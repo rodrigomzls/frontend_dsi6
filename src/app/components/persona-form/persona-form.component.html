@@ -1,0 +1,201 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon class="title-icon">{{ isEditMode ? 'edit' : 'person_add' }}</mat-icon>
+  {{ isEditMode ? 'Editar' : 'Agregar' }} Persona
+</h2>
+
+<mat-dialog-content>
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <form [formGroup]="personForm" class="person-form">
+    <!-- Información Personal -->
+    <div class="form-section">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" required />
+          <mat-error *ngIf="personForm.get('nombre')?.hasError('required')">
+            El nombre es requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Apellidos</mat-label>
+          <input matInput formControlName="apellidos" required />
+          <mat-error *ngIf="personForm.get('apellidos')?.hasError('required')">
+            Los apellidos son requeridos
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>DNI</mat-label>
+          <input matInput formControlName="dni" required maxlength="8" />
+          <mat-hint>8 dígitos</mat-hint>
+          <mat-error *ngIf="personForm.get('dni')?.hasError('required')">
+            El DNI es requerido
+          </mat-error>
+          <mat-error *ngIf="personForm.get('dni')?.hasError('invalidDni')">
+            Formato de DNI inválido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="telefono" required />
+          <mat-error *ngIf="personForm.get('telefono')?.hasError('required')">
+            El teléfono es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Información de Contacto -->
+    <div class="form-section">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Correo Electrónico</mat-label>
+          <input matInput formControlName="correo" required type="email" />
+          <mat-error *ngIf="personForm.get('correo')?.hasError('required')">
+            El correo es requerido
+          </mat-error>
+          <mat-error *ngIf="personForm.get('correo')?.hasError('invalidEmail')">
+            Formato de correo inválido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Dirección</mat-label>
+          <input matInput formControlName="direccion" required />
+          <mat-error *ngIf="personForm.get('direccion')?.hasError('required')">
+            La dirección es requerida
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Ubicación -->
+    <div class="form-section">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>País</mat-label>
+          <mat-select
+            formControlName="paisId"
+            (selectionChange)="onCountryChange($event)"
+            required
+          >
+            <mat-option *ngFor="let country of countries" [value]="country.id">
+              {{ country.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="personForm.get('paisId')?.hasError('required')">
+            El país es requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Departamento</mat-label>
+          <mat-select
+            formControlName="departamentoId"
+            (selectionChange)="onDepartmentChange($event)"
+            required
+            [disabled]="!departments.length"
+          >
+            <mat-option *ngFor="let department of departments" [value]="department.id">
+              {{ department.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="personForm.get('departamentoId')?.hasError('required')">
+            El departamento es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Provincia</mat-label>
+          <mat-select
+            formControlName="provinciaId"
+            (selectionChange)="onProvinceChange($event)"
+            required
+            [disabled]="!provinces.length"
+          >
+            <mat-option *ngFor="let province of provinces" [value]="province.id">
+              {{ province.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="personForm.get('provinciaId')?.hasError('required')">
+            La provincia es requerida
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Distrito</mat-label>
+          <mat-select
+            formControlName="distritoId"
+            (selectionChange)="onDistritoChange($event)"
+            required
+            [disabled]="!districts.length"
+          >
+            <mat-option *ngFor="let district of districts" [value]="district.id">
+              {{ district.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="personForm.get('distritoId')?.hasError('required')">
+            El distrito es requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Coordenadas con botón de geocodificación -->
+    <div class="form-section">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-full">
+          <mat-label>Coordenadas</mat-label>
+          <input
+            matInput
+            formControlName="coordenadas"
+            placeholder="Ej: -8.3791,-74.5539"
+            readonly
+          />
+          <mat-hint>Se mostrarán al calcular</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <button
+          type="button"
+          mat-raised-button
+          color="accent"
+          (click)="manualGeocode()"
+          [disabled]="!canGeocode() || isGeocoding"
+          class="geocode-btn"
+        >
+          <mat-icon>location_on</mat-icon>
+          {{ isGeocoding ? 'Calculando...' : 'Calcular Coordenadas' }}
+        </button>
+
+        <div class="geocode-status" *ngIf="isGeocoding">
+          <mat-spinner diameter="20"></mat-spinner>
+          <span>Buscando ubicación...</span>
+        </div>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" class="cancel-button">Cancelar</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="personForm.invalid"
+    class="submit-button"
+  >
+    {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+  </button>
+</mat-dialog-actions>

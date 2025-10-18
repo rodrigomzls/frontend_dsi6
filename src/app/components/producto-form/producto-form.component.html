@@ -1,0 +1,139 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon class="title-icon">{{ isEditMode ? 'edit' : 'add' }}</mat-icon>
+  {{ isEditMode ? 'Editar' : 'Nuevo' }} Producto
+</h2>
+
+<mat-dialog-content>
+  <div class="loading-overlay" *ngIf="isLoading">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+
+  <form [formGroup]="productForm" class="product-form">
+    <!-- Información Básica -->
+    <div class="form-section">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" required />
+          <mat-error *ngIf="productForm.get('nombre')?.hasError('required')">
+            Nombre requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Descripción</mat-label>
+          <textarea 
+            matInput 
+            formControlName="descripcion" 
+            rows="1"
+            required>
+          </textarea>
+          <mat-error *ngIf="productForm.get('descripcion')?.hasError('required')">
+            Descripción requerida
+          </mat-error>
+        </mat-form-field>
+      </div>
+     <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Precio</mat-label>
+          <input 
+            matInput 
+            type="number" 
+            formControlName="precio" 
+            min="0.01" 
+            step="0.01"
+            required />
+          <span matPrefix>S/&nbsp;</span>
+          <mat-error *ngIf="productForm.get('precio')?.hasError('required')">
+            Precio requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Stock</mat-label>
+          <input 
+            matInput 
+            type="number" 
+            formControlName="stock" 
+            min="0"
+            required />
+          <mat-error *ngIf="productForm.get('stock')?.hasError('required')">
+            Stock requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+    <!-- Información Comercial -->
+    <!-- Categorización -->
+    <div class="form-section">
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Categoría</mat-label>
+          <mat-select formControlName="categoriaId" required>
+            <mat-option *ngFor="let categoria of categorias" [value]="categoria.id_categoria">
+              {{ categoria.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="productForm.get('categoriaId')?.hasError('required')">
+            Categoría requerida
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Marca</mat-label>
+          <mat-select formControlName="marcaId" required>
+            <mat-option *ngFor="let marca of marcas" [value]="marca.id_marca">
+              {{ marca.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="productForm.get('marcaId')?.hasError('required')">
+            Marca requerida
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Proveedor</mat-label>
+          <mat-select formControlName="proveedorId" required>
+            <mat-option *ngFor="let proveedor of proveedores" [value]="proveedor.id_proveedor">
+              {{ proveedor.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="productForm.get('proveedorId')?.hasError('required')">
+            Proveedor requerido
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>País Origen</mat-label>
+          <mat-select formControlName="paisOrigenId" required>
+            <mat-option *ngFor="let pais of paises" [value]="pais.id">
+              {{ pais.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="productForm.get('paisOrigenId')?.hasError('required')">
+            País requerido
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" class="cancel-button">
+    <mat-icon>close</mat-icon>
+    Cancelar
+  </button>
+<button
+  mat-raised-button
+  color="primary"
+  (click)="onSubmit()"
+  [disabled]="productForm.invalid || isLoading || !isFormReady()"
+  class="submit-button"
+>
+  <mat-icon>{{ isEditMode ? 'save' : 'check' }}</mat-icon>
+  {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+</button>
+</mat-dialog-actions>

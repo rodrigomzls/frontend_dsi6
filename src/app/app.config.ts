@@ -1,0 +1,22 @@
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+
+import { LOCALE_ID } from '@angular/core';
+import localeEsPe from '@angular/common/locales/es-PE';
+import { registerLocaleData } from '@angular/common';
+
+import { routes } from './app.routes';
+
+registerLocaleData(localeEsPe, 'es-PE');
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    { provide: LOCALE_ID, useValue: 'es-PE' },
+    provideRouter(routes),
+    provideHttpClient(),
+    provideAnimations()
+  ]
+};
+

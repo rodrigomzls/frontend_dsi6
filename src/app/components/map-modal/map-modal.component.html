@@ -1,0 +1,26 @@
+<div class="map-modal">
+  <h2 mat-dialog-title class="dialog-title">
+    <mat-icon class="title-icon">location_on</mat-icon>
+    Ubicación de {{ data.nombre }} {{ data.apellidos }}
+  </h2>
+
+  <mat-dialog-content class="dialog-content">
+    <div class="address-info">
+      <p><strong>Dirección:</strong> {{ data.direccion }}</p>
+      <p>
+        <strong>Ubicación:</strong> {{ data.distrito }}, {{ data.provincia }},
+        {{ data.departamento }}, {{ data.pais }}
+      </p>
+      <p><strong>Coordenadas:</strong> {{ data.coordenadas }}</p>
+    </div>
+
+    <div id="map-{{ uniqueId }}" class="map-container"></div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-button (click)="onClose()" class="close-btn">
+      <mat-icon>close</mat-icon>
+      Cerrar
+    </button>
+  </mat-dialog-actions>
+</div>

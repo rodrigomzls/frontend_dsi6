@@ -1,0 +1,36 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* todo a la izquierda */
+  background-color: #1550a8;
+  color: white;
+  padding: 10px 20px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-right: 20px; /* separa logo de los links */
+}
+
+.logo mat-icon {
+  margin-right: 8px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: 500;
+  font-family: "Montserrat", sans-serif;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
+
+.active {
+  border-bottom: 2px solid white;
+}
