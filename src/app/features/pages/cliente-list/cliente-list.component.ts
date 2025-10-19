@@ -11,15 +11,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Person } from '../../../core/models/persona.model';
-import { PersonService} from '../../../core/services/persona.service';
-import { PersonaFormComponent } from '../../../components/persona-form/persona-form.component';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipsModule } from '@angular/material/chips';
+
+import { Cliente } from '../../../core/models/cliente.model';
+import { ClienteService } from '../../../core/services/cliente.service';
+import { ClienteFormComponent } from '../../../components/cliente-form/cliente-form.component';
 import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confirm-dialog.component';
 import { MapModalComponent } from '../../../components/map-modal/map-modal.component';
 
 @Component({
-  selector: 'app-persona-list',
+  selector: 'app-cliente-list',
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -33,24 +36,22 @@ import { MapModalComponent } from '../../../components/map-modal/map-modal.compo
     MatDialogModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatSelectModule,
+    MatChipsModule
   ],
-  templateUrl: './persona-list.component.html',
-  styleUrl: './persona-list.component.css',
+  templateUrl: './cliente-list.component.html',
+  styleUrl: './cliente-list.component.css',
 })
-export class personaListComponent implements OnInit {
- displayedColumns: string[] = [
+export class ClienteListComponent implements OnInit {
+  displayedColumns: string[] = [
     'nombre',
-    'apellidos',
+    'tipo_documento',
     'dni',
-    'correo',
     'telefono',
     'direccion',
-    'pais',
-    'departamento',
-    'provincia',
-    'distrito',
+    'tipo_cliente',
+    'razon_social',
     'acciones'
   ];
 
@@ -61,7 +62,7 @@ export class personaListComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
-    private PersonService: PersonService,
+    private clienteService: ClienteService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {
@@ -69,7 +70,7 @@ export class personaListComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadPeopleWithLocation();
+    this.loadClientes();
   }
 
   ngAfterViewInit(): void {
@@ -77,30 +78,17 @@ export class personaListComponent implements OnInit {
     this.dataSource.sort = this.sort;
   }
 
-  loadPeopleWithLocation(): void {
+  loadClientes(): void {
     this.isLoading = true;
-    this.PersonService.getPeopleWithLocation().subscribe({
-      next: (peopleWithLocation) => {
-        this.dataSource.data = peopleWithLocation;
+    this.clienteService.getClientes().subscribe({
+      next: (clientes) => {
+        this.dataSource.data = clientes;
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading people with location:', error);
+        console.error('Error loading clients:', error);
         this.isLoading = false;
-        this.loadPeople();
-      }
-    });
-  }
-
-  loadPeople(): void {
-    this.PersonService.getPeople().subscribe({
-      next: (people) => {
-        this.dataSource.data = people;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading people:', error);
-        this.isLoading = false;
+        this.showErrorMessage('Error al cargar los clientes');
       }
     });
   }
@@ -115,58 +103,99 @@ export class personaListComponent implements OnInit {
   }
 
   openAddDialog(): void {
-    const dialogRef = this.dialog.open(PersonaFormComponent, {
+    const dialogRef = this.dialog.open(ClienteFormComponent, {
       width: '700px',
-      height: '80vh',
-      maxHeight: '80vh',
-      panelClass: 'persona-form-dialog'
+      height: 'auto',
+      maxHeight: '90vh',
+      panelClass: 'cliente-form-dialog'
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.loadPeopleWithLocation();
+        this.loadClientes();
       }
     });
   }
 
-  openEditDialog(person: Person): void {
-    const dialogRef = this.dialog.open(PersonaFormComponent, {
+  openEditDialog(cliente: Cliente): void {
+    const dialogRef = this.dialog.open(ClienteFormComponent, {
       width: '700px',
-      height: '80vh',
-      maxHeight: '80vh',
-      panelClass: 'persona-form-dialog',
-      data: { person }
+      height: 'auto',
+      maxHeight: '90vh',
+      panelClass: 'cliente-form-dialog',
+      data: { cliente }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.loadPeopleWithLocation();
+        this.loadClientes();
       }
     });
   }
 
-  deletepersona(persona: Person): void {
+  deleteCliente(cliente: Cliente): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '450px',
       data: {
-        message: `¿Estás seguro de que deseas eliminar a ${persona.nombre} ${persona.apellidos}? Esta acción no se puede deshacer.`
+        message: `¿Estás seguro de que deseas eliminar a ${cliente.nombre}? Esta acción no se puede deshacer.`
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.PersonService.deletePerson(persona.id!).subscribe({
+      if (result && cliente.id) {
+        this.clienteService.deleteCliente(cliente.id).subscribe({
           next: () => {
-            this.loadPeopleWithLocation();
-            this.showSuccessMessage('personaa eliminada correctamente');
+            this.loadClientes();
+            this.showSuccessMessage('Cliente eliminado correctamente');
           },
           error: (error) => {
-            console.error('Error deleting persona:', error);
-            this.showErrorMessage('Error al eliminar la personaa');
+            console.error('Error deleting client:', error);
+            this.showErrorMessage('Error al eliminar el cliente');
           }
         });
       }
     });
+  }
+
+  openMapDialog(cliente: Cliente): void {
+    // Verificar si hay dirección para geocodificar
+    if (!cliente.direccion) {
+      this.showErrorMessage('No hay dirección disponible para este cliente');
+      return;
+    }
+
+    this.dialog.open(MapModalComponent, {
+      width: '800px',
+      maxHeight: '90vh',
+      data: {
+        nombre: cliente.nombre,
+        direccion: cliente.direccion,
+        telefono: cliente.telefono,
+        tipo_cliente: cliente.tipo_cliente,
+        razon_social: cliente.razon_social,
+        coordenadas: cliente['coordenadas'] // Opcional, si decides agregar este campo
+      }
+    });
+  }
+
+  getTipoClienteColor(tipoCliente: string): string {
+    const colors: { [key: string]: string } = {
+      'Bodega': 'primary',
+      'Restaurante': 'accent',
+      'Gimnasio': 'warn',
+      'Final': 'basic',
+      'Empresa': 'primary'
+    };
+    return colors[tipoCliente] || 'basic';
+  }
+
+  getTipoDocumentoColor(tipoDocumento: string): string {
+    const colors: { [key: string]: string } = {
+      'DNI': 'primary',
+      'RUC': 'accent',
+      'CE': 'warn'
+    };
+    return colors[tipoDocumento] || 'basic';
   }
 
   private showSuccessMessage(message: string): void {
@@ -186,28 +215,4 @@ export class personaListComponent implements OnInit {
       verticalPosition: 'top'
     });
   }
-
-  openMapDialog(persona: any): void {
-    // Verificar si hay coordenadas
-    if (!persona.coordenadas) {
-      this.showErrorMessage('No hay coordenadas disponibles para esta personaa');
-      return;
-    }
-
-    this.dialog.open(MapModalComponent, {
-      width: '800px',
-      maxHeight: '90vh',
-      data: {
-        nombre: persona.nombre,
-        apellidos: persona.apellidos,
-        direccion: persona.direccion,
-        pais: persona.paisNombre || 'N/A',
-        departamento: persona.departamentoNombre || 'N/A',
-        provincia: persona.provinciaNombre || 'N/A',
-        distrito: persona.distritoNombre || 'N/A',
-        coordenadas: persona.coordenadas
-      }
-    });
-  }
-
 }

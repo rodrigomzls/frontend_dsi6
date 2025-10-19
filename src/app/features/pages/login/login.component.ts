@@ -21,7 +21,7 @@ export class LoginComponent {
     console.log('Login attempt:', this.username, this.password);
     
     // Redirigir después del login exitoso
-    this.router.navigate(['/personas']);
+    this.router.navigate(['/clientes']);
   }
 
   goToRegister() {

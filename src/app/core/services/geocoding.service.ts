@@ -23,13 +23,15 @@ export class GeocodingService {
       format: 'json',
       limit: '1',
       addressdetails: '1',
-      countrycodes: 'pe' // Priorizar Perú
+      countrycodes: 'pe', // Priorizar Perú
+      'accept-language': 'es' // Idioma español
     };
 
     return this.http.get<any[]>(this.nominatimUrl, { params }).pipe(
       map(response => {
         if (response && response.length > 0) {
           const result = response[0];
+          console.log('Geocoding result:', result); // Para debug
           return {
             lat: parseFloat(result.lat),
             lng: parseFloat(result.lon)
@@ -44,33 +46,31 @@ export class GeocodingService {
     );
   }
 
-  geocodeFromComponents(
-    direccion: string,
-    distrito: string,
-    provincia: string,
-    departamento: string,
-    pais: string
-  ): Observable<Coordinates | null> {
-    // Construir la dirección completa
-    const fullAddress = this.buildFullAddress(direccion, distrito, provincia, departamento, pais);
-
-    return this.geocodeAddress(fullAddress);
+  geocodeFromAddress(direccion: string): Observable<Coordinates | null> {
+    // Para clientes, usamos solo la dirección ya que no tenemos ubicación geográfica en la BD
+    return this.geocodeAddress(direccion);
   }
 
-  private buildFullAddress(
-    direccion: string,
-    distrito: string,
-    provincia: string,
-    departamento: string,
-    pais: string
-  ): string {
-    const parts = [direccion];
+  // Método alternativo para geocodificación inversa (si necesitas obtener dirección desde coordenadas)
+  reverseGeocode(lat: number, lng: number): Observable<string | null> {
+    const params = {
+      lat: lat.toString(),
+      lon: lng.toString(),
+      format: 'json',
+      'accept-language': 'es'
+    };
 
-    if (distrito && distrito !== 'N/A') parts.push(distrito);
-    if (provincia && provincia !== 'N/A') parts.push(provincia);
-    if (departamento && departamento !== 'N/A') parts.push(departamento);
-    if (pais && pais !== 'N/A') parts.push(pais);
-
-    return parts.join(', ');
+    return this.http.get<any>(`https://nominatim.openstreetmap.org/reverse`, { params }).pipe(
+      map(response => {
+        if (response && response.display_name) {
+          return response.display_name;
+        }
+        return null;
+      }),
+      catchError(error => {
+        console.error('Error en reverse geocoding:', error);
+        return of(null);
+      })
+    );
   }
 }

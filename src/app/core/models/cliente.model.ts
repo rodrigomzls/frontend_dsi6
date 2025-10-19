@@ -1,39 +1,39 @@
 export interface Cliente {
   id?: number;
+  tipo_documento: 'DNI' | 'RUC' | 'CE';
+  dni: string;
   nombre: string;
   telefono: string;
   direccion: string;
-  distritoId: number;
-  tipoCliente: 'Bodega' | 'Restaurante' | 'Gimnasio' | 'Final';
+  coordenadas?: string; // Ahora viene del backend
+  tipo_cliente: 'Bodega' | 'Restaurante' | 'Gimnasio' | 'Final' | 'Empresa';
+  razon_social?: string;
   activo?: boolean;
-  fechaRegistro?: string;
-  paisNombre?: string;
-  departamentoNombre?: string;
-  provinciaNombre?: string;
-  distritoNombre?: string;
+  fecha_registro?: string;
 }
 
+// Mantenemos las interfaces de ubicación
 export interface Country {
-  id_pais: number;
-  pais: string;
+  id: number;
+  nombre: string;
 }
 
 export interface Department {
-  id_departamento: number;
-  departamento: string;
-  id_pais: number;
+  id: number;
+  nombre: string;
+  paisId: number;
 }
 
 export interface Province {
-  id_provincia: number;
-  provincia: string;
-  id_departamento: number;
+  id: number;
+  nombre: string;
+  departamentoId: number;
 }
 
 export interface District {
-  id_distrito: number;
-  distrito: string;
-  id_provincia: number;
+  id: number;
+  nombre: string;
+  provinciaId: number;
 }
 
 export interface Coordinates {

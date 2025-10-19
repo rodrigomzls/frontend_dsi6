@@ -49,6 +49,40 @@
   z-index: 1;
 }
 
+.map-container.hidden {
+  display: none;
+}
+
+.map-loading, .map-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.map-error {
+  color: #dc3545;
+}
+
+.map-error mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+.popup-content {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.popup-content strong {
+  color: #333;
+}
+
 .dialog-actions {
   padding: 16px 24px;
   background-color: #f8f9fa;
