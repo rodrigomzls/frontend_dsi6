@@ -7,8 +7,16 @@
 
   <!-- Navegación -->
   <nav class="nav-links">
-  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Inicio</a>
-  <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
-  <a routerLink="/productos" routerLinkActive="active">Productos</a>
+    <a routerLink="/inicio" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Inicio</a>
+    <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
+    <a routerLink="/productos" routerLinkActive="active">Productos</a>
   </nav>
+
+  <!-- Opcional: Botón de logout -->
+  <div class="user-actions">
+    <button mat-button (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Cerrar Sesión
+    </button>
+  </div>
 </header>

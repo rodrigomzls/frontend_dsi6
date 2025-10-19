@@ -5,7 +5,7 @@ import { Country, Department, Province, District } from '../models/cliente.model
 
 @Injectable({ providedIn: 'root' })
 export class UbicacionService {
-  private apiUrl = 'http://localhost:4200/api/ubicacion';
+  private apiUrl = 'http://localhost:4000/api/ubicacion';
 
   constructor(private http: HttpClient) { }
 

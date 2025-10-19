@@ -5,7 +5,7 @@ import { Cliente, Country, Department, Province, District } from '../models/clie
 
 @Injectable({ providedIn: 'root' })
 export class ClienteService {
-  private apiUrl = 'http://localhost:4200/api';
+  private apiUrl = 'http://localhost:4000/api';
 
   constructor(private http: HttpClient) { }
 

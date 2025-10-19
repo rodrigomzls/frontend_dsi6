@@ -16,13 +16,13 @@ export class LoginComponent {
 
   constructor(private router: Router) {}
 
-  onLogin() {
-    // Lógica de autenticación aquí
-    console.log('Login attempt:', this.username, this.password);
-    
-    // Redirigir después del login exitoso
-    this.router.navigate(['/clientes']);
-  }
+ onLogin() {
+  // Lógica de autenticación aquí
+  console.log('Login attempt:', this.username, this.password);
+  
+  // Redirigir después del login exitoso - AHORA A INICIO
+  this.router.navigate(['/inicio']);
+}
 
   goToRegister() {
     this.router.navigate(['/register']);
