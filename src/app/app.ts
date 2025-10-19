@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/header/header.component';
 import { FooterComponent } from './shared/footer/footer.component';
@@ -6,7 +6,8 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule],
+  standalone: true,
+  imports: [RouterOutlet, HeaderComponent, FooterComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -15,8 +16,9 @@ export class App {
 
   constructor(private router: Router) {}
 
-  showHeaderFooter(): boolean {
-    const currentRoute = this.router.url;
-    return currentRoute !== '/login' && currentRoute !== '/register';
-  }
+  // Esta señal verifica si estamos en login o register
+  isAuthPage = computed(() => {
+    const currentUrl = this.router.url;
+    return currentUrl === '/login' || currentUrl === '/register';
+  });
 }

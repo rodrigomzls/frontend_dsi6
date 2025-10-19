@@ -1,16 +1,26 @@
+/* Importar fuente Montserrat desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
 .register-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #057cbe 0%, #009949 100%);
   padding: 20px;
 }
 
 .register-card {
   background: white;
   padding: 40px;
-  border-radius: 10px;
+  border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   width: 100%;
   max-width: 450px;
@@ -18,25 +28,25 @@
 
 .logo-section {
   text-align: center;
-  margin-bottom: 30px;
 }
 
 .company-logo {
-  max-width: 100px;
-  margin-bottom: 15px;
+  max-width: 150px;
+  margin-top: -35px;
 }
 
 .logo-section h1 {
-  color: #333;
-  font-size: 1.5rem;
-  margin: 0;
+  color: #009949;
+  font-size: 1.6rem;
+  font-weight: 600;
 }
 
 h2 {
   text-align: center;
-  color: #333;
+  color: #057cbe;
   margin-bottom: 30px;
   font-size: 1.8rem;
+  font-weight: 600;
 }
 
 .register-form {
@@ -50,7 +60,7 @@ h2 {
 label {
   display: block;
   margin-bottom: 5px;
-  color: #555;
+  color: #009949;
   font-weight: 500;
 }
 
@@ -59,18 +69,18 @@ input[type="email"],
 input[type="password"] {
   width: 100%;
   padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 5px;
+  border: 2px solid #49b63f;
+  border-radius: 6px;
   font-size: 16px;
-  transition: border-color 0.3s;
-  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #057cbe;
+  box-shadow: 0 0 5px rgba(5, 124, 190, 0.5);
 }
 
 .terms-group {
@@ -88,7 +98,7 @@ input[type="password"]:focus {
 .terms-label {
   margin: 0;
   font-weight: normal;
-  color: #666;
+  color: #555;
   cursor: pointer;
 }
 
@@ -99,23 +109,25 @@ input[type="password"]:focus {
   margin-top: 30px;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   padding: 12px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
   font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .btn-primary {
-  background-color: #28a745;
+  background-color: #009949;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: #218838;
+  background-color: #49b63f;
+  transform: scale(1.02);
 }
 
 .btn-primary:disabled {
@@ -124,12 +136,13 @@ input[type="password"]:focus {
 }
 
 .btn-secondary {
-  background-color: #6c757d;
+  background-color: #057cbe;
   color: white;
 }
 
 .btn-secondary:hover {
-  background-color: #5a6268;
+  background-color: #036da8;
+  transform: scale(1.02);
 }
 
 .login-link {
@@ -141,14 +154,14 @@ input[type="password"]:focus {
 
 .login-link p {
   margin: 0;
-  color: #666;
+  color: #555;
 }
 
 .login-link a {
-  color: #667eea;
+  color: #057cbe;
   text-decoration: none;
   cursor: pointer;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .login-link a:hover {
@@ -161,7 +174,7 @@ input.ng-invalid.ng-touched {
 }
 
 input.ng-valid.ng-touched {
-  border-color: #28a745;
+  border-color: #49b63f;
 }
 
 .error-message {
@@ -175,7 +188,7 @@ input.ng-valid.ng-touched {
   .register-card {
     padding: 30px 20px;
   }
-  
+
   .button-group {
     flex-direction: column;
   }
