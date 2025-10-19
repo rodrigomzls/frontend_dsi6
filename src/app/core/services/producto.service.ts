@@ -27,12 +27,18 @@ export class ProductService {
     );
   }
 
-  getProveedores(): Observable<Supplier[]> {
-    return this.http.get<Supplier[]>(`${this.apiUrl}/proveedor`).pipe(
-      catchError(this.handleError)
-    );
-  }
-
+getProveedores(): Observable<Supplier[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/proveedores`).pipe( // Cambiado a "proveedores"
+    map(proveedores => {
+      console.log('Proveedores crudos:', proveedores);
+      return proveedores.map(prov => ({
+        id_proveedor: prov.id_proveedor,
+        nombre: prov.nombre // Ahora sí tendrá el campo nombre
+      }));
+    }),
+    catchError(this.handleError)
+  );
+}
   getPaises(): Observable<Country[]> {
     return this.http.get<Country[]>(`${this.apiUrl}/paises`).pipe(
       catchError(this.handleError)
