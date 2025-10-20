@@ -12,6 +12,9 @@ export interface Product {
   marcaNombre?: string;
   proveedorNombre?: string;
   paisOrigenNombre?: string;
+  
+   // 🔹 Agrega esta línea (opcional)
+  imagen?: string;
 }
 
 export interface Country {
