@@ -9,11 +9,24 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  private handleError(error: any) {
-    console.error('An error occurred:', error);
-    return throwError(() => new Error('Something went wrong; please try again later.'));
+private handleError(error: any) {
+  console.error('Error completo:', error);
+  
+  let errorMessage = 'Something went wrong; please try again later.';
+  
+  if (error.status === 404) {
+    errorMessage = 'Recurso no encontrado. Verifica la URL.';
+  } else if (error.status === 0) {
+    errorMessage = 'No se puede conectar al servidor. Verifica que el backend esté ejecutándose.';
+  } else if (error.error instanceof ErrorEvent) {
+    errorMessage = `Error del cliente: ${error.error.message}`;
+  } else {
+    errorMessage = `Error del servidor: ${error.status} - ${error.message}`;
   }
-
+  
+  console.error('An error occurred:', errorMessage);
+  return throwError(() => new Error(errorMessage));
+}
   // ========= MÉTODOS DE RELACIONES =========
   getCategorias(): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.apiUrl}/categorias`).pipe(
@@ -46,16 +59,18 @@ getProveedores(): Observable<Supplier[]> {
   }
 
   // ========= PRODUCTOS =========
-  getProductsWithDetails(): Observable<any[]> {
+getProductsWithDetails(): Observable<any[]> {
   return forkJoin({
     productos: this.http.get<Product[]>(`${this.apiUrl}/productos`),
     paises: this.http.get<Country[]>(`${this.apiUrl}/paises`),
     categorias: this.http.get<Category[]>(`${this.apiUrl}/categorias`),
     marcas: this.http.get<Brand[]>(`${this.apiUrl}/marcas`),
-    proveedores: this.http.get<Supplier[]>(`${this.apiUrl}/proveedor`)
+    proveedores: this.getProveedores() // ← Cambiar esto para usar el método corregido
   }).pipe(
     map(({ productos, paises, categorias, marcas, proveedores }) => {
       console.log('=== DEBUG PRODUCTOS ===');
+      console.log('Proveedores disponibles:', proveedores); // Debug
+      
       productos.forEach((product, index) => {
         console.log(`Producto ${index}:`, {
           id: product.id,
@@ -70,8 +85,10 @@ getProveedores(): Observable<Supplier[]> {
       return productos.map(product => {
         const pais = paises.find(p => p.id === product.paisOrigenId);
         const categoria = categorias.find(c => c.id_categoria === product.categoriaId);
-        const marca = marcas.find(m => m.id_marca=== product.marcaId);
+        const marca = marcas.find(m => m.id_marca === product.marcaId);
         const proveedor = proveedores.find(prov => prov.id_proveedor === product.proveedorId);
+
+        console.log(`Proveedor encontrado para producto ${product.id}:`, proveedor);
 
         return {
           ...product,
@@ -85,7 +102,6 @@ getProveedores(): Observable<Supplier[]> {
     catchError(this.handleError)
   );
 }
-
   private getNameById(items: any[], id: number): string {
     const item = items.find(i => i.id === id);
     return item ? item.nombre : 'N/A';
