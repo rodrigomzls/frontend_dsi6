@@ -1,0 +1,157 @@
+<!-- src/app/features/pages/ventas/nueva-venta/nueva-venta.component.html -->
+<div class="nueva-venta-container">
+  <div class="header">
+    <h1>🛒 Nueva Venta Rápida</h1>
+    <p>Registro optimizado para ventas telefónicas y WhatsApp</p>
+  </div>
+
+  <div class="venta-content">
+    <!-- Sección Cliente -->
+<!-- En nueva-venta.component.html -->
+<div class="section cliente-section">
+  <h2>👤 Cliente</h2>
+  <div class="search-box">
+    <input 
+      type="text" 
+      [(ngModel)]="searchCliente" 
+      (input)="filtrarClientes()"
+      placeholder="Buscar por nombre, teléfono o documento..."
+      class="search-input">
+    <button (click)="limpiarBusquedaCliente()" class="btn-clear">✕</button>
+  </div>
+
+  <!-- Lista de clientes filtrados -->
+  <div class="results-list" *ngIf="searchCliente && filteredClientes.length > 0">
+    <div 
+      *ngFor="let cliente of filteredClientes" 
+      class="result-item"
+      (click)="seleccionarCliente(cliente)">
+      <strong>{{ cliente.razon_social || cliente.persona?.nombre_completo }}</strong>
+      <span>{{ cliente.persona?.telefono }}</span>
+      <small>{{ cliente.tipo_cliente }}</small>
+    </div>
+  </div>
+
+  <div *ngIf="venta.id_cliente !== 0" class="selected-cliente">
+    ✅ Cliente seleccionado: <strong>{{ searchCliente }}</strong>
+    (ID: {{ venta.id_cliente }})
+  </div>
+</div>
+
+    <!-- Sección Productos -->
+    <div class="section productos-section">
+      <h2>📦 Productos</h2>
+      
+      <!-- Búsqueda de productos -->
+      <div class="search-box">
+        <input 
+          type="text" 
+          [(ngModel)]="searchProducto" 
+          (input)="filtrarProductos()"
+          placeholder="Buscar producto..."
+          class="search-input">
+        <button (click)="limpiarBusquedaProducto()" class="btn-clear">✕</button>
+      </div>
+
+      <!-- Lista de productos filtrados -->
+  <!-- En nueva-venta.component.html - en la sección de productos -->
+<div class="results-list" *ngIf="searchProducto && filteredProductos.length > 0">
+  <div 
+    *ngFor="let producto of filteredProductos" 
+    class="result-item"
+    (click)="seleccionarProducto(producto)">
+    <strong>{{ producto.nombre }}</strong>
+    <span>S/ {{ producto.precio }}</span>
+    <small>Stock: {{ producto.stock }} | ID: {{ producto.id }}</small> <!-- Mostrar ID -->
+  </div>
+</div>
+
+      <!-- Agregar producto seleccionado -->
+      <div *ngIf="productoSeleccionado" class="add-product-form">
+        <div class="product-info">
+          <strong>{{ productoSeleccionado.nombre }}</strong>
+          <span>S/ {{ productoSeleccionado.precio }}</span>
+          <small>Stock: {{ productoSeleccionado.stock }}</small>
+        </div>
+        <div class="quantity-controls">
+          <label>Cantidad:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="cantidad" 
+            min="1" 
+            [max]="productoSeleccionado.stock"
+            class="quantity-input">
+          <button (click)="agregarProducto()" class="btn-add">➕ Agregar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carrito de Compra -->
+    <div class="section carrito-section">
+      <h2>🛍️ Carrito de Compra</h2>
+      
+      <div *ngIf="venta.detalles.length === 0" class="empty-cart">
+        <p>No hay productos en el carrito</p>
+      </div>
+
+      <div *ngIf="venta.detalles.length > 0" class="cart-items">
+        <div *ngFor="let detalle of venta.detalles; let i = index" class="cart-item">
+          <div class="item-info">
+            <strong>{{ detalle.producto_nombre }}</strong>
+            <span>{{ detalle.cantidad }} x S/ {{ detalle.precio_unitario }}</span>
+          </div>
+          <div class="item-subtotal">
+            S/ {{ detalle.cantidad * detalle.precio_unitario }}
+            <button (click)="removerProducto(i)" class="btn-remove">🗑️</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cart-total" *ngIf="venta.detalles.length > 0">
+        <strong>Total: S/ {{ venta.total }}</strong>
+      </div>
+    </div>
+
+    <!-- Método de Pago y Notas -->
+    <div class="section config-section">
+      <h2>⚙️ Configuración</h2>
+      
+      <div class="form-group">
+        <label>Método de Pago:</label>
+        <select [(ngModel)]="venta.id_metodo_pago" class="form-select">
+          <option *ngFor="let metodo of metodosPago" [value]="metodo.id_metodo_pago">
+            {{ metodo.metodo_pago }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notas (opcional):</label>
+        <textarea 
+          [(ngModel)]="venta.notas" 
+          placeholder="Observaciones de la venta..."
+          class="form-textarea"></textarea>
+      </div>
+    </div>
+
+    <!-- Mensajes de Error -->
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+
+    <!-- Botones de Acción -->
+    <div class="action-buttons">
+      <button 
+        (click)="finalizarVenta()" 
+        [disabled]="loading || venta.detalles.length === 0 || venta.id_cliente === 0"
+        class="btn-primary">
+        {{ loading ? 'Procesando...' : '✅ Finalizar Venta' }}
+      </button>
+      
+      <button 
+        (click)="router.navigate(['/ventas'])" 
+        class="btn-secondary">
+        📋 Ver Todas las Ventas
+      </button>
+    </div>
+  </div>
+</div>

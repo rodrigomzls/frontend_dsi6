@@ -1,61 +1,112 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // 👈 Necesario para el pipe 'number'
-import { ProductService } from '../../../core/services/producto.service';
-import { Product } from '../../../core/models/producto.model';
+// src/app/features/pages/inicio/home.component.ts
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-home',
-  standalone: true, // 👈 importante
-  imports: [CommonModule], // 👈 aquí habilitamos los pipes y directivas ngFor, ngIf, etc.
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
-})
-export class HomeComponent implements OnInit {
-  productos: Product[] = [];
-  currentSlide: number = 0;
-  slides = [
-    { image: '../../../../assets/image1.jpg', title: 'Nueva Colección', subtitle: 'Explora lo más reciente' },
-    { image: '../../../../assets/image2.jpg', title: 'Ofertas Especiales', subtitle: 'Descuentos hasta 50%' },
-    { image: '../../../../assets/image3.jpg', title: 'Compra con confianza', subtitle: 'Calidad garantizada' }
-  ];
-
-  constructor(private productService: ProductService) {}
-
-  ngOnInit(): void {
-    this.cargarProductos();
-    this.iniciarCarrusel();
-  }
-
-  cargarProductos(): void {
-    this.productService.getProducts().subscribe({
-      next: (data) => {
-        this.productos = data;
-      },
-      error: (error) => {
-        console.error('Error al cargar productos:', error);
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="home-container">
+      <div class="welcome-card">
+        <h1>¡Bienvenido al Sistema de Agua! 💧</h1>
+        
+        <div class="user-info" *ngIf="authService.currentUser$ | async as user">
+          <p><strong>Usuario:</strong> {{ user.nombre }}</p>
+          <p><strong>Rol:</strong> {{ user.roleName }}</p>
+        </div>
+        
+        <div class="quick-actions">
+          <h3>Acciones Rápidas</h3>
+          <div class="action-buttons">
+            <button (click)="goToClientes()" class="btn-primary">👥 Gestionar Clientes</button>
+            <button (click)="goToProductos()" class="btn-secondary">📦 Ver Productos</button>
+            <button (click)="nuevaVenta()" class="btn-success">🛒 Nueva Venta</button>
+            <button (click)="goToVentas()" class="btn-info">📋 Panel de Ventas</button>
+            <button (click)="logout()" class="btn-logout">🚪 Cerrar Sesión</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .home-container {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .welcome-card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .user-info {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      border-left: 4px solid #009949;
+    }
+    .quick-actions {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    button {
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    .btn-primary { background: #009949; color: white; }
+    .btn-secondary { background: #057cbe; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-info { background: #17a2b8; color: white; }
+    .btn-logout { background: #dc3545; color: white; }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    @media (max-width: 768px) {
+      .action-buttons {
+        grid-template-columns: 1fr;
       }
-    });
+    }
+  `]
+})
+export class HomeComponent {
+  public authService = inject(AuthService);
+  private router = inject(Router);
+
+  goToClientes() {
+    this.router.navigate(['/clientes']);
   }
 
-  agregarAlCarrito(producto: Product): void {
-    console.log('🛒 Producto agregado al carrito:', producto);
+  goToProductos() {
+    this.router.navigate(['/productos']);
   }
 
-  iniciarCarrusel(): void {
-    setInterval(() => {
-      this.cambiarSlideAutomatico();
-    }, 4000);
+  nuevaVenta() {
+    this.router.navigate(['/ventas/nueva']);
   }
 
-  cambiarSlide(index: number): void {
-    this.currentSlide = index;
+  goToVentas() {
+    this.router.navigate(['/ventas']);
   }
 
-  cambiarSlideAutomatico(): void {
-    this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-  }
-
-  isActiveSlide(index: number): boolean {
-    return this.currentSlide === index;
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

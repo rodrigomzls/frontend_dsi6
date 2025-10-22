@@ -1,0 +1,155 @@
+<!-- src/app/features/pages/ventas/detalle-venta/detalle-venta.component.html -->
+<div class="detalle-venta-container">
+  <!-- Header -->
+  <div class="header">
+    <button (click)="volverAPanel()" class="btn-back">← Volver al Panel</button>
+    <h1>📄 Detalle de Venta</h1>
+    <button (click)="imprimirDetalle()" class="btn-print">🖨️ Imprimir</button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <p>🔄 Cargando detalle de venta...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Venta no encontrada -->
+  <div *ngIf="notFound" class="not-found">
+    <h2>😔 Venta no encontrada</h2>
+    <p>La venta que buscas no existe o fue eliminada.</p>
+    <button (click)="volverAPanel()" class="btn-primary">Volver al Panel</button>
+  </div>
+
+  <!-- Detalle de la venta -->
+  <div *ngIf="venta && !loading" class="venta-detalle">
+    <!-- Información general -->
+    <div class="seccion info-general">
+      <h2>📋 Información General</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <label>ID de Venta:</label>
+          <span class="venta-id">#{{ venta.id_venta }}</span>
+        </div>
+        <div class="info-item">
+          <label>Fecha:</label>
+          <!-- ✅ CORREGIDO: Usar formatearFecha -->
+          <span>{{ formatearFecha(venta.fecha) }}</span>
+        </div>
+        <div class="info-item">
+          <label>Hora:</label>
+          <!-- ✅ CORREGIDO: Usar formatearHora -->
+          <span>{{ formatearHora(venta.hora) }}</span>
+        </div>
+        <div class="info-item">
+          <label>Estado:</label>
+          <span [class]="'estado-badge ' + getEstadoClass(venta.estado || '')">
+            {{ venta.estado }}
+          </span>
+        </div>
+        <div class="info-item">
+          <label>Método de Pago:</label>
+          <span class="metodo-pago">{{ venta.metodo_pago }}</span>
+        </div>
+        <div class="info-item">
+          <label>Total:</label>
+          <span class="total-venta">S/ {{ venta.total }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resto del template se mantiene igual -->
+    <!-- Información del cliente -->
+    <div class="seccion info-cliente">
+      <h2>👤 Información del Cliente</h2>
+      <div class="cliente-info">
+        <div class="cliente-datos">
+          <strong>{{ venta.razon_social || 'Cliente' }}</strong>
+          <div *ngIf="venta.telefono" class="cliente-contacto">
+            <span>📞 {{ venta.telefono }}</span>
+          </div>
+          <div *ngIf="venta.direccion" class="cliente-direccion">
+            <span>📍 {{ venta.direccion }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles de productos -->
+    <div class="seccion productos-detalle">
+      <h2>📦 Productos Vendidos</h2>
+      <div class="productos-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detalle of venta.detalles" class="producto-row">
+              <td class="producto-nombre">
+                <strong>{{ detalle.producto_nombre }}</strong>
+              </td>
+              <td class="producto-cantidad">
+                {{ detalle.cantidad }} unidades
+              </td>
+              <td class="producto-precio">
+                S/ {{ detalle.precio_unitario }}
+              </td>
+              <td class="producto-subtotal">
+                S/ {{ detalle.cantidad * detalle.precio_unitario }}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="3"><strong>Total General:</strong></td>
+              <td class="total-general"><strong>S/ {{ venta.total }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="seccion info-adicional">
+      <h2>📝 Información Adicional</h2>
+      <div class="adicional-grid">
+        <div class="info-item">
+          <label>Vendedor:</label>
+          <span>{{ venta.vendedor || 'Sistema' }}</span>
+        </div>
+        <div class="info-item" *ngIf="venta.repartidor">
+          <label>Repartidor:</label>
+          <span>{{ venta.repartidor }}</span>
+        </div>
+        <div class="info-item" *ngIf="venta.notas">
+          <label>Notas:</label>
+          <span class="notas-text">{{ venta.notas }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="seccion acciones">
+      <h2>⚡ Acciones</h2>
+      <div class="acciones-buttons">
+        <button (click)="volverAPanel()" class="btn-secondary">
+          📋 Volver al Panel
+        </button>
+        <button *ngIf="puedeCambiarEstado" (click)="cambiarEstado()" class="btn-primary">
+          🔄 Cambiar Estado
+        </button>
+        <button (click)="imprimirDetalle()" class="btn-print">
+          🖨️ Imprimir Comprobante
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

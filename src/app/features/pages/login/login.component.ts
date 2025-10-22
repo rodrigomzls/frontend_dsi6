@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+// src/app/features/pages/login/login.component.ts
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -11,20 +13,35 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  username: string = '';
-  password: string = '';
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  constructor(private router: Router) {}
+  credentials = {
+    nombre_usuario: '',
+   password: '' // CAMBIAR de "contrasena" a "contraseña"
+  };
+  loading = false;
+  error = '';
 
- onLogin() {
-  // Lógica de autenticación aquí
-  console.log('Login attempt:', this.username, this.password);
-  
-  // Redirigir después del login exitoso - AHORA A INICIO
-  this.router.navigate(['/inicio']);
-}
+  onSubmit(): void {
+    if (!this.credentials.nombre_usuario || !this.credentials.password) {
+      this.error = 'Por favor completa todos los campos';
+      return;
+    }
 
-  goToRegister() {
-    this.router.navigate(['/register']);
+    this.loading = true;
+    this.error = '';
+
+    this.authService.login(this.credentials.nombre_usuario, this.credentials.password)
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/inicio']);
+        },
+        error: (error) => {
+          this.error = error.error?.error || 'Error al iniciar sesión';
+          this.loading = false;
+          console.error('Error de login:', error);
+        }
+      });
   }
 }

@@ -114,3 +114,19 @@ mat-chip {
   background-color: #f44336;
   color: white;
 }
+
+.no-data {
+  color: #999;
+  font-style: italic;
+}
+
+.actions-container {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.map-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

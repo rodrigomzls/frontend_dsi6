@@ -70,11 +70,18 @@
         </td>
       </ng-container>
 
-      <!-- Razón Social Column -->
-      <ng-container matColumnDef="razon_social">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Razón Social</th>
-        <td mat-cell *matCellDef="let cliente">{{ cliente.razon_social || 'N/A' }}</td>
-      </ng-container>
+<!-- Razón Social Column -->
+<ng-container matColumnDef="razon_social">
+  <th mat-header-cell *matHeaderCellDef mat-sort-header>Razón Social</th>
+  <td mat-cell *matCellDef="let cliente">
+    <span *ngIf="cliente.razon_social && cliente.razon_social.trim() !== ''">
+      {{ cliente.razon_social }}
+    </span>
+    <span *ngIf="!cliente.razon_social || cliente.razon_social.trim() === ''" class="no-data">
+      N/A
+    </span>
+  </td>
+</ng-container>
 
       <!-- Acciones Column -->
       <ng-container matColumnDef="acciones">

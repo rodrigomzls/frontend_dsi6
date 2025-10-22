@@ -1,39 +1,52 @@
+<!-- src/app/components/login/login.component.html -->
 <div class="login-container">
-  <div class="login-card">
-    <div class="logo-section">
-      <img src="../../../../assets/company-logo.jpeg" alt="Company Logo" class="company-logo">
-      
+  <div class="card">
+    <div class="card-header">
+      <h2>
+        <span>💧</span>
+        Sistema de Agua
+      </h2>
+      <p class="subtitle">Iniciar Sesión</p>
     </div>
-
-    <h2>INICIAR SESIÓN</h2>
-
-    <form (ngSubmit)="onLogin()" class="login-form">
+    
+    <form (ngSubmit)="onSubmit()" *ngIf="!loading">
       <div class="form-group">
-        <label for="username">Nombre de usuario</label>
+        <label for="username">USUARIO</label>
         <input 
           type="text" 
-          id="username" 
-          [(ngModel)]="username" 
-          name="username"
+          id="username"
+          [(ngModel)]="credentials.nombre_usuario" 
+          name="username" 
           required
-          placeholder="Ingresa tu nombre de usuario">
+          placeholder="Ingresa tu usuario"
+          [disabled]="loading"
+          autocomplete="username">
       </div>
 
       <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input 
-          type="password" 
-          id="password" 
-          [(ngModel)]="password" 
-          name="password"
-          required
-          placeholder="Ingresa tu contraseña">
-      </div>
+  <label for="password">CONTRASEÑA</label>
+  <input 
+    type="password" 
+    id="password"
+    [(ngModel)]="credentials.password"
+    name="password" 
+    required
+    placeholder="Ingresa tupassword"
+    [disabled]="loading"
+    autocomplete="current-password">
+</div>
 
-      <div class="button-group">
-        <button type="submit" class="btn-primary">Iniciar Sesión</button>
-        <button type="button" class="btn-secondary" (click)="goToRegister()">Registrarse</button>
-      </div>
+      <button type="submit" class="btn-primary" [disabled]="loading">
+        {{ loading ? 'INICIANDO SESIÓN...' : 'INICIAR SESIÓN' }}
+      </button>
     </form>
+
+    <div *ngIf="loading" class="loading">
+      <p>Verificando credenciales...</p>
+    </div>
+
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
   </div>
 </div>

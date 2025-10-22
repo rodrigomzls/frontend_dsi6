@@ -172,19 +172,18 @@ export class ClienteFormComponent implements OnInit {
     });
   }
 
-  loadFormData(cliente: Cliente): void {
-    this.clienteForm.patchValue({
-      tipo_documento: cliente.tipo_documento,
-      dni: cliente.dni,
-      nombre: cliente.nombre,
-      telefono: cliente.telefono,
-      direccion: cliente.direccion,
-      tipo_cliente: cliente.tipo_cliente,
-      razon_social: cliente.razon_social || '',
-      coordenadas: cliente['coordenadas'] || ''
-    });
-  }
-
+loadFormData(cliente: Cliente): void {
+  this.clienteForm.patchValue({
+    tipo_documento: cliente.tipo_documento,
+    dni: cliente.dni,
+    nombre: cliente.nombre,
+    telefono: cliente.telefono,
+    direccion: cliente.direccion,
+    tipo_cliente: cliente.tipo_cliente,
+    razon_social: cliente.razon_social || '', // Asegurar que no sea null
+    coordenadas: cliente.coordenadas || ''
+  });
+}
   getDocumentoError(): string {
     const errors = this.clienteForm.get('dni')?.errors;
     const tipoDocumento = this.clienteForm.get('tipo_documento')?.value;
@@ -214,23 +213,24 @@ export class ClienteFormComponent implements OnInit {
     return '';
   }
 
-  shouldShowRazonSocial(): boolean {
-    const tipoCliente = this.clienteForm.get('tipo_cliente')?.value;
-    return tipoCliente === 'Empresa' || tipoCliente === 'Restaurante';
-  }
+shouldShowRazonSocial(): boolean {
+  const tipoCliente = this.clienteForm.get('tipo_cliente')?.value;
+  // Mostrar razón social solo para Empresa y Restaurante
+  return true;
+}
 
 onSubmit(): void {
   if (this.clienteForm.valid) {
     this.isLoading = true;
     const formData = this.clienteForm.value;
 
-    // Si no es empresa, limpiar razón social
-    if (!this.shouldShowRazonSocial()) {
+    // Lógica mejorada para razón social - NO forzar a null
+    if (formData.razon_social && formData.razon_social.trim() === '') {
       formData.razon_social = null;
     }
 
     // Si las coordenadas están vacías, enviar null
-    if (!formData.coordenadas) {
+    if (!formData.coordenadas || formData.coordenadas.trim() === '') {
       formData.coordenadas = null;
     }
 
@@ -242,17 +242,22 @@ onSubmit(): void {
       next: () => {
         this.isLoading = false;
         this.dialogRef.close(true);
+        this.showMessage(
+          this.isEditMode ? 'Cliente actualizado correctamente' : 'Cliente creado correctamente', 
+          'success'
+        );
       },
       error: (error) => {
         console.error('Error saving client:', error);
         this.isLoading = false;
         
-        // Mostrar mensaje de error específico
         let errorMessage = 'Error al guardar el cliente';
         if (error.error?.message) {
           errorMessage = error.error.message;
         } else if (error.status === 400) {
           errorMessage = 'El número de documento ya existe';
+        } else if (error.status === 404) {
+          errorMessage = 'Cliente no encontrado';
         }
         
         this.showMessage(errorMessage, 'error');
@@ -263,9 +268,9 @@ onSubmit(): void {
     Object.keys(this.clienteForm.controls).forEach(key => {
       this.clienteForm.get(key)?.markAsTouched();
     });
+    this.showMessage('Por favor complete todos los campos requeridos', 'warn');
   }
 }
-
   onCancel(): void {
     this.dialogRef.close(false);
   }

@@ -1,7 +1,7 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* todo a la izquierda */
+  justify-content: space-between; /* Cambia esto */
   background-color: #057cbe;
   color: white;
   padding: 10px 20px;
@@ -19,6 +19,11 @@
   margin-right: 8px;
 }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
 .nav-links a {
   color: white;
   text-decoration: none;
@@ -33,4 +38,12 @@
 
 .active {
   border-bottom: 2px solid white;
+}
+.user-actions {
+  margin-left: auto; /* Esto empuja el botón a la derecha */
+  padding: 10px 20px;
+}
+
+.user-actions button {
+  color: white !important;
 }

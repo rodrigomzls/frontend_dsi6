@@ -1,0 +1,444 @@
+/* src/app/features/pages/ventas/detalle-venta/detalle-venta.component.css */
+.detalle-venta-container {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.header h1 {
+  color: #057cbe;
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.btn-back {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.btn-back:hover {
+  background: #5a6268;
+}
+
+.btn-print {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.btn-print:hover {
+  background: #138496;
+}
+
+/* Secciones */
+.seccion {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+.seccion h2 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+  border-bottom: 2px solid #f1f1f1;
+  padding-bottom: 10px;
+}
+
+/* Información general */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.venta-id {
+  font-weight: bold;
+  color: #057cbe;
+  font-size: 1.1rem;
+  font-family: 'Courier New', monospace;
+}
+
+.total-venta {
+  font-weight: bold;
+  color: #009949;
+  font-size: 1.2rem;
+}
+
+.metodo-pago {
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+/* Estados */
+.estado-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.estado-pendiente {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.estado-confirmado {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.estado-preparacion {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.estado-ruta {
+  background: #cce7ff;
+  color: #004085;
+  border: 1px solid #b3d7ff;
+}
+
+.estado-entregado {
+  background: #d1f7d1;
+  color: #0f5132;
+  border: 1px solid #badbcc;
+}
+
+.estado-pagado {
+  background: #d1f0ff;
+  color: #084298;
+  border: 1px solid #b6d4fe;
+}
+
+.estado-cancelado {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.estado-desconocido {
+  background: #e2e3e5;
+  color: #383d41;
+  border: 1px solid #d6d8db;
+}
+
+/* Información del cliente */
+.cliente-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.cliente-datos {
+  flex: 1;
+}
+
+.cliente-datos strong {
+  font-size: 1.2rem;
+  color: #333;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.cliente-contacto,
+.cliente-direccion {
+  color: #666;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tabla de productos */
+.productos-table {
+  overflow-x: auto;
+}
+
+.productos-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.productos-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #e1e5e9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.8rem;
+}
+
+.productos-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f1f1;
+  vertical-align: middle;
+}
+
+.producto-row:hover {
+  background: #f8f9fa;
+}
+
+.producto-nombre strong {
+  color: #333;
+}
+
+.producto-cantidad {
+  color: #666;
+  text-align: center;
+}
+
+.producto-precio,
+.producto-subtotal {
+  text-align: right;
+  font-weight: 500;
+}
+
+.producto-precio {
+  color: #666;
+}
+
+.producto-subtotal {
+  color: #009949;
+  font-weight: 600;
+}
+
+.total-row {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.total-general {
+  color: #009949;
+  font-size: 1.1rem;
+  text-align: right;
+}
+
+/* Información adicional */
+.adicional-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.notas-text {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #009949;
+  font-style: italic;
+  color: #666;
+}
+
+/* Acciones */
+.acciones-buttons {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: #009949;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #008040;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+/* Estados de carga y mensajes */
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.loading p {
+  color: #009949;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #f5c6cb;
+  text-align: center;
+  margin: 20px 0;
+  font-weight: 500;
+}
+
+.not-found {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.not-found h2 {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.not-found p {
+  color: #888;
+  margin-bottom: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .detalle-venta-container {
+    padding: 10px;
+  }
+
+  .header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .info-grid,
+  .adicional-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cliente-info {
+    flex-direction: column;
+  }
+
+  .acciones-buttons {
+    flex-direction: column;
+  }
+
+  .productos-table {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .seccion {
+    padding: 20px;
+  }
+
+  .productos-table table {
+    min-width: 500px;
+  }
+}
+
+/* Estilos para impresión */
+@media print {
+  .btn-back,
+  .btn-print,
+  .acciones-buttons {
+    display: none;
+  }
+
+  .detalle-venta-container {
+    background: white;
+    padding: 0;
+  }
+
+  .seccion {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    page-break-inside: avoid;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.seccion {
+  animation: fadeIn 0.4s ease-out;
+}

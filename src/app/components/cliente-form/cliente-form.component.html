@@ -71,13 +71,18 @@
         </mat-form-field>
       </div>
 
-      <div class="form-row" *ngIf="shouldShowRazonSocial()">
-        <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Razón Social (Opcional)</mat-label>
-          <input matInput formControlName="razon_social" />
-          <mat-hint>Para facturación</mat-hint>
-        </mat-form-field>
-      </div>
+     <!-- En la sección de Información Personal -->
+<div class="form-row">
+  <mat-form-field appearance="outline" class="form-field-full">
+    <mat-label>Razón Social (Para facturación)</mat-label>
+    <input 
+      matInput 
+      formControlName="razon_social" 
+      placeholder="Ingrese la razón social para facturación"
+    />
+    <mat-hint>Opcional para facturación</mat-hint>
+  </mat-form-field>
+</div>
     </div>
 
     <!-- Dirección -->

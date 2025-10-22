@@ -1,0 +1,142 @@
+<!-- src/app/features/pages/ventas/asignacion-rutas/asignacion-rutas.component.html -->
+<div class="asignacion-rutas-container">
+  <div class="header">
+    <button (click)="volverAPanel()" class="btn-back">← Volver al Panel</button>
+    <h1>🚚 Asignación de Rutas</h1>
+    <p>Gestiona y asigna repartidores a las ventas listas para entrega</p>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="success" class="success-message">
+    ✅ {{ success }}
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    ❌ {{ error }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <p>🔄 Cargando datos de asignación...</p>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats" *ngIf="!loading">
+    <div class="stat-card">
+      <span class="stat-number">{{ ventasListas.length }}</span>
+      <span class="stat-label">Listas para Reparto</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">{{ ventasEnRuta.length }}</span>
+      <span class="stat-label">En Ruta</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">{{ repartidores.length }}</span>
+      <span class="stat-label">Repartidores Activos</span>
+    </div>
+  </div>
+
+  <!-- Sección: Ventas Listas para Reparto -->
+  <div class="section" *ngIf="!loading && ventasListas.length > 0">
+    <h2>📦 Ventas Listas para Reparto ({{ ventasListas.length }})</h2>
+    <!-- Asignación por Zona -->
+    <div class="asignacion-zona" *ngIf="zonasConVentas.length > 0">
+      <h3>📍 Asignación por Zona</h3>
+      <div class="zonas-grid">
+        <!-- ✅ CORREGIDO: Usar zonasConVentas en lugar de expresión compleja -->
+        <div *ngFor="let zonaInfo of zonasConVentas" class="zona-card">
+          <h4>{{ zonaInfo.zona }}</h4>
+          <p>{{ zonaInfo.cantidad }} ventas</p>
+          <!-- ✅ CORREGIDO: Pasar solo el ID del repartidor -->
+          <select (change)="asignarZona($any($event.target).value, zonaInfo.zona)" class="form-select">
+            <option value="">Seleccionar repartidor...</option>
+            <option *ngFor="let repartidor of repartidores" [value]="repartidor.id_repartidor">
+              {{ repartidor.persona?.nombre_completo }} - {{ repartidor.placa_furgon }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de ventas individuales -->
+    <div class="ventas-listas">
+      <h3>🛒 Asignación Individual</h3>
+      <div class="ventas-grid">
+        <div *ngFor="let venta of ventasListas" class="venta-card">
+          <div class="venta-info">
+            <div class="venta-header">
+              <strong>#{{ venta.id_venta }}</strong>
+              <span class="cliente-nombre">{{ venta.razon_social }}</span>
+            </div>
+            <div class="venta-detalles">
+              <small>📞 {{ venta.telefono }}</small>
+              <small>📍 {{ venta.direccion }}</small>
+              <small>💰 S/ {{ venta.total }}</small>
+              <small>📅 {{ formatearFecha(venta.fecha) }}</small>
+            </div>
+          </div>
+          <div class="venta-acciones">
+            <!-- ✅ CORREGIDO: Pasar solo el ID del repartidor -->
+            <select (change)="asignarRepartidor(venta, $any($event.target).value)" class="form-select">
+              <option value="">Asignar repartidor...</option>
+              <option *ngFor="let repartidor of repartidores" [value]="repartidor.id_repartidor">
+                {{ repartidor.persona?.nombre_completo }} - {{ repartidor.placa_furgon }}
+              </option>
+            </select>
+                    <!-- En la sección de ventas individuales -->
+            <button (click)="verDetalleVenta(venta.id_venta)" class="btn-detalle" 
+                    [disabled]="!venta.id_venta">
+            👁️ Ver
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección: Ventas En Ruta -->
+  <div class="section" *ngIf="!loading && ventasEnRuta.length > 0">
+    <h2>🚗 Ventas En Ruta ({{ ventasEnRuta.length }})</h2>
+    
+    <div class="repartidores-grid">
+      <div *ngFor="let repartidor of repartidores" class="repartidor-panel">
+        <div class="repartidor-header">
+          <h3>{{ repartidor.persona?.nombre_completo }}</h3>
+          <span class="placa">{{ repartidor.placa_furgon }}</span>
+        </div>
+        
+        <div class="ventas-asignadas">
+          <div *ngFor="let venta of ventasPorRepartidor[repartidor.id_repartidor]" class="venta-asignada">
+            <div class="venta-info">
+              <strong>#{{ venta.id_venta }}</strong>
+              <span>{{ venta.razon_social }}</span>
+              <small>{{ venta.direccion }}</small>
+            </div>
+            <div class="venta-acciones">
+              <button (click)="marcarEntregado(venta)" class="btn-entregado">
+                ✅ Entregado
+              </button>
+              <!-- En la sección de ventas en ruta -->
+            <button (click)="verDetalleVenta(venta.id_venta)" class="btn-detalle"
+                    [disabled]="!venta.id_venta">
+            👁️
+            </button>
+            </div>
+          </div>
+          
+          <div *ngIf="ventasPorRepartidor[repartidor.id_repartidor].length === 0" class="sin-ventas">
+            <p>No hay ventas asignadas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sin datos -->
+  <div *ngIf="!loading && ventasListas.length === 0 && ventasEnRuta.length === 0" class="no-data">
+    <p>📭 No hay ventas para asignar en este momento</p>
+    <button (click)="volverAPanel()" class="btn-primary">
+      Volver al Panel de Ventas
+    </button>
+  </div>
+</div>

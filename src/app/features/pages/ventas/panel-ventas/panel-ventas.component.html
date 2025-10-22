@@ -1,0 +1,185 @@
+<!-- src/app/features/pages/ventas/panel-ventas/panel-ventas.component.html -->
+<div class="panel-ventas-container">
+  <div class="header">
+    <h1>📋 Panel de Ventas</h1>
+    <p>Gestiona y sigue el estado de todas las ventas</p>
+  </div>
+
+  <!-- Barra de herramientas -->
+  <div class="toolbar">
+    <button (click)="nuevaVenta()" class="btn-primary">
+      ➕ Nueva Venta
+    </button>
+    <!-- En la barra de herramientas -->
+    <button (click)="irAAsignacionRutas()" class="btn-primary" *ngIf="authService.isAdmin()">
+      🚚 Asignar Rutas
+    </button>
+    <div class="filters">
+      <!-- Búsqueda -->
+      <div class="filter-group">
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (input)="aplicarFiltros()"
+          placeholder="Buscar por cliente o ID..."
+          class="search-input">
+      </div>
+
+      <!-- Filtro por estado -->
+      <div class="filter-group">
+        <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()" class="filter-select">
+          <option [value]="0">Todos los estados</option>
+          <option *ngFor="let estado of estadosVenta" [value]="estado.id_estado_venta">
+            {{ estado.estado }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Filtro por fecha -->
+      <div class="filter-group">
+        <input 
+          type="date" 
+          [(ngModel)]="filtroFecha" 
+          (change)="aplicarFiltros()"
+          class="filter-input">
+      </div>
+
+      <!-- Limpiar filtros -->
+      <button (click)="limpiarFiltros()" class="btn-clear">
+        🗑️ Limpiar
+      </button>
+    </div>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="stats" *ngIf="ventas.length > 0">
+    <div class="stat-card">
+      <span class="stat-number">{{ ventas.length }}</span>
+      <span class="stat-label">Total Ventas</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">{{ ventasFiltradas.length }}</span>
+      <span class="stat-label">Filtradas</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">{{ ventasPendientes }}</span>
+      <span class="stat-label">Pendientes</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">{{ ventasEntregadas }}</span>
+      <span class="stat-label">Entregadas</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <p>🔄 Cargando ventas...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Tabla de ventas -->
+  <div *ngIf="!loading && ventasFiltradas.length > 0" class="ventas-table-container">
+    <table class="ventas-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Método Pago</th>
+          <th *ngIf="authService.isAdmin()">Acciones</th>
+          <th>Detalle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let venta of ventasPaginadas" class="venta-row">
+          <td class="venta-id">#{{ venta.id_venta }}</td>
+          <td class="venta-cliente">
+            <!-- CORRECCIÓN: Usar razon_social directamente en lugar de venta.cliente?.razon_social -->
+            <strong>{{ venta.razon_social || 'Cliente' }}</strong>
+            <div *ngIf="venta.telefono" class="cliente-telefono">
+              <small>📞 {{ venta.telefono }}</small>
+            </div>
+          </td>
+         <!-- En panel-ventas.component.html - actualiza la celda de fecha -->
+          <td class="venta-fecha">
+            {{ formatearFechaTabla(venta.fecha) }}<br>
+            <small>{{ formatearHoraTabla(venta.hora) }}</small>
+          </td>
+          <td class="venta-total">
+            S/ {{ venta.total }}
+          </td>
+          <td class="venta-estado">
+            <span [class]="'estado-badge ' + getEstadoClass(venta.estado || '')">
+              {{ venta.estado }}
+            </span>
+          </td>
+          <td class="venta-metodo">
+            {{ venta.metodo_pago }}
+          </td>
+          <!-- En panel-ventas.component.html - verifica el select -->
+          <td *ngIf="authService.isAdmin()" class="venta-acciones">
+            <select 
+              [value]="venta.id_estado_venta" 
+              (change)="cambiarEstadoVenta(venta, $any($event.target).value)"
+              class="estado-select">
+              <option *ngFor="let estado of estadosVenta" [value]="estado.id_estado_venta">
+                {{ estado.estado }}
+              </option>
+            </select>
+          </td>
+          <td class="venta-detalle">
+            <button 
+              (click)="verDetalleVenta(venta.id_venta!)"
+              class="btn-detalle">
+              👁️ Ver
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        (click)="cambiarPagina(currentPage - 1)" 
+        [disabled]="currentPage === 1"
+        class="page-btn">
+        ◀️ Anterior
+      </button>
+      
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+        ({{ totalItems }} ventas)
+      </span>
+      
+      <button 
+        (click)="cambiarPagina(currentPage + 1)" 
+        [disabled]="currentPage === totalPages"
+        class="page-btn">
+        Siguiente ▶️
+      </button>
+    </div>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="!loading && ventasFiltradas.length === 0 && ventas.length > 0" class="no-results">
+    <p>😔 No se encontraron ventas con los filtros aplicados</p>
+    <button (click)="limpiarFiltros()" class="btn-secondary">
+      Limpiar filtros
+    </button>
+  </div>
+
+  <!-- Sin ventas -->
+  <div *ngIf="!loading && ventas.length === 0" class="no-ventas">
+    <p>📭 No hay ventas registradas aún</p>
+    <button (click)="nuevaVenta()" class="btn-primary">
+      ➕ Crear primera venta
+    </button>
+  </div>
+</div>

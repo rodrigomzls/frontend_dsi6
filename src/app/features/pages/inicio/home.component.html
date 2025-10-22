@@ -1,54 +1,21 @@
+<!-- src/app/features/pages/inicio/home.component.html -->
 <div class="home-container">
-
-  <!-- 🔹 SECCIÓN DE CARRUSEL -->
-  <div class="carousel">
-    <div 
-      class="slide" 
-      *ngFor="let slide of slides; let i = index" 
-      [class.active]="isActiveSlide(i)"
-    >
-      <img [src]="slide.image" [alt]="slide.title" />
-      <div class="overlay">
-        <h2>{{ slide.title }}</h2>
-        <p>{{ slide.subtitle }}</p>
-      </div>
+  <div class="welcome-card">
+    <h1>¡Bienvenido al Sistema de Agua! 💧</h1>
+    
+    <!-- Usar *ngIf con alias para manejar el observable -->
+    <div class="user-info" *ngIf="authService.currentUser$ | async as user">
+      <p><strong>Usuario:</strong> {{ user.nombre }}</p>
+      <p><strong>Rol:</strong> {{ user.roleName }}</p>
     </div>
-
-    <!-- Indicadores -->
-    <div class="carousel-indicators">
-      <span 
-        *ngFor="let slide of slides; let i = index" 
-        [class.active]="isActiveSlide(i)"
-        (click)="cambiarSlide(i)">
-      </span>
+    
+    <div class="quick-actions">
+      <h3>Acciones Rápidas</h3>
+      <div class="action-buttons">
+        <button (click)="goToClientes()" class="btn-primary">Gestionar Clientes</button>
+        <button (click)="goToProductos()" class="btn-secondary">Ver Productos</button>
+        <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
+      </div>
     </div>
   </div>
-
-  <!-- 🔹 SECCIÓN DE PRODUCTOS DESTACADOS -->
-  <section class="productos-destacados">
-    <h2>Productos Destacados</h2>
-
-    <div class="productos-grid">
-      <div class="producto-card" *ngFor="let producto of productos">
-        <!-- Imagen simulada o placeholder -->
-        <img 
-          [src]="producto.imagen || '../../../../assets/bidon-agua-bella.jpg'" 
-          [alt]="producto.nombre" 
-        />
-        <div class="info">
-          <h3>{{ producto.nombre }}</h3>
-          <p class="precio">S/. {{ producto.precio | number:'1.2-2' }}</p>
-          <button class="btn-agregar" (click)="agregarAlCarrito(producto)">
-            Agregar al carrito 🛒
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 🔹 BOTÓN FLOTANTE WHATSAPP -->
-  <a href="https://wa.me/51999999999" class="btn-whatsapp" target="_blank">
-    <img src="../../../../assets/waza.png" alt="WhatsApp">
-  </a>
-
 </div>
