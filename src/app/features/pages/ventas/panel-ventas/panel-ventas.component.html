@@ -92,8 +92,8 @@
           <th>Total</th>
           <th>Estado</th>
           <th>Método Pago</th>
-          <th *ngIf="authService.isAdmin()">Acciones</th>
-          <th>Detalle</th>
+          <th *ngIf="authService.isAdmin()">Cambiar Estado</th>
+          <th>Detalles</th>
         </tr>
       </thead>
       <tbody>
@@ -137,7 +137,7 @@
             <button 
               (click)="verDetalleVenta(venta.id_venta!)"
               class="btn-detalle">
-              👁️ Ver
+              Ver
             </button>
           </td>
         </tr>

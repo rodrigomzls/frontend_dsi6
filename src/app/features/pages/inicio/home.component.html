@@ -1,7 +1,6 @@
-<!-- src/app/features/pages/inicio/home.component.html -->
 <div class="home-container">
   <div class="welcome-card">
-    <h1>¡Bienvenido al Sistema de Agua! 💧</h1>
+    <h1>¡Bienvenido al Sistema de Agua!</h1>
     
     <!-- Usar *ngIf con alias para manejar el observable -->
     <div class="user-info" *ngIf="authService.currentUser$ | async as user">

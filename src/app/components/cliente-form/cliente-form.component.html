@@ -43,7 +43,7 @@
       <h3 class="section-title">Información Personal</h3>
       <div class="form-row">
         <mat-form-field appearance="outline" class="form-field-full">
-          <mat-label>Nombre Completo / Razón Social</mat-label>
+          <mat-label>Nombre Completo</mat-label>
           <input matInput formControlName="nombre" required />
           <mat-error *ngIf="clienteForm.get('nombre')?.hasError('required')">
             El nombre es requerido

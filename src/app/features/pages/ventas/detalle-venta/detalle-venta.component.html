@@ -4,7 +4,6 @@
   <div class="header">
     <button (click)="volverAPanel()" class="btn-back">← Volver al Panel</button>
     <h1>📄 Detalle de Venta</h1>
-    <button (click)="imprimirDetalle()" class="btn-print">🖨️ Imprimir</button>
   </div>
 
   <!-- Loading -->
@@ -137,19 +136,16 @@
     </div>
 
     <!-- Acciones -->
-    <div class="seccion acciones">
-      <h2>⚡ Acciones</h2>
+    <!-- <div class="seccion acciones">
+      <h2>⚡ Acciones</h2> -->
       <div class="acciones-buttons">
-        <button (click)="volverAPanel()" class="btn-secondary">
-          📋 Volver al Panel
-        </button>
-        <button *ngIf="puedeCambiarEstado" (click)="cambiarEstado()" class="btn-primary">
+        <!-- <button *ngIf="puedeCambiarEstado" (click)="cambiarEstado()" class="btn-primary">
           🔄 Cambiar Estado
-        </button>
-        <button (click)="imprimirDetalle()" class="btn-print">
+        </button> -->
+        <button (click)="imprimirComprobante()" class="btn-print">
           🖨️ Imprimir Comprobante
         </button>
       </div>
-    </div>
+    <!-- </div> -->
   </div>
 </div>

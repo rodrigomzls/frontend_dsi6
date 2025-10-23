@@ -6,7 +6,7 @@ export interface Cliente {
   telefono: string;
   direccion: string;
   coordenadas?: string; // Ahora viene del backend
-  tipo_cliente: 'Bodega' | 'Restaurante' | 'Gimnasio' | 'Final' | 'Empresa';
+  tipo_cliente: 'Bodega' | 'Restaurante' | 'Gimnasio' | 'Persona' | 'Empresa';
   razon_social?: string;
   activo?: boolean;
   fecha_registro?: string;

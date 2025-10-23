@@ -183,7 +183,7 @@ export class ClienteListComponent implements OnInit {
       'Bodega': 'primary',
       'Restaurante': 'accent',
       'Gimnasio': 'warn',
-      'Final': 'basic',
+      'Persona': 'basic',
       'Empresa': 'primary'
     };
     return colors[tipoCliente] || 'basic';

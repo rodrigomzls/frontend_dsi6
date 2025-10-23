@@ -1,7 +1,7 @@
 <!-- src/app/features/pages/ventas/nueva-venta/nueva-venta.component.html -->
 <div class="nueva-venta-container">
   <div class="header">
-    <h1>🛒 Nueva Venta Rápida</h1>
+    <h1> Venta Rápida</h1>
     <p>Registro optimizado para ventas telefónicas y WhatsApp</p>
   </div>
 
@@ -9,7 +9,7 @@
     <!-- Sección Cliente -->
 <!-- En nueva-venta.component.html -->
 <div class="section cliente-section">
-  <h2>👤 Cliente</h2>
+  <h2>Registar o Seleccionar Cliente 👤</h2>
   <div class="search-box">
     <input 
       type="text" 
@@ -26,8 +26,8 @@
       *ngFor="let cliente of filteredClientes" 
       class="result-item"
       (click)="seleccionarCliente(cliente)">
-      <strong>{{ cliente.razon_social || cliente.persona?.nombre_completo }}</strong>
-      <span>{{ cliente.persona?.telefono }}</span>
+      <strong>{{ cliente.razon_social || cliente.persona?.nombre_completo }} - </strong>
+      <span>{{ cliente.persona?.telefono }} - </span>
       <small>{{ cliente.tipo_cliente }}</small>
     </div>
   </div>
@@ -40,7 +40,7 @@
 
     <!-- Sección Productos -->
     <div class="section productos-section">
-      <h2>📦 Productos</h2>
+      <h2>Seleccionar Productos 📦</h2>
       
       <!-- Búsqueda de productos -->
       <div class="search-box">
@@ -60,8 +60,8 @@
     *ngFor="let producto of filteredProductos" 
     class="result-item"
     (click)="seleccionarProducto(producto)">
-    <strong>{{ producto.nombre }}</strong>
-    <span>S/ {{ producto.precio }}</span>
+    <strong>{{ producto.nombre }} - </strong>
+    <span>S/ {{ producto.precio }} - </span>
     <small>Stock: {{ producto.stock }} | ID: {{ producto.id }}</small> <!-- Mostrar ID -->
   </div>
 </div>
@@ -81,14 +81,14 @@
             min="1" 
             [max]="productoSeleccionado.stock"
             class="quantity-input">
-          <button (click)="agregarProducto()" class="btn-add">➕ Agregar</button>
+          <button (click)="agregarProducto()" class="btn-add"> Agregar</button>
         </div>
       </div>
     </div>
 
-    <!-- Carrito de Compra -->
+    <!-- Detalle de Venta -->
     <div class="section carrito-section">
-      <h2>🛍️ Carrito de Compra</h2>
+      <h2>Detalle de Venta 🛍️</h2>
       
       <div *ngIf="venta.detalles.length === 0" class="empty-cart">
         <p>No hay productos en el carrito</p>
@@ -97,7 +97,7 @@
       <div *ngIf="venta.detalles.length > 0" class="cart-items">
         <div *ngFor="let detalle of venta.detalles; let i = index" class="cart-item">
           <div class="item-info">
-            <strong>{{ detalle.producto_nombre }}</strong>
+            <strong>{{ detalle.producto_nombre }}: </strong>
             <span>{{ detalle.cantidad }} x S/ {{ detalle.precio_unitario }}</span>
           </div>
           <div class="item-subtotal">
@@ -112,9 +112,9 @@
       </div>
     </div>
 
-    <!-- Método de Pago y Notas -->
+    <!-- Método de Pago-->
     <div class="section config-section">
-      <h2>⚙️ Configuración</h2>
+      <h2>Pago 💳</h2>
       
       <div class="form-group">
         <label>Método de Pago:</label>
@@ -123,13 +123,6 @@
             {{ metodo.metodo_pago }}
           </option>
         </select>
-      </div>
-      <div class="form-group">
-        <label>Notas (opcional):</label>
-        <textarea 
-          [(ngModel)]="venta.notas" 
-          placeholder="Observaciones de la venta..."
-          class="form-textarea"></textarea>
       </div>
     </div>
 
@@ -144,13 +137,7 @@
         (click)="finalizarVenta()" 
         [disabled]="loading || venta.detalles.length === 0 || venta.id_cliente === 0"
         class="btn-primary">
-        {{ loading ? 'Procesando...' : '✅ Finalizar Venta' }}
-      </button>
-      
-      <button 
-        (click)="router.navigate(['/ventas'])" 
-        class="btn-secondary">
-        📋 Ver Todas las Ventas
+        {{ loading ? 'Procesando...' : 'Finalizar Venta' }}
       </button>
     </div>
   </div>

@@ -2,7 +2,6 @@
 import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/header/header.component';
-import { FooterComponent } from './shared/footer/footer.component';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
 import { Subscription } from 'rxjs';
@@ -10,10 +9,11 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, CommonModule],
+  imports: [RouterOutlet, HeaderComponent, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
+
 export class App implements OnInit, OnDestroy {
   protected readonly title = signal('my-app-dsi6');
   private authSubscription!: Subscription;
@@ -58,4 +58,11 @@ export class App implements OnInit, OnDestroy {
     const protectedRoutes = ['/inicio', '/clientes', '/productos'];
     return protectedRoutes.some(route => this.router.url.startsWith(route));
   }
+
+  shouldShowHeader(): boolean {
+  const currentUrl = this.router.url;
+  const isAuthRoute = currentUrl === '/login' || currentUrl === '/register' || currentUrl === '/';
+  return !isAuthRoute;
+}
+
 }

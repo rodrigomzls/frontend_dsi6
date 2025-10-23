@@ -9,6 +9,7 @@ import { ProductService} from '../../../../core/services/producto.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { RepartidorService } from '../../../../core/services/repartidor.service'; // ✅ Importar servicio
 import { Repartidor } from '../../../../core/models/repartidor.model'; // ✅ Importar modelo
+
 @Component({
   selector: 'app-nueva-venta',
   standalone: true,
@@ -16,6 +17,7 @@ import { Repartidor } from '../../../../core/models/repartidor.model'; // ✅ Im
   templateUrl: './nueva-venta.component.html',
   styleUrls: ['./nueva-venta.component.css']
 })
+
 export class NuevaVentaComponent implements OnInit {
   private ventasService = inject(VentasService);
   private clientesService = inject(ClienteService);

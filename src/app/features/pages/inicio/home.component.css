@@ -1,118 +1,163 @@
 /* src/app/features/pages/inicio/home.component.css */
+
+/* === CONTENEDOR PRINCIPAL === */
 .home-container {
-  padding: 20px;
-  max-width: 800px;
+  padding: 25px;
+  max-width: 900px;
   margin: 0 auto;
   min-height: calc(100vh - 120px);
-}
-
-.welcome-card {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  background: linear-gradient(180deg, #e6f7ff 0%, #ffffff 100%);
+  font-family: "Poppins", sans-serif;
   margin-top: 20px;
 }
 
-.welcome-card h1 {
-  color: #057cbe;
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 2rem;
+/* === TARJETA DE BIENVENIDA === */
+.welcome-card {
+  background: #ffffff;
+  padding: 35px 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 120, 180, 0.15);
+  margin-top: 20px;
+  transition: transform 0.3s ease;
 }
 
+.welcome-card:hover {
+  transform: translateY(-3px);
+}
+
+.welcome-card h1 {
+  color: #0288d1;
+  text-align: center;
+  margin-bottom: 15px;
+  font-size: 2.1rem;
+  font-weight: 700;
+}
+
+.welcome-card p {
+  text-align: center;
+  color: #555;
+  font-size: 1.1rem;
+}
+
+/* === INFORMACIÓN DEL USUARIO === */
 .user-info {
-  background: #f8f9fa;
+  background: #f1fbff;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 10px;
   margin: 25px 0;
-  border-left: 4px solid #009949;
+  border-left: 6px solid #00aaff;
+  box-shadow: 0 2px 6px rgba(0, 150, 200, 0.1);
 }
 
 .user-info p {
   margin: 8px 0;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
+  color: #333;
 }
 
+/* === ACCIONES RÁPIDAS === */
 .quick-actions {
-  margin-top: 30px;
+  margin-top: 35px;
   text-align: center;
 }
 
 .quick-actions h3 {
-  color: #333;
+  color: #0277bd;
   margin-bottom: 20px;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .action-buttons {
   display: flex;
-  gap: 15px;
+  gap: 18px;
   flex-wrap: wrap;
   justify-content: center;
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
+/* === BOTONES === */
 button {
-  padding: 12px 24px;
+  padding: 14px 28px;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  min-width: 160px;
+  font-size: 1.05rem;
+  transition: all 0.25s ease;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+/* === COLORES DE BOTONES === */
 .btn-primary {
-  background: #009949;
+  background: #00bcd4;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #008040;
+  background: #0097a7;
 }
 
 .btn-secondary {
-  background: #057cbe;
+  background: #0288d1;
   color: white;
 }
 
 .btn-secondary:hover {
-  background: #046ba3;
+  background: #0277bd;
 }
 
 .btn-logout {
-  background: #dc3545;
+  background: #ef5350;
   color: white;
 }
 
 .btn-logout:hover {
-  background: #c82333;
+  background: #d32f2f;
 }
 
-/* Responsive */
+/* === ANIMACIÓN SUAVE DE APARICIÓN === */
+.welcome-card,
+.user-info,
+.quick-actions {
+  animation: fadeIn 0.8s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
+  .home-container {
+    padding: 15px;
+  }
+
+  .welcome-card {
+    padding: 25px;
+  }
+
+  .welcome-card h1 {
+    font-size: 1.7rem;
+  }
+
   .action-buttons {
     flex-direction: column;
     align-items: center;
   }
-  
+
   button {
     width: 100%;
-    max-width: 250px;
-  }
-  
-  .welcome-card {
-    padding: 20px;
-  }
-  
-  .welcome-card h1 {
-    font-size: 1.6rem;
+    max-width: 300px;
   }
 }

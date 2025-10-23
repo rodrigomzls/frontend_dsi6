@@ -33,14 +33,14 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   text-align: center;
-  border-left: 4px solid #007bff;
+  border-left: 4px solid #057cbe;
 }
 
 .stat-number {
   display: block;
   font-size: 2em;
   font-weight: bold;
-  color: #007bff;
+  color: #057cbe;
 }
 
 .stat-label {
@@ -135,7 +135,7 @@
 }
 
 .repartidor-header {
-  background: #007bff;
+  background: #057cbe;
   color: white;
   padding: 15px;
   display: flex;

@@ -1,19 +1,18 @@
 <header class="header">
-  <!-- Icono a la izquierda -->
-  <div class="logo">
-    <mat-icon>water</mat-icon>
-    <span>Viña</span>
+  <!-- Logo clickeable -->
+  <div class="logo" (click)="irAlInicio()">
+    <img src="../../../assets/company-logo.png" alt="Logo Viña" class="logo-img">
+    <span class="logo-text">Viña</span>
   </div>
 
   <!-- Navegación -->
   <nav class="nav-links">
-  <!--<a routerLink="/inicio" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Inicio</a>-->
-    <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
-    <a routerLink="/productos" routerLinkActive="active">Productos</a>
+    
   </nav>
 
-  <!-- Opcional: Botón de logout -->
-  <div class="user-actions">
+  <!-- Lado derecho -->
+  <div class="user-actions" *ngIf="isLoggedIn">
+    <span class="user-name">{{ nombreUsuario }}👋</span>
     <button mat-button (click)="logout()">
       <mat-icon>logout</mat-icon>
       Cerrar Sesión

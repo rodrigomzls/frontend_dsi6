@@ -125,10 +125,6 @@ export class DetalleVentaComponent implements OnInit {
     this.router.navigate(['/ventas']);
   }
 
-  imprimirDetalle() {
-    window.print();
-  }
-
   // Método para cambiar estado
   cambiarEstado() {
     if (!this.venta?.id_venta) return;
@@ -153,4 +149,93 @@ export class DetalleVentaComponent implements OnInit {
   get puedeCambiarEstado(): boolean {
     return this.authService.isAdmin();
   }
+
+  // ✅ NUEVO: Imprimir comprobante sencillo
+  imprimirComprobante() {
+  if (!this.venta) return;
+
+  const ventana = window.open('', '_blank', 'width=800,height=600');
+
+  const contenido = `
+    <html>
+      <head>
+        <title>Comprobante de Venta #${this.venta.id_venta}</title>
+        <style>
+          body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 30px;
+            color: #333;
+            background: #fff;
+          }
+          h1 { text-align: center; }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+          }
+          th { background-color: #f5f5f5; }
+          .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Comprobante de Venta</h1>
+        <p><strong>ID Venta:</strong> ${this.venta.id_venta}</p>
+        <p><strong>Cliente:</strong> ${this.venta.razon_social || 'Cliente General'}</p>
+        <p><strong>Fecha:</strong> ${this.formatearFecha(this.venta.fecha)} ${this.formatearHora(this.venta.hora)}</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${this.venta.detalles.map((d: any) => `
+              <tr>
+                <td>${d.producto_nombre}</td>
+                <td>${d.cantidad}</td>
+                <td>S/ ${Number(d.precio_unitario).toFixed(2)}</td>
+                <td>S/ ${(Number(d.cantidad) * Number(d.precio_unitario)).toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="text-align:right;"><strong>Total:</strong></td>
+              <td><strong>S/ ${Number(this.venta.total).toFixed(2)}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="footer">
+          <p>Gracias por su compra 💙</p>
+          <p>Agua Viña - Distribución de bidones</p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  ventana?.document.write(contenido);
+  ventana?.document.close();
+
+  // ⏱️ Esperar 500 ms antes de imprimir
+  setTimeout(() => {
+    ventana?.print();
+    ventana?.close();
+  }, 500);
+}
+
 }

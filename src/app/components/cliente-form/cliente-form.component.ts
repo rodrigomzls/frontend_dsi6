@@ -49,7 +49,7 @@ export class ClienteFormComponent implements OnInit {
     { value: 'Bodega', label: 'Bodega' },
     { value: 'Restaurante', label: 'Restaurante' },
     { value: 'Gimnasio', label: 'Gimnasio' },
-    { value: 'Final', label: 'Cliente Final' },
+    { value: 'Persona', label: 'Persona' },
     { value: 'Empresa', label: 'Empresa' }
   ];
 
