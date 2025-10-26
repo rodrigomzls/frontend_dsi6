@@ -3,6 +3,10 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+// Agrega estas importaciones para el diálogo
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+// Importa el componente del formulario de cliente
+import { ClienteRapidoFormComponent } from '../../../../components/cliente-rapido-form/cliente-rapido-form.component';
 import { VentasService, Venta, VentaDetalle } from '../../../../core/services/ventas.service';
 import { ClienteService, ClienteVenta } from '../../../../core/services/cliente.service'; // ✅ Importar ClienteVenta
 import { ProductService} from '../../../../core/services/producto.service';
@@ -13,7 +17,7 @@ import { Repartidor } from '../../../../core/models/repartidor.model'; // ✅ Im
 @Component({
   selector: 'app-nueva-venta',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatDialogModule],
   templateUrl: './nueva-venta.component.html',
   styleUrls: ['./nueva-venta.component.css']
 })
@@ -25,6 +29,8 @@ export class NuevaVentaComponent implements OnInit {
   private authService = inject(AuthService);
   public router = inject(Router);
   private repartidorService = inject(RepartidorService); // ✅ Inyectar servicio
+   // ✅ Agrega el servicio de diálogo
+  private dialog = inject(MatDialog);
 
   // Datos de la venta
   venta: Venta = {
@@ -64,6 +70,54 @@ export class NuevaVentaComponent implements OnInit {
 
 // En nueva-venta.component.ts - en cargarDatosIniciales
 // En nueva-venta.component.ts - corrige la función cargarDatosIniciales
+
+// En nueva-venta.component.ts - alternativa con componente rápido
+abrirModalClienteRapido() {
+  const dialogRef = this.dialog.open(ClienteRapidoFormComponent, { // Usar ClienteRapidoFormComponent
+    width: '500px',
+    maxWidth: '95vw',
+    data: {}
+  });
+
+  dialogRef.afterClosed().subscribe((resultado) => {
+    if (resultado) {
+      console.log('✅ Cliente rápido creado exitosamente');
+      this.cargarClientes();
+    }
+  });
+}
+  // Método auxiliar para cargar clientes
+  private cargarClientes() {
+    this.clientesService.getClientesParaVentas().subscribe({
+      next: (clientes: ClienteVenta[]) => {
+        console.log('📋 Clientes recargados:', clientes);
+        this.clientes = clientes;
+        this.filteredClientes = clientes;
+        
+        // Si hay búsqueda activa, re-filtrar
+        if (this.searchCliente) {
+          this.filtrarClientes();
+        }
+      },
+      error: (error) => console.error('Error recargando clientes:', error)
+    });
+  }
+
+  // Método para mostrar mensajes
+  private mostrarMensajeExito(mensaje: string) {
+    // Puedes usar alert temporal o implementar un snackbar
+    alert(mensaje);
+  }
+
+
+
+
+
+
+
+
+
+
 async cargarDatosIniciales() {
   try {
     // Cargar clientes para ventas
@@ -122,7 +176,7 @@ cargarRepartidores() {
     
     const searchLower = this.searchCliente.toLowerCase();
     this.filteredClientes = this.clientes.filter(cliente =>
-      cliente.razon_social?.toLowerCase().includes(searchLower) ||
+      cliente.nombre_completo ?.toLowerCase().includes(searchLower) ||
       cliente.persona?.nombre_completo?.toLowerCase().includes(searchLower) ||
       cliente.persona?.telefono?.includes(this.searchCliente) ||
       cliente.persona?.numero_documento?.includes(this.searchCliente)
@@ -146,7 +200,7 @@ cargarRepartidores() {
   // Seleccionar cliente
   seleccionarCliente(cliente: ClienteVenta) { // ✅ Usar ClienteVenta
     this.venta.id_cliente = cliente.id_cliente;
-    this.searchCliente = cliente.razon_social || cliente.persona?.nombre_completo || '';
+    this.searchCliente = cliente.nombre_completo  || cliente.persona?.nombre_completo || '';
     this.filteredClientes = [];
     
     console.log('✅ Cliente seleccionado:', {
@@ -272,11 +326,16 @@ agregarProducto() {
   }
 
   // Limpiar búsquedas
-  limpiarBusquedaCliente() {
-    this.searchCliente = '';
-    this.filteredClientes = this.clientes;
-  }
-
+// En nueva-venta.component.ts - actualiza el método limpiarBusquedaCliente
+limpiarBusquedaCliente() {
+  this.searchCliente = '';
+  this.filteredClientes = this.clientes;
+  
+  // ✅ AGREGAR ESTAS LÍNEAS PARA LIMPIAR LA SELECCIÓN DEL CLIENTE
+  this.venta.id_cliente = 0;
+  
+  console.log('🧹 Búsqueda de cliente limpiada, selección resetada');
+}
   limpiarBusquedaProducto() {
     this.searchProducto = '';
     this.filteredProductos = this.productos;

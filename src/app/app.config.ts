@@ -10,6 +10,7 @@ import { registerLocaleData } from '@angular/common';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor'; // ✅ Solo este
+import { MatDialogModule } from '@angular/material/dialog';
 
 registerLocaleData(localeEsPe, 'es-PE');
 
@@ -21,6 +22,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([authInterceptor]) // ✅ Solo un interceptor
     ),
-    provideAnimations()
+      provideAnimations(),
+    // Agregar proveedores de Material
+    MatDialogModule
   ]
 };

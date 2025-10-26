@@ -8,7 +8,7 @@ import { Cliente, Country, Department, Province, District } from '../models/clie
 export interface ClienteVenta {
   id_cliente: number;
   tipo_cliente: string;
-  razon_social?: string;
+  nombre_completo?: string;
   activo?: boolean;
   fecha_registro?: string;
   persona?: {

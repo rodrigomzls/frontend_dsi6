@@ -101,7 +101,7 @@
           <td class="venta-id">#{{ venta.id_venta }}</td>
           <td class="venta-cliente">
             <!-- CORRECCIÓN: Usar razon_social directamente en lugar de venta.cliente?.razon_social -->
-            <strong>{{ venta.razon_social || 'Cliente' }}</strong>
+            <strong>{{ venta.nombre_completo || 'Cliente' }}</strong>
             <div *ngIf="venta.telefono" class="cliente-telefono">
               <small>📞 {{ venta.telefono }}</small>
             </div>
