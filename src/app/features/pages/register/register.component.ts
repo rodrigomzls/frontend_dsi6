@@ -1,61 +1,53 @@
+// src/app/features/pages/register/register.component.ts
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  userData = {
-    username: '',
+  usuario: any = {
+    nombre_usuario: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    id_rol: 2,    // 1 = Admin, 2 = Vendedor (por defecto vendedor)
+    id_persona: null
   };
 
-  passwordsMatch: boolean = true;
-  isSubmitting: boolean = false;
+  loading = false;
+  error: string | null = null;
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
-  validatePasswords() {
-    this.passwordsMatch = this.userData.password === this.userData.confirmPassword;
-  }
-
-  onRegister() {
-    // Validar que las contraseñas coincidan
-    this.validatePasswords();
-    
-    if (!this.passwordsMatch) {
-      alert('Las contraseñas no coinciden');
+  onSubmit() {
+    if (!this.usuario.nombre_usuario || !this.usuario.password || !this.usuario.email) {
+      this.error = 'Completa todos los campos';
       return;
     }
 
-    // Validar campos requeridos
-    if (!this.userData.username || !this.userData.email || !this.userData.password) {
-      alert('Por favor completa todos los campos requeridos');
-      return;
-    }
+    this.loading = true;
+    this.error = null;
 
-    // Simular proceso de registro
-    this.isSubmitting = true;
-    
-    console.log('Datos de registro:', this.userData);
-    
-    // Simular llamada a API
-    setTimeout(() => {
-      this.isSubmitting = false;
-      alert('Registro exitoso! Por favor inicia sesión.');
-      this.router.navigate(['/login']);
-    }, 1500);
-  }
-
-  goToLogin() {
-    this.router.navigate(['/login']);
+    // Llamada al backend (asegúrate de tener authService.register implementado)
+    this.authService.register(this.usuario).subscribe({
+      next: (res: any) => {
+        this.loading = false;
+        // Si quieres iniciar sesión automático después de registrar:
+        // this.authService.setSession(...) o redirigir a login
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = err.error?.message || 'Error registrando usuario';
+        console.error('Error register', err);
+      }
+    });
   }
 }

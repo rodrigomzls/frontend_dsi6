@@ -1,45 +1,55 @@
-<!-- src/app/components/login/login.component.html -->
 <div class="login-container">
+  <!-- Fondo animado o video -->
+  <video autoplay muted loop playsinline class="background-video">
+    <source src="../../../../assets/fondo-agua.mp4" type="video/mp4" />
+  </video>
+
   <div class="card">
     <div class="card-header">
-      <h2>
-        <span>💧</span>
-        Sistema de Agua
-      </h2>
-      <p class="subtitle">Iniciar Sesión</p>
+      <img src="../../../../assets/company-logo.png" class="logo" />
+      
     </div>
-    
-    <form (ngSubmit)="onSubmit()" *ngIf="!loading">
+
+    <form (ngSubmit)="onSubmit()" *ngIf="!loading" class="login-form">
       <div class="form-group">
         <label for="username">USUARIO</label>
-        <input 
-          type="text" 
+        <input
+          type="text"
           id="username"
-          [(ngModel)]="credentials.nombre_usuario" 
-          name="username" 
+          [(ngModel)]="credentials.nombre_usuario"
+          name="username"
           required
           placeholder="Ingresa tu usuario"
           [disabled]="loading"
-          autocomplete="username">
+          autocomplete="username"
+        />
       </div>
 
       <div class="form-group">
-  <label for="password">CONTRASEÑA</label>
-  <input 
-    type="password" 
-    id="password"
-    [(ngModel)]="credentials.password"
-    name="password" 
-    required
-    placeholder="Ingresa tupassword"
-    [disabled]="loading"
-    autocomplete="current-password">
-</div>
+        <label for="password">CONTRASEÑA</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="credentials.password"
+          name="password"
+          required
+          placeholder="Ingresa tu contraseña"
+          [disabled]="loading"
+          autocomplete="current-password"
+        />
+      </div>
 
       <button type="submit" class="btn-primary" [disabled]="loading">
         {{ loading ? 'INICIANDO SESIÓN...' : 'INICIAR SESIÓN' }}
       </button>
     </form>
+
+    <div class="help-links" style="margin-top:12px;">
+  <p style="color:#d9f9ff; font-size:0.95rem;">
+    ¿No tienes cuenta?
+    <a routerLink="/register" class="link-register">Crear cuenta</a>
+  </p>
+</div>
 
     <div *ngIf="loading" class="loading">
       <p>Verificando credenciales...</p>

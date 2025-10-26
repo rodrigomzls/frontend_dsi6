@@ -1,20 +1,42 @@
+<!-- VIDEO DE FONDO -->
+<div class="video-background">
+  <video autoplay muted loop playsinline>
+    <source src="assets/fondo-agua.mp4" type="video/mp4" />
+  </video>
+</div>
+
+<!-- CONTENIDO PRINCIPAL -->
 <div class="home-container">
   <div class="welcome-card">
-    <h1>¡Bienvenido al Sistema de Agua!</h1>
-    
-    <!-- Usar *ngIf con alias para manejar el observable -->
+    <h1>¡Bienvenido al Sistema de Agua Viña!</h1>
+
+    <!-- Información del usuario -->
     <div class="user-info" *ngIf="authService.currentUser$ | async as user">
       <p><strong>Usuario:</strong> {{ user.nombre }}</p>
       <p><strong>Rol:</strong> {{ user.roleName }}</p>
     </div>
-    
+
+    <!-- Acciones rápidas -->
     <div class="quick-actions">
-      <h3>Acciones Rápidas</h3>
       <div class="action-buttons">
-        <button (click)="goToClientes()" class="btn-primary">Gestionar Clientes</button>
-        <button (click)="goToProductos()" class="btn-secondary">Ver Productos</button>
-        <button (click)="logout()" class="btn-logout">Cerrar Sesión</button>
+        <button (click)="goToClientes()" class="btn-primary">
+          <i class="fas fa-users"></i> Gestionar Clientes
+        </button>
+
+        <button (click)="goToProductos()" class="btn-secondary">
+          <i class="fas fa-box-open"></i> Ver Productos
+        </button>
+
+        <button (click)="nuevaVenta()" class="btn-success">
+          <i class="fas fa-shopping-cart"></i> Nueva Venta
+        </button>
+
+        <button (click)="goToVentas()" class="btn-info">
+          <i class="fas fa-clipboard-list"></i> Panel de Ventas
+        </button>
       </div>
     </div>
+
+
   </div>
 </div>

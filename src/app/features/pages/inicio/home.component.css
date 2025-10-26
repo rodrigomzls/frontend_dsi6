@@ -1,42 +1,62 @@
 /* src/app/features/pages/inicio/home.component.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+/* === VIDEO DE FONDO === */
+.video-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.video-background video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.55); /* oscurece ligeramente para contraste */
+}
 
 /* === CONTENEDOR PRINCIPAL === */
 .home-container {
+  position: relative;
+  z-index: 1;
   padding: 25px;
   max-width: 900px;
   margin: 0 auto;
   min-height: calc(100vh - 120px);
-  background: linear-gradient(180deg, #e6f7ff 0%, #ffffff 100%);
-  font-family: "Poppins", sans-serif;
-  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Mostserrat", sans-serif;
+  margin-top: -10px;
 }
 
-/* === TARJETA DE BIENVENIDA === */
+/* === TARJETA DE BIENVENIDA (efecto vidrio) === */
 .welcome-card {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 35px 25px;
   border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0, 120, 180, 0.15);
-  margin-top: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-align: center;
   transition: transform 0.3s ease;
+  width: 900px;
 }
 
 .welcome-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
 }
 
 .welcome-card h1 {
   color: #0288d1;
-  text-align: center;
   margin-bottom: 15px;
-  font-size: 2.1rem;
+  font-size: 2.2rem;
   font-weight: 700;
-}
-
-.welcome-card p {
-  text-align: center;
-  color: #555;
-  font-size: 1.1rem;
+  font-family: "Mostserrat", sans-serif;
 }
 
 /* === INFORMACIÓN DEL USUARIO === */
@@ -44,9 +64,13 @@
   background: #f1fbff;
   padding: 20px;
   border-radius: 10px;
-  margin: 25px 0;
+  margin: 25px 300px;
   border-left: 6px solid #00aaff;
-  box-shadow: 0 2px 6px rgba(0, 150, 200, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 150, 200, 0.1); 
+  width: 250px;
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+
 }
 
 .user-info p {
@@ -114,6 +138,24 @@ button:hover {
 
 .btn-secondary:hover {
   background: #0277bd;
+}
+
+.btn-success {
+  background: #06c540;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #03ad36;
+}
+
+.btn-info {
+  background: #01dd93;
+  color: white;
+}
+
+.btn-info:hover {
+  background: #03c886;
 }
 
 .btn-logout {

@@ -9,7 +9,7 @@ export interface User {
   username: string;
   nombre: string;
   role: number;
-  roleName: string;
+  roleName: string; 
 }
 
 export interface AuthResponse {
@@ -76,6 +76,11 @@ export class AuthService {
       })
     );
   }
+
+  register(data: any) {
+  return this.http.post(`${this.apiUrl}/register`, data);
+}
+
 
   private setSession(response: AuthResponse): void {
     localStorage.setItem(this.STORAGE_KEY, response.token);

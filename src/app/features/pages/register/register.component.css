@@ -1,195 +1,183 @@
-/* Importar fuente Montserrat desde Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Montserrat', sans-serif;
+:host {
+  display: block;
+  min-height: 100vh;
 }
 
 .register-container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #057cbe 0%, #009949 100%);
-  padding: 20px;
+  overflow: hidden;
+  font-family: 'Montserrat', sans-serif;
 }
 
-.register-card {
-  background: white;
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+/* Fondo en video */
+.background-video {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 450px;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  filter: brightness(0.6);
 }
 
-.logo-section {
+/* Tarjeta del login */
+.card {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 45px 35px;
+  width: 100%;
+  max-width: 420px;
+  color: #fff;
   text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: fadeIn 1s ease;
 }
 
-.company-logo {
-  max-width: 150px;
-  margin-top: -35px;
+.card-header {
+  margin-bottom: 25px;
 }
 
-.logo-section h1 {
-  color: #009949;
-  font-size: 1.6rem;
-  font-weight: 600;
+.logo {
+  width: 120px;
+  height: auto;
+  margin-top: -3rem;
+  margin-bottom: -2rem;
+  animation: floatLogo 3s ease-in-out infinite;
 }
 
-h2 {
-  text-align: center;
-  color: #057cbe;
-  margin-bottom: 30px;
-  font-size: 1.8rem;
-  font-weight: 600;
+.card-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: #ffffff;
 }
 
-.register-form {
-  margin-bottom: 20px;
+.subtitle {
+  color: #d9f9ff;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
+/* Campos del formulario */
 .form-group {
+  text-align: left;
   margin-bottom: 20px;
 }
 
 label {
   display: block;
-  margin-bottom: 5px;
-  color: #009949;
-  font-weight: 500;
+  margin-bottom: 6px;
+  color: #e3f2fd;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #49b63f;
-  border-radius: 6px;
-  font-size: 16px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus {
-  outline: none;
-  border-color: #057cbe;
-  box-shadow: 0 0 5px rgba(5, 124, 190, 0.5);
-}
-
-.terms-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 25px;
-}
-
-.terms-group input[type="checkbox"] {
-  width: auto;
-  margin: 0;
-}
-
-.terms-label {
-  margin: 0;
-  font-weight: normal;
-  color: #555;
-  cursor: pointer;
-}
-
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 30px;
-}
-
-.btn-primary,
-.btn-secondary {
-  padding: 12px;
+input {
+  width: 93%;
+  padding: 12px 15px;
+  border-radius: 10px;
   border: none;
-  border-radius: 6px;
-  font-size: 16px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input:focus {
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.3);
+}
+
+select {
+  width: 93%;
+  padding: 12px 15px;
+  border-radius: 10px;
+  border: none;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  outline: none;
+  transition: all 0.3s ease;
+}
+select:focus {
+  background: white;
+  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.3);
+}
+
+/* Botón principal */
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #00aaff, #009688);
+  color: white;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-}
-
-.btn-primary {
-  background-color: #009949;
-  color: white;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .btn-primary:hover {
-  background-color: #49b63f;
-  transform: scale(1.02);
+  background: linear-gradient(135deg, #0099cc, #00796b);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 150, 200, 0.4);
 }
 
-.btn-primary:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background-color: #057cbe;
+/* Mensajes */
+.error-message {
+  background: rgba(255, 60, 60, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 15px;
+  font-weight: 500;
   color: white;
 }
 
-.btn-secondary:hover {
-  background-color: #036da8;
-  transform: scale(1.02);
-}
-
-.login-link {
-  text-align: center;
+.loading {
   margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
+  color: #aeeaff;
 }
 
-.login-link p {
-  margin: 0;
-  color: #555;
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.login-link a {
-  color: #057cbe;
-  text-decoration: none;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.login-link a:hover {
-  text-decoration: underline;
-}
-
-/* Estilos para validación */
-input.ng-invalid.ng-touched {
-  border-color: #dc3545;
-}
-
-input.ng-valid.ng-touched {
-  border-color: #49b63f;
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 14px;
-  margin-top: 5px;
+@keyframes floatLogo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 /* Responsive */
 @media (max-width: 480px) {
-  .register-card {
-    padding: 30px 20px;
+  .card {
+    padding: 35px 25px;
   }
 
-  .button-group {
-    flex-direction: column;
+  .card-header h2 {
+    font-size: 1.6rem;
   }
 }
