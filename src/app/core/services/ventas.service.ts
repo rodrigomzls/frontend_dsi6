@@ -17,7 +17,7 @@ export interface Venta {
   notas?: string;
   detalles: VentaDetalle[];
   
-  razon_social?: string;
+  nombre_completo?: string;
   telefono?: string;
   direccion?: string;
   estado?: string;  // Este campo viene del JOIN con estado_venta

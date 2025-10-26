@@ -190,7 +190,7 @@ export class DetalleVentaComponent implements OnInit {
       <body>
         <h1>Comprobante de Venta</h1>
         <p><strong>ID Venta:</strong> ${this.venta.id_venta}</p>
-        <p><strong>Cliente:</strong> ${this.venta.razon_social || 'Cliente General'}</p>
+        <p><strong>Cliente:</strong> ${this.venta.nombre_completo || 'Cliente General'}</p>
         <p><strong>Fecha:</strong> ${this.formatearFecha(this.venta.fecha)} ${this.formatearHora(this.venta.hora)}</p>
 
         <table>

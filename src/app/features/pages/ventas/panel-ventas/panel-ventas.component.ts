@@ -135,12 +135,12 @@ export class PanelVentasComponent implements OnInit {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(venta => {
         const coincide = 
-          venta.razon_social?.toLowerCase().includes(term) ||
+          venta.nombre_completo?.toLowerCase().includes(term) ||
           venta.id_venta?.toString().includes(term) ||
           venta.estado?.toLowerCase().includes(term) ||
           venta.telefono?.includes(term);
         
-        console.log(`Búsqueda venta ${venta.id_venta}: "${venta.razon_social}" -> ${coincide}`);
+        console.log(`Búsqueda venta ${venta.id_venta}: "${venta.nombre_completo}" -> ${coincide}`);
         return coincide;
       });
     }

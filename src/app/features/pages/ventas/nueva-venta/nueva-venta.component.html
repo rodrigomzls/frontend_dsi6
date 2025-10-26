@@ -18,6 +18,11 @@
       placeholder="Buscar por nombre, teléfono o documento..."
       class="search-input">
     <button (click)="limpiarBusquedaCliente()" class="btn-clear">✕</button>
+    <!-- Botón para abrir modal de cliente rápido -->
+    <button (click)="abrirModalClienteRapido()" class="btn-agregar-cliente">
+      <span class="btn-icon">➕</span>
+      Nuevo Cliente
+    </button>
   </div>
 
   <!-- Lista de clientes filtrados -->
@@ -26,7 +31,7 @@
       *ngFor="let cliente of filteredClientes" 
       class="result-item"
       (click)="seleccionarCliente(cliente)">
-      <strong>{{ cliente.razon_social || cliente.persona?.nombre_completo }} - </strong>
+      <strong>{{ cliente.nombre_completo  || cliente.persona?.nombre_completo }} - </strong>
       <span>{{ cliente.persona?.telefono }} - </span>
       <small>{{ cliente.tipo_cliente }}</small>
     </div>
