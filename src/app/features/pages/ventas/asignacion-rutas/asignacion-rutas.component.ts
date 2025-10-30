@@ -40,16 +40,19 @@ export class AsignacionRutasComponent implements OnInit {
   ventasPorRepartidor: { [key: number]: Venta[] } = {};
   zonasConVentas: { zona: string, cantidad: number }[] = []; // ✅ NUEVO: Para zonas
 
-  ngOnInit() {
-    if (!this.authService.isAdmin()) {
-      this.router.navigate(['/ventas']);
-      return;
-    }
-    
-    this.cargarDatos();
-    this.estadosVenta = this.ventasService.getEstadosVenta();
+// En asignacion-rutas.component.ts - CORREGIR el ngOnInit
+// En asignacion-rutas.component.ts - CORREGIR el ngOnInit
+ngOnInit() {
+  // ✅ VERIFICAR POR MÓDULO EN LUGAR DE SOLO ROL ADMIN
+  if (!this.authService.hasModuleAccess('ventas_asignacion_rutas')) {
+    console.log('❌ Usuario no tiene acceso a asignación de rutas');
+    this.router.navigate(['/ventas']);
+    return;
   }
-
+  
+  this.cargarDatos();
+  this.estadosVenta = this.ventasService.getEstadosVenta();
+}
 // En el método cargarDatos
 cargarDatos() {
   this.loading = true;

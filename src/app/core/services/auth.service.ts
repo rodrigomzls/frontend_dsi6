@@ -4,17 +4,18 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-export interface User {
-  id: number;
-  username: string;
-  nombre: string;
-  role: number;
-  roleName: string; 
-}
+import { Usuario, Rol } from '../models/usuario.model';
 
 export interface AuthResponse {
   token: string;
-  user: User;
+  user: {
+    id: number;
+    username: string;
+    nombre: string;
+    role: number;
+    roleName: string;
+    modulos: string[];  // Nuevo campo
+  };
 }
 
 @Injectable({
@@ -24,22 +25,56 @@ export class AuthService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:4000/api/auth';
   
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private STORAGE_KEY = 'auth_token';
+  private USER_KEY = 'auth_user';
+  private LOGIN_EVENT_KEY = 'auth_login_event';
+  private LOGOUT_EVENT_KEY = 'auth_logout_event';
+
+  private currentUserSubject = new BehaviorSubject<Usuario | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  // Para comunicación entre pestañas
-  private readonly STORAGE_KEY = 'auth_token';
-  private readonly USER_KEY = 'auth_user';
-  private readonly LOGIN_EVENT_KEY = 'app_login';
-  private readonly LOGOUT_EVENT_KEY = 'app_logout';
+  // Nuevo método para verificar acceso a módulo
+// En auth.service.ts - mejorar el método
+hasModuleAccess(modulo: string): boolean {
+  const user = this.currentUserSubject.value;
+  if (!user) return false;
+  
+  // Verificar tanto los módulos como el rol como fallback
+  const modulos = (user as any)?.modulos as string[] | undefined;
+  
+  if (Array.isArray(modulos)) {
+    return modulos.includes(modulo);
+  }
+  
+  // Fallback: si no hay módulos, verificar por rol
+  return this.checkAccessByRole(modulo, user);
+}
 
+private checkAccessByRole(modulo: string, user: Usuario): boolean {
+  const role = (user as any).id_rol ?? (user as any).role ?? 0;
+  
+  // Mapear módulos por rol (como lo haces en HomeComponent)
+  switch (Number(role)) {
+    case 1: // Admin
+      return ['usuarios', 'personas', 'clientes', 'productos', 
+              'ventas_nueva', 'ventas', 'ventas_asignacion_rutas'].includes(modulo);
+    case 2: // Vendedor
+      return ['clientes', 'productos', 'ventas_nueva', 'ventas','ventas_asignacion_rutas'].includes(modulo);
+    case 3: // Repartidor
+      return ['rutas_asignadas', 'entregas', 'historial_entregas'].includes(modulo);
+    case 4: // Almacenero
+      return ['inventario', 'productos', 'inventario_movimiento', 'inventario_reportes'].includes(modulo);
+    default:
+      return false;
+  }
+}
   constructor() {
     this.setupCrossTabCommunication();
     this.initializeAuth();
   }
 
   // 🔥 NUEVO MÉTODO AGREGADO
-  getCurrentUser(): User | null {
+  getCurrentUser(): Usuario | null {
     return this.currentUserSubject.value;
   }
 
@@ -83,11 +118,53 @@ export class AuthService {
 
 
   private setSession(response: AuthResponse): void {
+    console.log('🔐 Respuesta completa del login:', response);
     localStorage.setItem(this.STORAGE_KEY, response.token);
-    localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
-    this.currentUserSubject.next(response.user);
-    console.log('🔐 Sesión iniciada y guardada');
+    // Normalizar y mapear campos que provienen del backend (login puede no incluir 'modulos' ni usar las mismas claves)
+    const rawUser: any = response.user as any;
+    const usuario: Usuario = {
+      id_usuario: rawUser.id ?? rawUser.id_usuario,
+      username: rawUser.username ?? rawUser.nombre_usuario,
+      nombre: rawUser.nombre ?? rawUser.nombre_completo ?? rawUser.username,
+      email: rawUser.email ?? null,
+      id_rol: rawUser.role ?? rawUser.id_rol,
+      role: rawUser.role ?? rawUser.id_rol,
+      id_persona: rawUser.id_persona ?? rawUser.id_persona ?? 0,
+      activo: rawUser.activo ?? 1,
+      roleName: rawUser.roleName ?? rawUser.rol ?? '',
+      modulos: rawUser.modulos ?? [],
+      ultimo_acceso: rawUser.ultimo_acceso ? new Date(rawUser.ultimo_acceso) : undefined,
+      fecha_creacion: rawUser.fecha_creacion ? new Date(rawUser.fecha_creacion) : new Date(),
+      fecha_actualizacion: rawUser.fecha_actualizacion ? new Date(rawUser.fecha_actualizacion) : new Date()
+    };
+
+    localStorage.setItem(this.USER_KEY, JSON.stringify(usuario));
+    this.currentUserSubject.next(usuario);
+    console.log('🔐 Sesión iniciada y guardada (normalizada)');
+
+    // Llamar a checkToken para obtener la versión completa del usuario (incluyendo 'modulos')
+    // especialmente porque el endpoint /login no siempre incluye 'modulos'.
+    setTimeout(() => this.checkToken(), 100);
   }
+
+    // Normaliza cualquier objeto user que venga del backend a la interfaz Usuario usada internamente
+    private normalizeUser(rawUser: any): Usuario {
+      return {
+        id_usuario: rawUser.id_usuario ?? rawUser.id ?? 0,
+        username: rawUser.username ?? rawUser.nombre_usuario ?? '',
+        nombre: rawUser.nombre ?? rawUser.nombre_completo ?? rawUser.username ?? '',
+        email: rawUser.email ?? null,
+        id_rol: rawUser.id_rol ?? rawUser.role ?? 0,
+        role: rawUser.role ?? rawUser.id_rol ?? 0,
+        id_persona: rawUser.id_persona ?? 0,
+        activo: rawUser.activo ?? 1,
+        roleName: rawUser.roleName ?? rawUser.rol ?? '',
+        modulos: rawUser.modulos ?? [],
+        ultimo_acceso: rawUser.ultimo_acceso ? new Date(rawUser.ultimo_acceso) : undefined,
+        fecha_creacion: rawUser.fecha_creacion ? new Date(rawUser.fecha_creacion) : new Date(),
+        fecha_actualizacion: rawUser.fecha_actualizacion ? new Date(rawUser.fecha_actualizacion) : new Date()
+      };
+    }
 
   public logout(): void {
     this.clearSession();
@@ -180,29 +257,21 @@ export class AuthService {
   checkToken(): void {
     const token = this.getToken();
     if (token) {
-      console.log('🔐 Verificando token con backend...');
-      this.http.get<{valid: boolean, user: User}>(`${this.apiUrl}/verify`, {
+      this.http.get<{valid: boolean, user: Usuario}>(`${this.apiUrl}/verify`, {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
         next: (response) => {
           if (response.valid) {
-            console.log('✅ Token válido');
-            // Actualizar datos del usuario
-            localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
-            this.currentUserSubject.next(response.user);
+            // Normalizar la respuesta del backend antes de guardarla
+            const normalized = this.normalizeUser(response.user as any);
+            localStorage.setItem(this.USER_KEY, JSON.stringify(normalized));
+            this.currentUserSubject.next(normalized);
           } else {
-            console.log('❌ Token inválido');
             this.clearSession();
           }
         },
-        error: (error) => {
-          console.log('❌ Error verificando token:', error);
-          this.clearSession();
-        }
+        error: () => this.clearSession()
       });
-    } else {
-      console.log('🔐 No hay token - Usuario no autenticado');
-      this.currentUserSubject.next(null);
     }
   }
 
@@ -216,7 +285,9 @@ export class AuthService {
 
   hasRole(role: number): boolean {
     const user = this.currentUserSubject.value;
-    return user ? user.role === role : false;
+    if (!user) return false;
+    const actual = (user as any).id_rol ?? (user as any).role ?? 0;
+    return Number(actual) === Number(role);
   }
 
   isAdmin(): boolean {

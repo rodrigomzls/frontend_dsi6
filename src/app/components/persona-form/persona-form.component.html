@@ -1,0 +1,39 @@
+<h3>{{ isEditMode ? 'Editar Persona' : 'Crear Persona' }}</h3>
+
+<div class="loading-overlay" *ngIf="isLoading" style="display:flex; justify-content:center; margin:12px 0;">
+  <mat-spinner diameter="36"></mat-spinner>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <mat-form-field appearance="outline" style="width:100%">
+    <mat-label>Tipo documento</mat-label>
+    <mat-select formControlName="tipo_documento">
+      <mat-option *ngFor="let t of tipos" [value]="t">{{ t }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width:100%">
+    <mat-label>Número documento</mat-label>
+    <input matInput formControlName="numero_documento" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width:100%">
+    <mat-label>Nombre completo</mat-label>
+    <input matInput formControlName="nombre_completo" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width:100%">
+    <mat-label>Teléfono</mat-label>
+    <input matInput formControlName="telefono" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" style="width:100%">
+    <mat-label>Dirección</mat-label>
+    <input matInput formControlName="direccion" />
+  </mat-form-field>
+
+  <div class="form-actions" style="display:flex; gap:8px; margin-top:12px;">
+    <button mat-flat-button color="primary" type="submit" [disabled]="isLoading">{{ isEditMode ? 'Actualizar' : 'Crear' }}</button>
+    <button mat-button type="button" (click)="onCancel()">Cancelar</button>
+  </div>
+</form>

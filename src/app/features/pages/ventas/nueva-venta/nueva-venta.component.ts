@@ -109,15 +109,6 @@ abrirModalClienteRapido() {
     alert(mensaje);
   }
 
-
-
-
-
-
-
-
-
-
 async cargarDatosIniciales() {
   try {
     // Cargar clientes para ventas

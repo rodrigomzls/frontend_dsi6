@@ -171,47 +171,40 @@ export class PanelVentasComponent implements OnInit {
   // Cambiar estado de venta (solo admin)
 // En panel-ventas.component.ts - actualiza cambiarEstadoVenta
 // En panel-ventas.component.ts - corrige cambiarEstadoVenta
-cambiarEstadoVenta(venta: Venta, nuevoEstado: any) { // Cambia a 'any' temporalmente
-  if (!this.authService.isAdmin()) {
-    alert('Solo los administradores pueden cambiar el estado de las ventas');
-    return;
-  }
+cambiarEstadoVenta(venta: Venta, nuevoEstado: any) {
+    if (!this.authService.isAdmin() && !this.authService.isVendedor()) {
+        alert('Solo administradores y vendedores pueden cambiar el estado de las ventas');
+        return;
+    }
 
-  // ✅ CONVERTIR a número explícitamente
-  const estadoNumerico = Number(nuevoEstado);
-  
-  console.log('🔄 Cambiando estado:', {
-    ventaId: venta.id_venta,
-    estadoActual: venta.id_estado_venta,
-    nuevoEstadoOriginal: nuevoEstado,
-    nuevoEstadoConvertido: estadoNumerico,
-    tipoOriginal: typeof nuevoEstado,
-    tipoConvertido: typeof estadoNumerico
-  });
+    const estadoNumerico = Number(nuevoEstado);
+    
+    // ✅ RESTRICCIONES PARA VENDEDORES
+    if (this.authService.isVendedor() && !this.authService.isAdmin()) {
+        const estadosPermitidosVendedor = [1, 2, 3, 8]; // Pendiente, Confirmado, En preparación, Cancelado
+        if (!estadosPermitidosVendedor.includes(estadoNumerico)) {
+            alert('Los vendedores solo pueden cambiar a: Pendiente, Confirmado, En preparación o Cancelado');
+            return;
+        }
+    }
 
-  const estadoEncontrado = this.estadosVenta.find(e => e.id_estado_venta === estadoNumerico);
-  const nombreEstado = estadoEncontrado?.estado || 'Desconocido';
+    const estadoEncontrado = this.estadosVenta.find(e => e.id_estado_venta === estadoNumerico);
+    const nombreEstado = estadoEncontrado?.estado || 'Desconocido';
 
-  console.log('🔍 Buscando estado:', {
-    estadoBuscado: estadoNumerico,
-    estadoEncontrado: estadoEncontrado,
-    nombreEstado: nombreEstado
-  });
-
-  if (confirm(`¿Cambiar estado a "${nombreEstado}"?`)) {
-    this.ventasService.updateEstadoVenta(venta.id_venta!, estadoNumerico).subscribe({
-      next: () => {
-        venta.id_estado_venta = estadoNumerico;
-        venta.estado = nombreEstado;
-        this.aplicarFiltros();
-        alert('✅ Estado actualizado correctamente');
-      },
-      error: (error) => {
-        alert('Error al actualizar el estado');
-        console.error('Error actualizando estado:', error);
-      }
-    });
-  }
+    if (confirm(`¿Cambiar estado a "${nombreEstado}"?`)) {
+        this.ventasService.updateEstadoVenta(venta.id_venta!, estadoNumerico).subscribe({
+            next: (response) => {
+                venta.id_estado_venta = estadoNumerico;
+                venta.estado = nombreEstado;
+                this.aplicarFiltros();
+                alert('✅ Estado actualizado correctamente');
+            },
+            error: (error) => {
+                alert('Error al actualizar el estado');
+                console.error('Error actualizando estado:', error);
+            }
+        });
+    }
 }
 
 // Método para recargar una venta específica
@@ -268,6 +261,14 @@ getEstadoNombre(idEstado: any): string { // Cambia a 'any'
     };
     return classes[estado] || 'estado-desconocido';
   }
+
+// En panel-ventas.component.ts - agregar método
+goToAsignacionRutas() {
+  if (this.authService.hasModuleAccess('ventas_asignacion_rutas')) {
+    this.router.navigate(['/ventas/asignacion-rutas']);
+  }
+}
+
 
   // Navegación
   verDetalleVenta(id: number) {

@@ -11,7 +11,7 @@
       ➕ Nueva Venta
     </button>
     <!-- En la barra de herramientas -->
-    <button (click)="irAAsignacionRutas()" class="btn-primary" *ngIf="authService.isAdmin()">
+    <button *ngIf="authService.hasModuleAccess('ventas_asignacion_rutas')" (click)="goToAsignacionRutas()"  class="btn-primary">
       🚚 Asignar Rutas
     </button>
     <div class="filters">
@@ -92,7 +92,7 @@
           <th>Total</th>
           <th>Estado</th>
           <th>Método Pago</th>
-          <th *ngIf="authService.isAdmin()">Cambiar Estado</th>
+          <th *ngIf="authService.isAdmin() || authService.isVendedor()">Cambiar Estado</th>
           <th>Detalles</th>
         </tr>
       </thead>
@@ -123,16 +123,16 @@
             {{ venta.metodo_pago }}
           </td>
           <!-- En panel-ventas.component.html - verifica el select -->
-          <td *ngIf="authService.isAdmin()" class="venta-acciones">
-            <select 
+          <td *ngIf="authService.isAdmin() || authService.isVendedor()" class="venta-acciones">
+          <select 
               [value]="venta.id_estado_venta" 
               (change)="cambiarEstadoVenta(venta, $any($event.target).value)"
               class="estado-select">
               <option *ngFor="let estado of estadosVenta" [value]="estado.id_estado_venta">
-                {{ estado.estado }}
+                  {{ estado.estado }}
               </option>
-            </select>
-          </td>
+          </select>
+      </td>
           <td class="venta-detalle">
             <button 
               (click)="verDetalleVenta(venta.id_venta!)"

@@ -9,6 +9,8 @@ import { NuevaVentaComponent } from './features/pages/ventas/nueva-venta/nueva-v
 import { PanelVentasComponent } from './features/pages/ventas/panel-ventas/panel-ventas.component';
 import { DetalleVentaComponent } from './features/pages/ventas/detalle-venta/detalle-venta.component';
 import { AsignacionRutasComponent } from './features/pages/ventas/asignacion-rutas/asignacion-rutas.component';
+import { UsuarioListComponent } from './features/pages/usuario-list/usuario-list.component';
+import { PersonaListComponent } from './features/pages/persona-list/persona-list.component';
 // Guards para standalone
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
@@ -28,39 +30,54 @@ export const routes: Routes = [
     path: 'clientes', 
     component: ClienteListComponent,
     canActivate: [authGuard, roleGuard],
-    data: { expectedRoles: [1, 2] } // Admin(1) y Vendedor(2)
+     // preferible: usar módulo en vez de expectedRoles
+    data: { requiredModule: 'clientes', expectedRoles: [1, 2] } // Admin(1) y Vendedor(2)
   },
   { 
-    path: 'productos', 
+    path: 'productos',
     component: ProductoListComponent,
-    canActivate: [authGuard] // Todos los autenticados
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'productos', expectedRoles: [1, 2, 4] }
   },
   
   // Módulo de Ventas - ORDEN CORREGIDO
-  { 
-    path: 'ventas', 
-    component: PanelVentasComponent,
-    canActivate: [authGuard, roleGuard],
-    data: { expectedRoles: [1, 2] } // Admin y Vendedor
-  },
-  { 
-    path: 'ventas/nueva', 
+  {
+    path: 'ventas/nueva',
     component: NuevaVentaComponent,
     canActivate: [authGuard, roleGuard],
-    data: { expectedRoles: [1, 2] } // Admin y Vendedor
+    data: { requiredModule: 'ventas_nueva', expectedRoles: [1, 2] }// Admin y Vendedor
   },
   // ✅ MOVER ASIGNACION-RUTAS ANTES DE :id
-  { 
-    path: 'ventas/asignacion-rutas', 
+  {
+    path: 'ventas/asignacion-rutas',
     component: AsignacionRutasComponent,
     canActivate: [authGuard, roleGuard],
-    data: { expectedRoles: [1] } // Solo Admin
+    data: { requiredModule: 'ventas_asignacion_rutas', expectedRoles: [1, 2] }// Solo administradores
   },
   { 
     path: 'ventas/:id', 
     component: DetalleVentaComponent,
     canActivate: [authGuard, roleGuard],
     data: { expectedRoles: [1, 2] }
+  },
+    {
+    path: 'ventas',
+    component: PanelVentasComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'ventas', expectedRoles: [1, 2] }// Admin y Vendedor
+  },
+   
+   {
+    path: 'usuarios',
+    component: UsuarioListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'usuarios', expectedRoles: [1] }// Solo administradores
+  },
+  {
+    path: 'personas',
+    component: PersonaListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'personas' ,expectedRoles: [1, 2] } // Admin y Vendedor
   },
   { path: '**', redirectTo: '/login' }
 ];
