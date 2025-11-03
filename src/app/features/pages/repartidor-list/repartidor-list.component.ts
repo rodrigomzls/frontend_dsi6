@@ -49,7 +49,10 @@ export class RepartidorListComponent implements OnInit {
     private repartidorService: RepartidorService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar
-  ) {}
+  ) {
+    // Configurar el filtro personalizado
+    this.dataSource.filterPredicate = this.createFilter();
+  }
 
   ngOnInit(): void {
     this.loadRepartidores();
@@ -78,7 +81,55 @@ export class RepartidorListComponent implements OnInit {
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
-    if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
+  }
+
+  // Filtro personalizado para buscar en propiedades anidadas
+  private createFilter(): (data: Repartidor, filter: string) => boolean {
+    return (data: Repartidor, filter: string): boolean => {
+      if (!filter) return true;
+
+      const searchTerm = filter.toLowerCase();
+      
+      // Buscar en nombre completo (propiedad anidada)
+      if (data.persona?.nombre_completo?.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+      
+      // Buscar en teléfono (propiedad anidada)
+      if (data.persona?.telefono?.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+      
+      // Buscar en número de documento (propiedad anidada)
+      if (data.persona?.numero_documento?.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+      
+      // Buscar en placa del furgón
+      if (data.placa_furgon?.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+      
+      // Buscar en estado activo
+      if ((data.activo ? 'sí' : 'no').includes(searchTerm)) {
+        return true;
+      }
+      
+      // Buscar en fecha de contratación (formateada)
+      if (this.formatDate(data.fecha_contratacion)?.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+      
+      // Buscar en fecha de creación (formateada)
+      if (this.formatDate(data.fecha_creacion)?.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+
+      return false;
+    };
   }
 
   openAddDialog(): void {
