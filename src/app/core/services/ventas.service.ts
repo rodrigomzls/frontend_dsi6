@@ -85,11 +85,8 @@ export class VentasService {
   getEstadosVenta(): EstadoVenta[] {
     return [
       { id_estado_venta: 1, estado: 'Pendiente' },
-      { id_estado_venta: 2, estado: 'Confirmado' },
-      { id_estado_venta: 3, estado: 'En preparación' },
       { id_estado_venta: 4, estado: 'Listo para repartos' }, // ✅ Con "s"
       { id_estado_venta: 5, estado: 'En ruta' },
-      { id_estado_venta: 6, estado: 'Entregado' },
       { id_estado_venta: 7, estado: 'Pagado' },
       { id_estado_venta: 8, estado: 'Cancelado' }
     ];

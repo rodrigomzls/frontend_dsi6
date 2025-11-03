@@ -113,9 +113,6 @@
               <small>{{ venta.direccion }}</small>
             </div>
             <div class="venta-acciones">
-              <button (click)="marcarEntregado(venta)" class="btn-entregado">
-                ✅ Entregado
-              </button>
               <!-- En la sección de ventas en ruta -->
             <button (click)="verDetalleVenta(venta.id_venta)" class="btn-detalle"
                     [disabled]="!venta.id_venta">

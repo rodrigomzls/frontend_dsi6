@@ -156,14 +156,6 @@ export class PanelVentasComponent implements OnInit {
     return this.ventas.filter(v => v.id_estado_venta === 1).length;
   }
 
-  get ventasEntregadas(): number {
-    return this.ventas.filter(v => v.id_estado_venta === 5).length;
-  }
-
-  get ventasConfirmadas(): number {
-    return this.ventas.filter(v => v.id_estado_venta === 2).length;
-  }
-
   get ventasLista(): number {
     return this.ventas.filter(v => v.id_estado_venta === 4).length;
   }
@@ -181,9 +173,9 @@ cambiarEstadoVenta(venta: Venta, nuevoEstado: any) {
     
     // ✅ RESTRICCIONES PARA VENDEDORES
     if (this.authService.isVendedor() && !this.authService.isAdmin()) {
-        const estadosPermitidosVendedor = [1, 2, 3, 8]; // Pendiente, Confirmado, En preparación, Cancelado
+        const estadosPermitidosVendedor = [1, 4, 8]; // Pendiente, Confirmado, En preparación, Cancelado
         if (!estadosPermitidosVendedor.includes(estadoNumerico)) {
-            alert('Los vendedores solo pueden cambiar a: Pendiente, Confirmado, En preparación o Cancelado');
+            alert('Los vendedores solo pueden cambiar a: Pendiente, Listo para repartos,Cancelado');
             return;
         }
     }
@@ -251,11 +243,8 @@ getEstadoNombre(idEstado: any): string { // Cambia a 'any'
   getEstadoClass(estado: string): string {
     const classes: { [key: string]: string } = {
       'Pendiente': 'estado-pendiente',
-      'Confirmado': 'estado-confirmado',
-      'En preparación': 'estado-preparacion',
       'Listo para repartos': 'estado-listo',
       'En ruta': 'estado-ruta',
-      'Entregado': 'estado-entregado',
       'Pagado': 'estado-pagado',
       'Cancelado': 'estado-cancelado'
     };

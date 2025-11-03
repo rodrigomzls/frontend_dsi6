@@ -1,0 +1,30 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Editar Repartidor' : 'Nuevo Repartidor' }}</h2>
+<div mat-dialog-content>
+  <form [formGroup]="repartidorForm">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Persona</mat-label>
+      <mat-select formControlName="id_persona">
+        <mat-option *ngFor="let p of personas" [value]="p.id_persona">{{ p.nombre_completo }} - {{ p.numero_documento || '' }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Placa del furgón</mat-label>
+      <input matInput formControlName="placa_furgon" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Fecha de contratación</mat-label>
+      <input matInput type="date" formControlName="fecha_contratacion" />
+    </mat-form-field>
+
+    <mat-checkbox formControlName="activo">Activo</mat-checkbox>
+  </form>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="isLoading">
+    <mat-icon *ngIf="isLoading">hourglass_top</mat-icon>
+    {{ isEditMode ? 'Guardar' : 'Crear' }}
+  </button>
+</div>

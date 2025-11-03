@@ -1,0 +1,4 @@
+.repartidor-list-container { padding: 16px; }
+.toolbar { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+.spinner { display:flex; justify-content:center; padding:24px; }
+table { width:100%; }

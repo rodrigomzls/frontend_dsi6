@@ -34,7 +34,7 @@ export class HomeComponent implements OnInit {
               case 1: // Administrador
                 this.modulosPermitidos = [
                   'usuarios', 'personas', 'clientes', 'productos',
-                  'ventas_nueva', 'ventas', 'ventas_asignacion_rutas'
+                  'ventas_nueva', 'ventas', 'ventas_asignacion_rutas', 'repartidores'
                 ];
                 break;
               case 2: // Vendedor
@@ -112,6 +112,13 @@ nuevaVenta() {
   goToRoles() {
     if (this.tieneAcceso('roles')) {
       this.router.navigate(['/roles']);
+    }
+  }
+  
+  // Navegación al módulo Repartidores
+  goToRepartidores() {
+    if (this.tieneAcceso('repartidores')) {
+      this.router.navigate(['/repartidores']);
     }
   }
   // Módulos específicos del Administrador

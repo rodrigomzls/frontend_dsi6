@@ -243,32 +243,6 @@ cargarDatos() {
     
     return false;
   }
-
-  // Marcar venta como entregada
-  marcarEntregado(venta: Venta) {
-    if (!confirm(`¿Marcar venta #${venta.id_venta} como entregada?`)) {
-      return;
-    }
-
-    this.ventasService.updateEstadoVenta(venta.id_venta!, 6).subscribe({
-      next: () => {
-        this.success = `Venta #${venta.id_venta} marcada como entregada`;
-        venta.id_estado_venta = 6;
-        venta.estado = 'Entregado';
-        
-        // Remover de la lista
-        this.ventasEnRuta = this.ventasEnRuta.filter(v => v.id_venta !== venta.id_venta);
-        this.agruparVentasPorRepartidor();
-        
-        setTimeout(() => this.success = '', 3000);
-      },
-      error: (error) => {
-        this.error = 'Error marcando como entregado';
-        console.error('Error:', error);
-      }
-    });
-  }
-
   // Actualizar listas después de cambios
   actualizarListas() {
     this.ventasListas = this.ventasListas.filter(v => v.id_estado_venta === 4);

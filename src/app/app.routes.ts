@@ -11,6 +11,7 @@ import { DetalleVentaComponent } from './features/pages/ventas/detalle-venta/det
 import { AsignacionRutasComponent } from './features/pages/ventas/asignacion-rutas/asignacion-rutas.component';
 import { UsuarioListComponent } from './features/pages/usuario-list/usuario-list.component';
 import { PersonaListComponent } from './features/pages/persona-list/persona-list.component';
+import { RepartidorListComponent } from './features/pages/repartidor-list/repartidor-list.component';
 // Guards para standalone
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
@@ -72,6 +73,12 @@ export const routes: Routes = [
     component: UsuarioListComponent,
     canActivate: [authGuard, roleGuard],
     data: { requiredModule: 'usuarios', expectedRoles: [1] }// Solo administradores
+  },
+  {
+    path: 'repartidores',
+    component: RepartidorListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'repartidores', expectedRoles: [1] } // Solo administradores
   },
   {
     path: 'personas',

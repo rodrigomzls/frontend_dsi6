@@ -45,6 +45,11 @@
           <i class="fas fa-route"></i> Asignación de Rutas
         </button>
 
+        <!-- Botón para módulo Repartidores -->
+        <button *ngIf="tieneAcceso('repartidores')" (click)="goToRepartidores()" class="btn-primary">
+          <i class="fas fa-truck"></i> Gestión de Repartidores
+        </button>
+
         <button *ngIf="tieneAcceso('rutas_asignadas')" (click)="goToRutasAsignadas()" class="btn-primary">
           <i class="fas fa-route"></i> Mis Rutas
         </button>

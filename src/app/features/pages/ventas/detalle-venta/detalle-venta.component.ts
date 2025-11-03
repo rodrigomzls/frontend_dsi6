@@ -62,11 +62,8 @@ export class DetalleVentaComponent implements OnInit {
   getEstadoClass(estado: string): string {
     const classes: { [key: string]: string } = {
       'Pendiente': 'estado-pendiente',
-      'Confirmado': 'estado-confirmado',
-      'En preparación': 'estado-preparacion',
       'Listo para repartos': 'estado-listo',
       'En ruta': 'estado-ruta',
-      'Entregado': 'estado-entregado',
       'Pagado': 'estado-pagado',
       'Cancelado': 'estado-cancelado'
     };
