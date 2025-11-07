@@ -12,6 +12,16 @@ import { AsignacionRutasComponent } from './features/pages/ventas/asignacion-rut
 import { UsuarioListComponent } from './features/pages/usuario-list/usuario-list.component';
 import { PersonaListComponent } from './features/pages/persona-list/persona-list.component';
 import { RepartidorListComponent } from './features/pages/repartidor-list/repartidor-list.component';
+import { RutasAsignadasComponent } from './features/pages/repartidor/rutas-asignadas/rutas-asignadas.component';
+import { EntregasPendientesComponent } from './features/pages/repartidor/entregas-pendientes/entregas-pendientes.component';
+import { HistorialEntregasComponent } from './features/pages/repartidor/historial-entregas/historial-entregas.component';
+import { DetalleVentaRepartidorComponent } from './features/pages/repartidor/detalle-venta-repartidor/detalle-venta-repartidor.component';
+
+
+
+
+
+
 // Guards para standalone
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
@@ -50,11 +60,11 @@ export const routes: Routes = [
   },
   // ✅ MOVER ASIGNACION-RUTAS ANTES DE :id
   {
-    path: 'ventas/asignacion-rutas',
+    path: 'ventas/asignacion-rutas',//ruta en frontend
     component: AsignacionRutasComponent,
     canActivate: [authGuard, roleGuard],
-    data: { requiredModule: 'ventas_asignacion_rutas', expectedRoles: [1, 2] }// Solo administradores
-  },
+    data: { requiredModule: 'ventas_asignacion_rutas', expectedRoles: [1, 2] }// Solo administradores y vendedores
+  },//ruta backend: ventas_asignacion_rutas
   { 
     path: 'ventas/:id', 
     component: DetalleVentaComponent,
@@ -86,5 +96,30 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { requiredModule: 'personas' ,expectedRoles: [1, 2] } // Admin y Vendedor
   },
+  // Agregar en el array de rutas
+{
+  path: 'repartidor/rutas-asignadas',
+  component: RutasAsignadasComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { requiredModule: 'rutas_asignadas', expectedRoles: [3] }
+},
+{
+  path: 'repartidor/entregas-pendientes',
+  component: EntregasPendientesComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { requiredModule: 'entregas_pendientes', expectedRoles: [3] }
+},
+{
+  path: 'repartidor/historial-entregas',
+  component: HistorialEntregasComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { requiredModule: 'historial_entregas', expectedRoles: [3] }
+},
+{
+  path: 'repartidor/venta/:id',
+  component: DetalleVentaRepartidorComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { expectedRoles: [3] } // Solo repartidores
+},
   { path: '**', redirectTo: '/login' }
 ];

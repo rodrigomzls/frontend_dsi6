@@ -1,0 +1,83 @@
+/* pedido-proveedor-list.component.css */
+.container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filter-field {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.table-container {
+  position: relative;
+  min-height: 200px;
+}
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+table {
+  width: 100%;
+}
+
+.mat-column-acciones {
+  width: 120px;
+  text-align: center;
+}
+
+.mat-column-id {
+  width: 80px;
+}
+
+.mat-column-total {
+  width: 120px;
+  text-align: right;
+}
+
+.mat-column-estado {
+  width: 150px;
+}
+
+/* Estilos para estados */
+.estado-solicitado {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.estado-confirmado {
+  color: #2196f3;
+  font-weight: bold;
+}
+
+.estado-en-camino {
+  color: #9c27b0;
+  font-weight: bold;
+}
+
+.estado-recibido {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.estado-cancelado {
+  color: #f44336;
+  font-weight: bold;
+}

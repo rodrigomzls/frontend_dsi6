@@ -1,0 +1,129 @@
+<div class="reportes-container">
+  <div class="header">
+    <h1>Reportes de Stock e Inventario</h1>
+    <p>Genera reportes detallados del estado del almacén</p>
+  </div>
+
+  <!-- Filtros -->
+  <mat-card class="filtros-card">
+    <mat-card-header>
+      <mat-card-title>Filtros del Reporte</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="filtrosForm" class="filtros-form">
+        <div class="filtros-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo de Reporte</mat-label>
+            <mat-select formControlName="tipoReporte">
+              <mat-option value="stock-general">Stock General</mat-option>
+              <mat-option value="stock-bajo">Stock Bajo</mat-option>
+              <mat-option value="movimientos">Movimientos</mat-option>
+              <mat-option value="caducidad">Lotes por Caducar</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha Desde</mat-label>
+            <input matInput [matDatepicker]="pickerInicio" formControlName="fechaInicio">
+            <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicio></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha Hasta</mat-label>
+            <input matInput [matDatepicker]="pickerFin" formControlName="fechaFin">
+            <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFin></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="acciones-filtros">
+          <button mat-raised-button color="primary" (click)="generarReporte()">
+            <mat-icon>refresh</mat-icon>
+            Generar Reporte
+          </button>
+          <button mat-stroked-button color="accent" (click)="exportarPDF()" [disabled]="!datosCargados">
+            <mat-icon>picture_as_pdf</mat-icon>
+            Exportar PDF
+          </button>
+          <button mat-stroked-button color="accent" (click)="exportarExcel()" [disabled]="!datosCargados">
+            <mat-icon>table_chart</mat-icon>
+            Exportar Excel
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Resumen de métricas -->
+  <div class="metricas-grid" *ngIf="datosCargados">
+    <mat-card class="metrica-card">
+      <mat-card-content>
+        <div class="metrica">
+          <h3>Productos Analizados</h3>
+          <p class="metrica-valor">{{ metricas.totalProductos }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metrica-card">
+      <mat-card-content>
+        <div class="metrica">
+          <h3>Valor Total Stock</h3>
+          <p class="metrica-valor">{{ metricas.valorTotal | currency:'PEN':'S/ ' }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="metrica-card">
+      <mat-card-content>
+        <div class="metrica">
+          <h3>Movimientos</h3>
+          <p class="metrica-valor">{{ metricas.totalMovimientos }}</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Tabla de resultados -->
+  <mat-card *ngIf="datosCargados" class="resultados-card">
+    <mat-card-header>
+      <mat-card-title>Resultados del Reporte</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="tabla-container">
+        <table class="reporte-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Stock Actual</th>
+              <th>Stock Mínimo</th>
+              <th>Último Movimiento</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of datosReporte">
+              <td>{{ item.producto }}</td>
+              <td>{{ item.stockActual }}</td>
+              <td>{{ item.stockMinimo }}</td>
+              <td>{{ item.ultimoMovimiento | date:'shortDate' }}</td>
+              <td>
+                <span [class]="item.estado + '-badge'" class="estado-badge">
+                  {{ item.estado }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Mensaje cuando no hay datos -->
+  <div *ngIf="!datosCargados" class="sin-datos">
+    <mat-icon>analytics</mat-icon>
+    <h3>Selecciona los filtros y genera un reporte</h3>
+    <p>Los resultados aparecerán aquí</p>
+  </div>
+</div>

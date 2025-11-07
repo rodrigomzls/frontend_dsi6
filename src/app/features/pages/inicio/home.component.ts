@@ -137,19 +137,19 @@ goToRutas() {
   // Módulos específicos del Repartidor
    goToRutasAsignadas() {
     if (this.tieneAcceso('rutas_asignadas')) {
-      this.router.navigate(['/rutas/asignadas']);
+      this.router.navigate(['/repartidor/rutas-asignadas']);
     }
   }
 
   goToEntregas() {
-    if (this.tieneAcceso('entregas')) {
-      this.router.navigate(['/entregas']);
+    if (this.tieneAcceso('entregas_pendientes')) {
+      this.router.navigate(['/repartidor/entregas-pendientes']);
     }
   }
 
    verHistorialEntregas() {
     if (this.tieneAcceso('historial_entregas')) {
-      this.router.navigate(['/entregas/historial']);
+      this.router.navigate(['/repartidor/historial-entregas']);
     }
   }
 
