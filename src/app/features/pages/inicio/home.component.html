@@ -61,17 +61,40 @@
         <button *ngIf="tieneAcceso('historial_entregas')" (click)="verHistorialEntregas()" class="btn-info">
           <i class="fas fa-history"></i> Historial de Entregas
         </button>
+ <!-- Botones para módulos de almacenero -->
+          <button *ngIf="tieneAcceso('inventario')" (click)="goToInventario()" class="btn-primary">
+            <i class="fas fa-warehouse"></i> Gestión de Inventario
+          </button>
 
+          <button *ngIf="tieneAcceso('inventario_movimiento')" (click)="registrarMovimiento()" class="btn-success">
+            <i class="fas fa-dolly"></i> Registrar Movimiento
+          </button>
+
+          <button *ngIf="tieneAcceso('inventario_reportes')" (click)="verReportes()" class="btn-info">
+            <i class="fas fa-chart-bar"></i> Reportes de Stock
+          </button>
+
+          <button *ngIf="tieneAcceso('lotes')" (click)="goToLotes()" class="btn-warning">
+            <i class="fas fa-barcode"></i> Gestión de Lotes
+          </button>
+
+          <button *ngIf="tieneAcceso('proveedores')" (click)="goToProveedores()" class="btn-info">
+            <i class="fas fa-truck-loading"></i> Proveedores
+          </button>
+
+          <button *ngIf="tieneAcceso('pedido_proveedor')" (click)="goPedidosProveedor()" class="btn-success">
+            <i class="fas fa-clipboard-list"></i> Pedidos a Proveedor
+          </button>
+
+          <button *ngIf="tieneAcceso('categorias')" (click)="goCategorias()" class="btn-primary">
+            <i class="fas fa-tags"></i> Categorías
+          </button>
+
+          <button *ngIf="tieneAcceso('marcas')" (click)="goMarcas()" class="btn-primary">
+            <i class="fas fa-copyright"></i> Marcas
+          </button>
         
-    <!--<button *ngIf="tieneAcceso('inventario')" (click)="goToInventario()" class="btn-primary">
-          <i class="fas fa-warehouse"></i> Gestión de Inventario
-        </button> <button *ngIf="tieneAcceso('inventario_movimiento')" (click)="registrarMovimiento()" class="btn-success">
-          <i class="fas fa-dolly"></i> Registrar Movimiento
-        </button>
-        <button *ngIf="tieneAcceso('inventario_reportes') || tieneAcceso('reportes')" (click)="verReportes()" class="btn-info">
-          <i class="fas fa-chart-bar"></i> Reportes de Stock
-        </button>-->
-        
+ 
       </div>
     </div>
 

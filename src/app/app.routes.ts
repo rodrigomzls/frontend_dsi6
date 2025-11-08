@@ -16,7 +16,14 @@ import { RutasAsignadasComponent } from './features/pages/repartidor/rutas-asign
 import { EntregasPendientesComponent } from './features/pages/repartidor/entregas-pendientes/entregas-pendientes.component';
 import { HistorialEntregasComponent } from './features/pages/repartidor/historial-entregas/historial-entregas.component';
 import { DetalleVentaRepartidorComponent } from './features/pages/repartidor/detalle-venta-repartidor/detalle-venta-repartidor.component';
-
+import { ProveedorListComponent } from './features/pages/proveedor-list/proveedor-list.component';
+import { PedidoProveedorListComponent } from './features/pages/pedido-proveedor-list/pedido-proveedor-list.component';
+import { CategoriaListComponent } from './features/pages/categoria-list/categoria-list.component';
+import { MarcaListComponent } from './features/pages/marca-list/marca-list.component';
+import { LoteListComponent } from './features/pages/lote-list/lote-list.component';
+import {MovimientoStockListComponent} from './features/pages/movimiento-stock-list/movimiento-stock-list.component';
+import { InventarioDashboardComponent } from './features/pages/inventario/inventario-dashboard/inventario-dashboard.component';
+import { InventarioReportesComponent } from './features/pages/inventario/inventario-reportes/inventario-reportes.component';
 
 
 
@@ -120,6 +127,57 @@ export const routes: Routes = [
   component: DetalleVentaRepartidorComponent,
   canActivate: [authGuard, roleGuard],
   data: { expectedRoles: [3] } // Solo repartidores
+},
+// Rutas de inventario
+
+  {
+    path: 'inventario/movimiento',
+    component: MovimientoStockListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'inventario_movimiento', expectedRoles: [4] }
+  },
+  
+  {
+    path: 'lotes',
+    component: LoteListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'lotes', expectedRoles: [4] }
+  },
+  {
+    path: 'proveedores',
+    component: ProveedorListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'proveedores', expectedRoles: [4] }
+  },
+  {
+    path: 'pedidos-proveedor',
+    component: PedidoProveedorListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'pedido_proveedor', expectedRoles: [4] }
+  },
+  {
+    path: 'categorias',
+    component: CategoriaListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'categorias', expectedRoles: [4] }
+  },
+  {
+    path: 'marcas',
+    component: MarcaListComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'marcas', expectedRoles: [4] }
+  },
+  {
+  path: 'inventario',
+  component: InventarioDashboardComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { requiredModule: 'inventario', expectedRoles: [4] }
+},
+{
+  path: 'inventario/reportes',
+  component: InventarioReportesComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { requiredModule: 'inventario_reportes', expectedRoles: [4] }
 },
   { path: '**', redirectTo: '/login' }
 ];
