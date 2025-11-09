@@ -1,3 +1,4 @@
+// inventario-reportes.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -9,6 +10,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { InventarioService } from '../../../../core/services/inventario.service';
+import { ExportService } from '../../../../core/services/export.service';
 
 @Component({
   selector: 'app-inventario-reportes',
@@ -23,7 +29,10 @@ import { MatInputModule } from '@angular/material/input';
     MatDatepickerModule,
     MatNativeDateModule,
     ReactiveFormsModule,
-    MatInputModule
+    MatInputModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   templateUrl: './inventario-reportes.component.html',
   styleUrls: ['./inventario-reportes.component.css']
@@ -31,6 +40,8 @@ import { MatInputModule } from '@angular/material/input';
 export class InventarioReportesComponent implements OnInit {
   filtrosForm: FormGroup;
   datosCargados = false;
+  cargando = false;
+  exportando = false;
   
   metricas = {
     totalProductos: 0,
@@ -38,24 +49,16 @@ export class InventarioReportesComponent implements OnInit {
     totalMovimientos: 0
   };
 
-  datosReporte = [
-    {
-      producto: 'Bidón Agua Bella 20L',
-      stockActual: 94,
-      stockMinimo: 20,
-      ultimoMovimiento: new Date(),
-      estado: 'normal'
-    },
-    {
-      producto: 'Botella Agua Bella 650ml',
-      stockActual: 5,
-      stockMinimo: 50,
-      ultimoMovimiento: new Date(),
-      estado: 'bajo'
-    }
-  ];
+  datosReporte: any[] = [];
+  productosConProblemas = 0;
+  filtrosAplicados: any = {};
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private inventarioService: InventarioService,
+    private exportService: ExportService,
+    private snackBar: MatSnackBar
+  ) {
     this.filtrosForm = this.fb.group({
       tipoReporte: ['stock-general'],
       fechaInicio: [null],
@@ -65,20 +68,271 @@ export class InventarioReportesComponent implements OnInit {
 
   ngOnInit() {}
 
-  generarReporte() {
-    this.datosCargados = true;
-    this.metricas = {
-      totalProductos: 25,
-      valorTotal: 12500.50,
-      totalMovimientos: 156
+    generarReporte() {
+    if (this.filtrosForm.invalid) {
+      this.snackBar.open('Por favor complete los filtros requeridos', 'Cerrar', {
+        duration: 3000
+      });
+      return;
+    }
+
+    this.cargando = true;
+    const filtros = this.filtrosForm.value;
+    this.filtrosAplicados = { ...filtros };
+
+    // Formatear fechas para el backend
+    const filtrosParaBackend = {
+      tipoReporte: filtros.tipoReporte,
+      fechaInicio: filtros.fechaInicio ? this.formatearFecha(filtros.fechaInicio) : null,
+      fechaFin: filtros.fechaFin ? this.formatearFecha(filtros.fechaFin) : null
     };
+
+    this.inventarioService.getReporteStock(filtrosParaBackend).subscribe({
+      next: (response: any) => {
+        this.cargando = false;
+        this.datosCargados = true;
+        
+        // Procesar datos del backend
+        this.procesarDatosReporte(response);
+        
+        this.snackBar.open('Reporte generado exitosamente', 'Cerrar', {
+          duration: 3000
+        });
+      },
+      error: (error) => {
+        this.cargando = false;
+        console.error('Error al generar reporte:', error);
+        this.snackBar.open('Error al generar el reporte', 'Cerrar', {
+          duration: 3000
+        });
+      }
+    });
   }
 
-  exportarPDF() {
-    console.log('Exportando PDF...');
+  /**
+   * Exportar a PDF
+   */
+  async exportarPDF() {
+    if (!this.datosCargados) {
+      this.snackBar.open('Primero genere un reporte', 'Cerrar', { 
+        duration: 3000 
+      });
+      return;
+    }
+
+    this.exportando = true;
+    
+    try {
+      // Intentar exportar la tabla completa (método con captura de pantalla)
+      await this.exportService.exportToPDF(
+        'tabla-reporte',
+        this.generarNombreArchivo('inventario'),
+        this.generarTituloReporte(),
+        this.metricas
+      );
+      
+      this.snackBar.open('PDF exportado exitosamente', 'Cerrar', { 
+        duration: 3000 
+      });
+    } catch (error) {
+      console.warn('Error en exportación PDF avanzada, usando método simple:', error);
+      
+      // Fallback: método simple
+      try {
+        this.exportService.exportSimplePDF(
+          this.datosReporte,
+          this.generarNombreArchivo('inventario'),
+          this.generarTituloReporte(),
+          this.metricas
+        );
+        
+        this.snackBar.open('PDF exportado exitosamente', 'Cerrar', { 
+          duration: 3000 
+        });
+      } catch (simpleError) {
+        console.error('Error en exportación PDF simple:', simpleError);
+        this.snackBar.open('Error al exportar PDF', 'Cerrar', { 
+          duration: 3000 
+        });
+      }
+    } finally {
+      this.exportando = false;
+    }
   }
 
+  /**
+   * Exportar a Excel
+   */
   exportarExcel() {
-    console.log('Exportando Excel...');
+    if (!this.datosCargados) {
+      this.snackBar.open('Primero genere un reporte', 'Cerrar', { 
+        duration: 3000 
+      });
+      return;
+    }
+
+    this.exportando = true;
+
+    try {
+      this.exportService.exportToExcel(
+        this.datosReporte,
+        this.generarNombreArchivo('inventario'),
+        this.generarNombreHoja()
+      );
+      
+      this.snackBar.open('Excel exportado exitosamente', 'Cerrar', { 
+        duration: 3000 
+      });
+    } catch (error) {
+      console.error('Error al exportar a Excel:', error);
+      this.snackBar.open('Error al exportar Excel', 'Cerrar', { 
+        duration: 3000 
+      });
+    } finally {
+      this.exportando = false;
+    }
+  }
+
+  /**
+   * Generar nombre de archivo con timestamp
+   */
+  private generarNombreArchivo(base: string): string {
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    let tipoReporte = 'general';
+    switch(this.filtrosAplicados.tipoReporte) {
+      case 'stock-bajo': tipoReporte = 'stock-bajo'; break;
+      case 'agotado': tipoReporte = 'agotados'; break;
+    }
+    
+    return `${base}_${tipoReporte}_${timestamp}`;
+  }
+
+  /**
+   * Generar título del reporte según filtros
+   */
+  private generarTituloReporte(): string {
+    let titulo = 'Reporte de Inventario - ';
+    
+    switch(this.filtrosAplicados.tipoReporte) {
+      case 'stock-general':
+        titulo += 'Stock General';
+        break;
+      case 'stock-bajo':
+        titulo += 'Stock Bajo';
+        break;
+      case 'agotado':
+        titulo += 'Productos Agotados';
+        break;
+      default:
+        titulo += 'Inventario';
+    }
+
+    // Agregar rango de fechas si está disponible
+    if (this.filtrosAplicados.fechaInicio && this.filtrosAplicados.fechaFin) {
+      const fechaInicio = new Date(this.filtrosAplicados.fechaInicio).toLocaleDateString('es-PE');
+      const fechaFin = new Date(this.filtrosAplicados.fechaFin).toLocaleDateString('es-PE');
+      titulo += ` (${fechaInicio} al ${fechaFin})`;
+    }
+
+    return titulo;
+  }
+
+  /**
+   * Generar nombre de hoja Excel
+   */
+  private generarNombreHoja(): string {
+    switch(this.filtrosAplicados.tipoReporte) {
+      case 'stock-general': return 'Stock General';
+      case 'stock-bajo': return 'Stock Bajo';
+      case 'agotado': return 'Productos Agotados';
+      default: return 'Inventario';
+    }
+  }
+
+  private procesarDatosReporte(response: any) {
+    // Actualizar métricas
+    this.metricas = {
+      totalProductos: response.metricas?.total_productos || 0,
+      valorTotal: parseFloat(response.metricas?.valor_total) || 0,
+      totalMovimientos: response.movimientos?.reduce((sum: number, mov: any) => 
+        sum + (mov.cantidad_movimientos || 0), 0) || 0
+    };
+
+    // Procesar productos para la tabla
+    this.datosReporte = response.productos?.map((producto: any) => ({
+      producto: producto.nombre,
+      descripcion: producto.descripcion,
+      stockActual: producto.stock,
+      stockMinimo: producto.stock_minimo,
+      precio: producto.precio,
+      estado: producto.estado_stock,
+      categoria: producto.categoria,
+      marca: producto.marca,
+      valorTotal: producto.valor_total
+    })) || [];
+
+    // Calcular productos con problemas
+    this.productosConProblemas = this.datosReporte.filter(item => 
+      item.estado === 'bajo' || item.estado === 'agotado'
+    ).length;
+  }
+
+
+  // Métodos auxiliares para la vista
+  getRowClass(item: any): string {
+    return `row-${item.estado}`;
+  }
+
+  getStockClass(item: any): string {
+    return item.stockActual <= item.stockMinimo ? 'stock-bajo' : 'stock-normal';
+  }
+
+  getDiferenciaClass(item: any): string {
+    const diferencia = item.stockActual - item.stockMinimo;
+    if (diferencia >= 10) return 'diferencia-positiva';
+    if (diferencia >= 0) return 'diferencia-normal';
+    if (diferencia >= -5) return 'diferencia-negativa';
+    return 'diferencia-critica';
+  }
+
+  getEstadoIcon(estado: string): string {
+    switch(estado) {
+      case 'normal': return 'check_circle';
+      case 'bajo': return 'warning';
+      case 'agotado': return 'cancel';
+      default: return 'help';
+    }
+  }
+
+  getEstadoText(estado: string): string {
+    switch(estado) {
+      case 'normal': return 'NORMAL';
+      case 'bajo': return 'BAJO';
+      case 'agotado': return 'AGOTADO';
+      default: return estado.toUpperCase();
+    }
+  }
+
+  getEstadoTooltip(item: any): string {
+    switch(item.estado) {
+      case 'normal':
+        return `Stock saludable. ${item.stockActual - item.stockMinimo} unidades por encima del mínimo`;
+      case 'bajo':
+        return `Stock bajo. ${item.stockMinimo - item.stockActual} unidades por debajo del mínimo requerido`;
+      case 'agotado':
+        return 'Producto agotado. Requiere reposición inmediata';
+      default:
+        return 'Estado desconocido';
+    }
+  }
+
+  contarPorEstado(estado: string): number {
+    return this.datosReporte.filter(item => item.estado === estado).length;
+  }
+
+  private formatearFecha(fecha: Date): string {
+    return fecha.toISOString().split('T')[0];
   }
 }
