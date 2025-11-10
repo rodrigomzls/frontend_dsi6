@@ -53,21 +53,21 @@ export class UsuarioListComponent implements OnInit {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
-
-  loadUsers(): void {
-    this.isLoading = true;
-    this.usuarioService.getUsers().subscribe({
-      next: (users) => {
-        this.dataSource.data = users;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error cargando usuarios:', err);
-        this.isLoading = false;
-      }
-    });
-  }
-
+// En usuario-list.component.ts - método loadUsers
+loadUsers(): void {
+  this.isLoading = true;
+  this.usuarioService.getUsers().subscribe({
+    next: (users) => {
+      console.log('Usuarios cargados:', users); // Debug
+      this.dataSource.data = users;
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('Error cargando usuarios:', err);
+      this.isLoading = false;
+    }
+  });
+}
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();

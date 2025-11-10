@@ -1,11 +1,11 @@
 export interface Cliente {
   id?: number;
-  tipo_documento: 'DNI' | 'RUC' | 'CE';
+  tipo_documento: 'DNI' | 'RUC' | 'CE' | 'NO_ESPECIFICADO';
   dni: string;
   nombre: string;
   telefono: string;
   direccion: string;
-  coordenadas?: string; // Ahora viene del backend
+  coordenadas?: string;
   tipo_cliente: 'Bodega' | 'Restaurante' | 'Gimnasio' | 'Persona' | 'Empresa';
   razon_social?: string;
   activo?: boolean;

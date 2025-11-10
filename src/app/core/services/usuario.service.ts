@@ -65,4 +65,10 @@ export class UsuarioService {
       catchError(this.handleError)
     );
   }
+  // En usuario.service.ts - agregar este método
+updateUser(id: number, payload: any) {
+  return this.http.patch(`${this.apiUrl}/usuarios/${id}`, payload).pipe(
+    catchError(this.handleError)
+  );
+}
 }

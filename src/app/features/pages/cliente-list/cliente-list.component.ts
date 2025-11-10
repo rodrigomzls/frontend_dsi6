@@ -104,10 +104,12 @@ export class ClienteListComponent implements OnInit {
 
   openAddDialog(): void {
     const dialogRef = this.dialog.open(ClienteFormComponent, {
-      width: '700px',
+      width: '800px', // Un poco más ancho para el formulario completo
+      maxWidth: '95vw',
       height: 'auto',
       maxHeight: '90vh',
-      panelClass: 'cliente-form-dialog'
+      panelClass: 'cliente-form-dialog',
+    autoFocus: false
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -119,11 +121,13 @@ export class ClienteListComponent implements OnInit {
 
   openEditDialog(cliente: Cliente): void {
     const dialogRef = this.dialog.open(ClienteFormComponent, {
-      width: '700px',
+      width: '800px', // Un poco más ancho para el formulario completo
+       maxWidth: '95vw',
       height: 'auto',
       maxHeight: '90vh',
       panelClass: 'cliente-form-dialog',
-      data: { cliente }
+       data: { cliente },
+    autoFocus: false
     });
 
     dialogRef.afterClosed().subscribe(result => {

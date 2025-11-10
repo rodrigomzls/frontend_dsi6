@@ -1,153 +1,106 @@
-/* ====== FORMULARIO DE CLIENTE ====== */
+/* ====== FORMULARIO DE CLIENTE COMPACTO ====== */
 
-/* Contenedor del formulario */
-.cliente-form {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  min-height: 500px;
-  padding: 0;
-  gap: 16px;
-  box-sizing: border-box;
+/* Contenedor principal del diálogo */
+:host {
+  display: block;
 }
 
-/* Contenido del modal */
-.mat-mdc-dialog-content {
-  padding: 24px !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  max-height: 65vh !important;
-  flex: 1;
-  position: relative;
-  background-color: #fff;
-  border-radius: 0 0 12px 12px;
-  box-sizing: border-box;
-}
-
-/* Secciones del formulario */
-.form-section {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-}
-
-.section-title {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2c3e50;
+.dialog-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: #0288d1;
+  margin: 0;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8fdff;
+  font-size: 20px;
+  font-weight: 600;
 }
 
-.section-title::before {
-  content: "•";
-  color: #4caf50;
-  font-size: 20px;
+.title-icon {
+  color: #0288d1;
+}
+
+/* Contenido del diálogo - SIN SCROLL */
+.dialog-content {
+  padding: 24px;
+  max-height: none !important;
+  overflow: visible !important;
+  position: relative;
+}
+
+/* Formulario compacto */
+.cliente-form {
+  min-width: 750px;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* Filas del formulario */
 .form-row {
   display: flex;
-  flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 16px;
   align-items: flex-start;
-}
-
-.form-row:last-child {
-  margin-bottom: 0;
 }
 
 /* Campos del formulario */
 .form-field {
   flex: 1;
-  min-width: 200px;
+  min-width: 140px;
+}
+
+.form-field-large {
+  flex: 2;
+  min-width: 220px;
 }
 
 .form-field-full {
-  width: 100%;
-  flex: none;
+  flex: 1;
+  min-width: 100%;
 }
 
-/* Título del modal */
-.dialog-title {
+/* Estilos para los campos de Material */
+mat-form-field {
+  width: 100%;
+}
+
+/* Hint del documento más compacto */
+.document-hint {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+/* Sección de coordenadas */
+.coordinates-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px dashed #e0e0e0;
+}
+
+/* Contenedor de geocodificación */
+.geocode-container {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 20px 24px;
-  margin: 0;
-  background-color: #49b63f;
-  color: white;
-  border-bottom: 1px solid #e9ecef;
-  font-size: 20px;
-  font-weight: 600;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+  gap: 16px;
+  width: 100%;
 }
 
-.title-icon {
-  color: #ffffff;
-}
-
-/* Acciones (botones) */
-mat-dialog-actions {
-  padding: 20px 24px !important;
-  margin: 0;
-  border-top: 1px solid #e9ecef;
-  background-color: #f8f9fa;
-  gap: 12px;
-  flex-shrink: 0;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-
-/* Botón cancelar */
-.cancel-button {
-  color: #6c757d;
-  font-weight: 500;
-}
-
-/* Botón guardar */
-.submit-button {
-  border-radius: 6px;
-  font-weight: 600;
-  min-width: 100px;
-}
-
-.spinner-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 8px;
-}
-
-/* Estilo general del modal */
-.mat-mdc-dialog-container .mdc-dialog__surface {
-  border-radius: 12px !important;
-}
-
-/* Estilos para geocodificación */
 .geocode-btn {
-  background-color: #2196f3;
-  color: white;
-  margin-top: 8px;
-}
-
-.geocode-btn:disabled {
-  background-color: #cccccc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
 }
 
 .geocode-status {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: 16px;
   color: #666;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .geocode-status mat-spinner {
@@ -155,11 +108,34 @@ mat-dialog-actions {
   height: 20px;
 }
 
-/* Campo de coordenadas readonly */
-mat-form-field .mat-mdc-input-element:read-only {
-  background-color: #f5f5f5;
-  color: #666;
-  cursor: not-allowed;
+/* Acciones del diálogo */
+.dialog-actions {
+  padding: 20px 24px;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+  margin: 0;
+  gap: 12px;
+}
+
+.cancel-button {
+  margin-right: 8px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.submit-button {
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.spinner-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Loading overlay */
@@ -177,46 +153,70 @@ mat-form-field .mat-mdc-input-element:read-only {
   border-radius: 8px;
 }
 
-/* Estilos para textarea */
-textarea {
-  resize: vertical;
-  min-height: 60px;
+/* Estilos para errores */
+mat-error {
+  font-size: 0.75rem;
 }
 
-/* Responsive */
+/* Responsive para pantallas más pequeñas */
 @media (max-width: 768px) {
+  .cliente-form {
+    min-width: auto;
+    max-width: 100%;
+  }
+  
   .form-row {
     flex-direction: column;
     gap: 12px;
   }
   
-  .form-field {
+  .form-field,
+  .form-field-large,
+  .form-field-full {
     min-width: 100%;
   }
   
-  .mat-mdc-dialog-content {
-    padding: 16px !important;
-    max-height: 60vh !important;
-  }
-  
-  .form-section {
+  .dialog-content {
     padding: 16px;
   }
   
-  .dialog-title {
-    padding: 16px 20px;
-    font-size: 18px;
+  .geocode-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
-  
-  mat-dialog-actions {
-    padding: 16px 20px !important;
-    flex-direction: column-reverse;
-  }
-  
-  .cancel-button,
-  .submit-button {
-    width: 100%;
-  }
+}
+
+/* Estilos para el diálogo global */
+::ng-deep .cliente-form-dialog {
+  max-height: 85vh !important;
+}
+
+::ng-deep .cliente-form-dialog .mat-dialog-container {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+::ng-deep .cliente-form-dialog .mat-dialog-content {
+  max-height: none !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* Mejoras visuales para los campos */
+::ng-deep .cliente-form-dialog .mat-form-field-outline {
+  border-radius: 4px;
+}
+
+::ng-deep .cliente-form-dialog .mat-form-field-wrapper {
+  padding-bottom: 0;
+}
+
+::ng-deep .cliente-form-dialog .mat-form-field-subscript-wrapper {
+  position: relative;
+  margin-top: 2px;
 }
 
 /* Snackbar styles */
@@ -233,4 +233,34 @@ textarea {
 ::ng-deep .warn-snackbar {
   background-color: #ff9800;
   color: white;
+}
+/* Agregar estas reglas al archivo CSS existente */
+
+/* Mejoras para los hints de validación */
+.document-hint {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+/* Estilos para campos con errores */
+.mat-form-field-invalid .mat-form-field-outline-thick {
+  color: #f44336;
+}
+
+/* Mejoras de accesibilidad para campos requeridos */
+.mat-form-field-required-marker {
+  color: #f44336;
+}
+
+/* Responsive mejorado para validaciones */
+@media (max-width: 768px) {
+  .document-hint {
+    font-size: 0.7rem;
+  }
+}
+
+/* Estilos para campos deshabilitados durante carga */
+.cliente-form:disabled {
+  opacity: 0.6;
+  pointer-events: none;
 }

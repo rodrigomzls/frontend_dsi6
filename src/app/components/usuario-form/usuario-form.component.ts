@@ -60,20 +60,25 @@ export class UsuarioFormComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    if (this.data?.user) {
-      this.isEdit = true;
-      this.form.patchValue({
-        nombre_usuario: this.data.user.nombre_usuario,
-        email: this.data.user.email,
-        id_rol: this.data.user.id_rol || this.data.user.role || 2,
-        id_persona: this.data.user.id_persona || null
-      });
-    }
-
-    // Cargar personas disponibles para asignar
-    this.loadPersonasDisponibles();
+// En usuario-form.component.ts - modificar ngOnInit
+ngOnInit(): void {
+  if (this.data?.user) {
+    this.isEdit = true;
+    
+    // Cargar datos del usuario incluyendo id_persona
+    this.form.patchValue({
+      nombre_usuario: this.data.user.nombre_usuario,
+      email: this.data.user.email,
+      id_rol: this.data.user.id_rol || this.data.user.role || 2,
+      id_persona: this.data.user.id_persona || null  // ← Asegurar que se cargue la persona
+    });
+    
+    console.log('Usuario a editar:', this.data.user); // Para debug
   }
+
+  // Cargar personas disponibles para asignar
+  this.loadPersonasDisponibles();
+}
 
   loadPersonasDisponibles() {
     this.usuarioService.getPersonasDisponibles().subscribe({
@@ -93,36 +98,42 @@ export class UsuarioFormComponent implements OnInit {
     });
   }
 
-  onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    this.isLoading = true;
-    const payload = { ...this.form.value };
-    // Si es edición y password está vacío, no enviarlo
-    if (this.isEdit && (!payload.password || payload.password.trim() === '')) {
-      delete payload.password;
-    }
-
-    const req$ = this.isEdit
-      ? this.usuarioService.updateRole(this.data.user.id_usuario, payload.id_rol)
-      : this.usuarioService.createUser(payload);
-
-    req$.subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.dialogRef.close(true);
-        this.snackBar.open(this.isEdit ? 'Usuario actualizado' : 'Usuario creado', 'Cerrar', { duration: 3000 });
-      },
-      error: (err) => {
-        console.error('Error saving user:', err);
-        this.isLoading = false;
-        this.snackBar.open(err?.message || 'Error al guardar usuario', 'Cerrar', { duration: 5000 });
-      }
-    });
+ // En usuario-form.component.ts - modificar el método onSubmit
+// En usuario-form.component.ts - agregar debug en onSubmit
+onSubmit(): void {
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
   }
 
+  this.isLoading = true;
+  const payload = { ...this.form.value };
+  
+  console.log('Datos a enviar:', payload); // Debug
+  console.log('ID usuario:', this.data?.user?.id_usuario); // Debug
+  
+  // Si es edición y password está vacío, no enviarlo
+  if (this.isEdit && (!payload.password || payload.password.trim() === '')) {
+    delete payload.password;
+  }
+
+  const req$ = this.isEdit
+    ? this.usuarioService.updateUser(this.data.user.id_usuario, payload)
+    : this.usuarioService.createUser(payload);
+
+  req$.subscribe({
+    next: () => {
+      this.isLoading = false;
+      this.dialogRef.close(true);
+      this.snackBar.open(this.isEdit ? 'Usuario actualizado' : 'Usuario creado', 'Cerrar', { duration: 3000 });
+    },
+    error: (err) => {
+      console.error('Error saving user:', err);
+      console.error('Datos enviados:', payload); // Debug adicional
+      this.isLoading = false;
+      this.snackBar.open(err?.message || 'Error al guardar usuario', 'Cerrar', { duration: 5000 });
+    }
+  });
+}
   onCancel(): void { this.dialogRef.close(false); }
 }

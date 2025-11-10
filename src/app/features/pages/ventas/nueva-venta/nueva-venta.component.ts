@@ -72,19 +72,66 @@ export class NuevaVentaComponent implements OnInit {
 // En nueva-venta.component.ts - corrige la función cargarDatosIniciales
 
 // En nueva-venta.component.ts - alternativa con componente rápido
+// En nueva-venta.component.ts - actualiza el método abrirModalClienteRapido
 abrirModalClienteRapido() {
-  const dialogRef = this.dialog.open(ClienteRapidoFormComponent, { // Usar ClienteRapidoFormComponent
-    width: '500px',
+  const dialogRef = this.dialog.open(ClienteRapidoFormComponent, {
+    width: '750px',
     maxWidth: '95vw',
-    data: {}
+    maxHeight: '90vh',
+     panelClass: 'cliente-rapido-dialog', // Clase para estilos globales
+    autoFocus: false
   });
 
-  dialogRef.afterClosed().subscribe((resultado) => {
-    if (resultado) {
-      console.log('✅ Cliente rápido creado exitosamente');
+  dialogRef.afterClosed().subscribe((nuevoCliente) => {
+    if (nuevoCliente) {
+      console.log('✅ Cliente rápido creado exitosamente:', nuevoCliente);
+      
+      // Recargar la lista de clientes
       this.cargarClientes();
+      
+      // AUTOCOMPLETAR: Buscar y seleccionar automáticamente el nuevo cliente
+      setTimeout(() => {
+        this.buscarYSeleccionarNuevoCliente(nuevoCliente);
+      }, 500);
     }
   });
+}
+
+// Nuevo método para buscar y seleccionar automáticamente el cliente recién creado
+private buscarYSeleccionarNuevoCliente(nuevoCliente: any) {
+  // Buscar el cliente en la lista actualizada
+  const clienteEncontrado = this.clientes.find(cliente => 
+    cliente.id_cliente === nuevoCliente.id_cliente || 
+    cliente.id_cliente === nuevoCliente.id
+  );
+  
+  if (clienteEncontrado) {
+    // Seleccionar automáticamente el cliente
+    this.seleccionarCliente(clienteEncontrado);
+    
+    // Mostrar mensaje de confirmación
+    this.mostrarMensajeExito(`Cliente "${nuevoCliente.nombre}" seleccionado automáticamente`);
+  } else {
+    // Si no se encuentra inmediatamente, intentar recargar la lista
+    this.cargarClientes();
+    
+    // Intentar nuevamente después de un segundo
+    setTimeout(() => {
+      const clienteReintento = this.clientes.find(cliente => 
+        cliente.id_cliente === nuevoCliente.id_cliente
+      );
+      if (clienteReintento) {
+        this.seleccionarCliente(clienteReintento);
+      }
+    }, 1000);
+  }
+}
+
+// Método para mostrar mensajes (si no lo tienes)
+private mostrarMensajeExito(mensaje: string) {
+  // Puedes usar un snackbar en lugar de alert para mejor UX
+  console.log('✅', mensaje);
+  // Opcional: Implementar snackbar aquí
 }
   // Método auxiliar para cargar clientes
   private cargarClientes() {
@@ -101,12 +148,6 @@ abrirModalClienteRapido() {
       },
       error: (error) => console.error('Error recargando clientes:', error)
     });
-  }
-
-  // Método para mostrar mensajes
-  private mostrarMensajeExito(mensaje: string) {
-    // Puedes usar alert temporal o implementar un snackbar
-    alert(mensaje);
   }
 
 async cargarDatosIniciales() {
