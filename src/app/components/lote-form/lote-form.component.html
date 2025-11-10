@@ -1,0 +1,60 @@
+<div class="form-container" [class.loading]="isLoading">
+  <h2>{{ titulo }}</h2>
+
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Producto</mat-label>
+      <mat-select formControlName="id_producto">
+        <mat-option *ngFor="let p of productos" [value]="p.id">
+          {{ p.nombre }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('id_producto')?.hasError('required')">
+        Seleccione un producto
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Número de lote</mat-label>
+      <input matInput formControlName="numero_lote" placeholder="Ejemplo: L-2025A" />
+      <mat-error *ngIf="form.get('numero_lote')?.hasError('required')">
+        Este campo es obligatorio
+      </mat-error>
+      <mat-error *ngIf="form.get('numero_lote')?.hasError('minlength')">
+        Mínimo 3 caracteres
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Fecha de caducidad</mat-label>
+      <input matInput type="date" formControlName="fecha_caducidad" />
+      <mat-error *ngIf="form.get('fecha_caducidad')?.hasError('required')">
+        La fecha es obligatoria
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Cantidad inicial</mat-label>
+      <input matInput type="number" formControlName="cantidad_inicial" />
+      <mat-error *ngIf="form.get('cantidad_inicial')?.hasError('required')">
+        Campo obligatorio
+      </mat-error>
+      <mat-error *ngIf="form.get('cantidad_inicial')?.hasError('min')">
+        Debe ser mayor que 0
+      </mat-error>
+    </mat-form-field>
+
+    <mat-checkbox formControlName="activo">Activo</mat-checkbox>
+
+    <div class="buttons">
+      <button mat-raised-button color="primary" type="submit" [disabled]="isLoading">
+        {{ data && data.id_lote ? 'Actualizar' : 'Guardar' }}
+      </button>
+      <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+    </div>
+  </form>
+
+  <div class="overlay" *ngIf="isLoading">
+    <mat-spinner diameter="60"></mat-spinner>
+  </div>
+</div>

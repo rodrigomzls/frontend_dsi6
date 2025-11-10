@@ -1,0 +1,100 @@
+<!-- src/app/features/pages/repartidor/historial-entregas/historial-entregas.component.html -->
+<div class="repartidor-container">
+  <div class="header">
+    <h1><i class="fas fa-history"></i> Historial de Entregas</h1>
+    <p>Revisa tu historial de entregas completadas</p>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-grid" *ngIf="!loading && historial.length > 0">
+    <div class="stat-card">
+      <div class="stat-icon success">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ getTotalEntregas() }}</h3>
+        <p>Entregas Completadas</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon danger">
+        <i class="fas fa-times-circle"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ getTotalCanceladas() }}</h3>
+        <p>Entregas Canceladas</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon primary">
+        <i class="fas fa-money-bill-wave"></i>
+      </div>
+      <div class="stat-info">
+        <h3>S/ {{ getTotalIngresos().toFixed(2) }}</h3>
+        <p>Total Entregado</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-section" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando historial de entregas...</p>
+  </div>
+
+  <div class="error-section" *ngIf="error && !loading">
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ error }}
+    </div>
+    <button class="btn btn-primary" (click)="cargarHistorial()">
+      <i class="fas fa-redo"></i> Reintentar
+    </button>
+  </div>
+
+  <div class="filtros" *ngIf="!loading && historial.length > 0">
+    <label>Filtrar por estado:</label>
+    <select [(ngModel)]="filtroEstado">
+      <option value="todos">Todos los estados</option>
+      <option value="pagado">Pagados</option>
+      <option value="cancelado">Cancelados</option>
+    </select>
+  </div>
+
+  <div class="historial-list" *ngIf="!loading && !error">
+    <div class="historial-card" *ngFor="let entrega of historialFiltrado" (click)="verDetalleVenta(entrega.id_venta)">
+      <div class="historial-header">
+        <div class="historial-info">
+          <h3>Entrega #{{ entrega.id_venta }}</h3>
+          <span class="badge" [ngClass]="getEstadoBadgeClass(entrega.estado)">
+            {{ entrega.estado }}
+          </span>
+        </div>
+        <div class="historial-fecha">
+          <small>{{ entrega.fecha }} {{ entrega.hora }}</small>
+        </div>
+      </div>
+
+      <div class="historial-body">
+        <div class="cliente-info">
+          <h4>{{ entrega.nombre_completo }}</h4>
+          <p *ngIf="entrega.razon_social"><strong>Razón Social:</strong> {{ entrega.razon_social }}</p>
+          <p><i class="fas fa-map-marker-alt"></i> {{ entrega.direccion }}</p>
+        </div>
+
+        <div class="historial-details">
+          <p><strong>Total:</strong> S/ {{ entrega.total }}</p>
+          <p><strong>Método de pago:</strong> {{ entrega.metodo_pago }}</p>
+          <p *ngIf="entrega.notas"><strong>Notas:</strong> {{ entrega.notas }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="historialFiltrado.length === 0">
+      <i class="fas fa-search fa-3x"></i>
+      <h3>No hay resultados</h3>
+      <p>No se encontraron entregas con el filtro seleccionado.</p>
+    </div>
+  </div>
+</div>

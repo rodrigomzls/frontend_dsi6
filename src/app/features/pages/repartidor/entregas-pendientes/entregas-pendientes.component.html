@@ -1,0 +1,72 @@
+<!-- src/app/features/pages/repartidor/entregas-pendientes/entregas-pendientes.component.html -->
+<div class="repartidor-container">
+  <div class="header">
+    <h1><i class="fas fa-truck-loading"></i> Entregas Pendientes</h1>
+    <p>Gestiona tus entregas en curso</p>
+  </div>
+
+  <div class="loading-section" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando entregas pendientes...</p>
+  </div>
+
+  <div class="error-section" *ngIf="error && !loading">
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ error }}
+    </div>
+    <button class="btn btn-primary" (click)="cargarEntregasPendientes()">
+      <i class="fas fa-redo"></i> Reintentar
+    </button>
+  </div>
+
+  <div class="entregas-list" *ngIf="!loading && !error">
+    <div class="entrega-card" *ngFor="let entrega of entregas">
+      <div class="entrega-header">
+        <div class="entrega-info">
+          <h3>Entrega #{{ entrega.id_venta }}</h3>
+          <span class="badge badge-warning">{{ entrega.estado }}</span>
+        </div>
+        <div class="entrega-fecha">
+          <small>{{ entrega.fecha }} {{ entrega.hora }}</small>
+        </div>
+      </div>
+
+      <div class="entrega-body">
+        <div class="cliente-info">
+          <h4>{{ entrega.nombre_completo }}</h4>
+          <p *ngIf="entrega.razon_social"><strong>Razón Social:</strong> {{ entrega.razon_social }}</p>
+          <p><i class="fas fa-phone"></i> {{ entrega.telefono }}</p>
+          <p><i class="fas fa-map-marker-alt"></i> {{ entrega.direccion }}</p>
+          <p *ngIf="entrega.notas"><strong>Notas:</strong> {{ entrega.notas }}</p>
+        </div>
+
+        <div class="entrega-details">
+          <p><strong>Total a cobrar:</strong> S/ {{ entrega.total }}</p>
+          <p><strong>Método de pago:</strong> {{ entrega.metodo_pago }}</p>
+        </div>
+      </div>
+
+      <div class="entrega-actions">
+        <button class="btn btn-success" (click)="marcarComoEntregado(entrega.id_venta)">
+          <i class="fas fa-check-circle"></i> Marcar como Pagado
+        </button>
+        <button class="btn btn-danger" (click)="marcarComoCancelado(entrega.id_venta)">
+          <i class="fas fa-times-circle"></i> Cancelar Entrega
+        </button>
+        <button class="btn btn-info" (click)="abrirMapa(entrega.direccion, entrega.coordenadas)">
+          <i class="fas fa-map"></i> Ver en Mapa
+        </button>
+        <button class="btn btn-secondary" (click)="verDetalleVenta(entrega.id_venta)">
+          <i class="fas fa-eye"></i> Ver Detalles
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="entregas.length === 0">
+      <i class="fas fa-check-circle fa-3x"></i>
+      <h3>No hay entregas pendientes</h3>
+      <p>¡Excelente trabajo! No tienes entregas pendientes en este momento.</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,60 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.checkbox-container {
+  margin-bottom: 20px;
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.section-divider {
+  margin: 30px 0;
+}
+
+.list-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.status-text {
+  color: #666;
+}
+
+.status-text.active {
+  color: #4caf50;
+}
+
+mat-list-item {
+  margin-bottom: 8px;
+}
+
+button[mat-stroked-button] {
+  margin-top: 20px;
+}
+
+/* Material Button Styles */
+button[mat-raised-button],
+button[mat-stroked-button] {
+  min-width: 120px;
+}
+
+button[mat-raised-button]:disabled,
+button[mat-stroked-button]:disabled {
+  opacity: 0.7;
+}

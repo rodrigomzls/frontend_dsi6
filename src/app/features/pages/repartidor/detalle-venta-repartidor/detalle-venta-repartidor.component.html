@@ -1,0 +1,160 @@
+<!-- src/app/features/pages/repartidor/detalle-venta-repartidor/detalle-venta-repartidor.component.html -->
+<div class="repartidor-container">
+  <!-- Header con navegación -->
+  <div class="header">
+    <div class="header-nav">
+      <button class="btn btn-secondary" (click)="volverAtras()">
+        <i class="fas fa-arrow-left"></i> Volver
+      </button>
+      <h1><i class="fas fa-file-invoice"></i> Detalle de Entrega</h1>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-section" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando detalles de la entrega...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-section" *ngIf="error && !loading">
+    <div class="alert alert-error">
+      <i class="fas fa-exclamation-triangle"></i>
+      {{ error }}
+    </div>
+    <button class="btn btn-primary" (click)="volverAtras()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+  </div>
+
+  <!-- Detalles de la venta -->
+  <div class="detalle-venta" *ngIf="venta && !loading">
+    <!-- Información General -->
+    <div class="seccion">
+      <h2><i class="fas fa-info-circle"></i> Información General</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <label>ID de Venta:</label>
+          <span class="valor-destacado">#{{ venta.id_venta }}</span>
+        </div>
+        <div class="info-item">
+          <label>Estado:</label>
+          <span class="badge" [ngClass]="getEstadoBadgeClass(venta.estado)">
+            {{ venta.estado }}
+          </span>
+        </div>
+        <div class="info-item">
+          <label>Fecha:</label>
+          <span>{{ formatearFecha(venta.fecha) }}</span>
+        </div>
+        <div class="info-item">
+          <label>Hora:</label>
+          <span>{{ formatearHora(venta.hora) }}</span>
+        </div>
+        <div class="info-item">
+          <label>Método de Pago:</label>
+          <span>{{ venta.metodo_pago }}</span>
+        </div>
+        <div class="info-item">
+          <label>Total a Cobrar:</label>
+          <span class="valor-destacado">S/ {{ venta.total }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Cliente -->
+    <div class="seccion">
+      <h2><i class="fas fa-user"></i> Información del Cliente</h2>
+      <div class="cliente-info">
+        <div class="info-item">
+          <label>Nombre:</label>
+          <span>{{ venta.nombre_completo }}</span>
+        </div>
+        <div class="info-item" *ngIf="venta.razon_social">
+          <label>Razón Social:</label>
+          <span>{{ venta.razon_social }}</span>
+        </div>
+        <div class="info-item">
+          <label>Teléfono:</label>
+          <span><i class="fas fa-phone"></i> {{ venta.telefono }}</span>
+        </div>
+        <div class="info-item">
+          <label>Dirección:</label>
+          <span><i class="fas fa-map-marker-alt"></i> {{ venta.direccion }}</span>
+        </div>
+        <div class="info-item" *ngIf="venta.notas">
+          <label>Notas:</label>
+          <span class="notas">{{ venta.notas }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles de Productos -->
+    <div class="seccion" *ngIf="venta.detalles && venta.detalles.length > 0">
+      <h2><i class="fas fa-boxes"></i> Productos a Entregar</h2>
+      <div class="productos-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let detalle of venta.detalles">
+              <td>{{ detalle.producto_nombre || 'Producto' }}</td>
+              <td>{{ detalle.cantidad }}</td>
+              <td>S/ {{ detalle.precio_unitario }}</td>
+              <td>S/ {{ detalle.subtotal || (detalle.cantidad * detalle.precio_unitario) }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="total-label"><strong>Total:</strong></td>
+              <td class="total-amount"><strong>S/ {{ venta.total }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Acciones del Repartidor -->
+    <div class="seccion" *ngIf="venta.id_estado_venta === 5">
+      <h2><i class="fas fa-tasks"></i> Acciones</h2>
+      <div class="acciones-grid">
+        <button class="btn btn-success btn-lg" (click)="marcarComoPagado()">
+          <i class="fas fa-check-circle"></i> Marcar como Pagado
+        </button>
+        <button class="btn btn-danger btn-lg" (click)="marcarComoCancelado()">
+          <i class="fas fa-times-circle"></i> Cancelar Entrega
+        </button>
+        <button class="btn btn-info btn-lg" (click)="abrirMapa()">
+          <i class="fas fa-map"></i> Ver en Mapa
+        </button>
+      </div>
+    </div>
+
+    <!-- Información de entrega completada -->
+    <div class="seccion" *ngIf="venta.id_estado_venta === 7">
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <strong>Entrega Completada</strong>
+        <p>Esta entrega fue marcada como pagada y completada.</p>
+      </div>
+      <button class="btn btn-info" (click)="abrirMapa()">
+        <i class="fas fa-map"></i> Ver Ubicación en Mapa
+      </button>
+    </div>
+
+    <!-- Información de entrega cancelada -->
+    <div class="seccion" *ngIf="venta.id_estado_venta === 8">
+      <div class="alert alert-danger">
+        <i class="fas fa-times-circle"></i>
+        <strong>Entrega Cancelada</strong>
+        <p *ngIf="venta.notas"><strong>Motivo:</strong> {{ venta.notas }}</p>
+      </div>
+    </div>
+  </div>
+</div>

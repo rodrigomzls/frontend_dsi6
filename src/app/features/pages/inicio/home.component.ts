@@ -48,8 +48,9 @@ export class HomeComponent implements OnInit {
                 ];
                 break;
               case 4: // Almacenero
-                this.modulosPermitidos = [
-                  'inventario', 'productos', 'inventario_movimiento', 'inventario_reportes'
+                  this.modulosPermitidos = [
+                  'inventario', 'productos', 'inventario_movimiento', 'inventario_reportes',
+                  'lotes', 'proveedores', 'pedido_proveedor', 'categorias', 'marcas'
                 ];
                 break;
               default:
@@ -137,19 +138,19 @@ goToRutas() {
   // Módulos específicos del Repartidor
    goToRutasAsignadas() {
     if (this.tieneAcceso('rutas_asignadas')) {
-      this.router.navigate(['/rutas/asignadas']);
+      this.router.navigate(['/repartidor/rutas-asignadas']);
     }
   }
 
   goToEntregas() {
-    if (this.tieneAcceso('entregas')) {
-      this.router.navigate(['/entregas']);
+    if (this.tieneAcceso('entregas_pendientes')) {
+      this.router.navigate(['/repartidor/entregas-pendientes']);
     }
   }
 
    verHistorialEntregas() {
     if (this.tieneAcceso('historial_entregas')) {
-      this.router.navigate(['/entregas/historial']);
+      this.router.navigate(['/repartidor/historial-entregas']);
     }
   }
 
@@ -168,6 +169,37 @@ goToRutas() {
       verReportes() {
     if (this.tieneAcceso('inventario_reportes')) {
       this.router.navigate(['/inventario/reportes']);
+    }
+  }
+
+  // Nuevos métodos para módulos de almacenero
+  goToLotes() {
+    if (this.tieneAcceso('lotes')) {
+      this.router.navigate(['/lotes']);
+    }
+  }
+
+  goToProveedores() {
+    if (this.tieneAcceso('proveedores')) {
+      this.router.navigate(['/proveedores']);
+    }
+  }
+
+  goPedidosProveedor() {
+    if (this.tieneAcceso('pedido_proveedor')) {
+      this.router.navigate(['/pedidos-proveedor']);
+    }
+  }
+
+  goCategorias() {
+    if (this.tieneAcceso('categorias')) {
+      this.router.navigate(['/categorias']);
+    }
+  }
+
+  goMarcas() {
+    if (this.tieneAcceso('marcas')) {
+      this.router.navigate(['/marcas']);
     }
   }
  

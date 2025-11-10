@@ -61,9 +61,11 @@ private checkAccessByRole(modulo: string, user: Usuario): boolean {
     case 2: // Vendedor
       return ['clientes', 'productos', 'ventas_nueva', 'ventas','ventas_asignacion_rutas'].includes(modulo);
     case 3: // Repartidor
-      return ['rutas_asignadas', 'entregas', 'historial_entregas'].includes(modulo);
-    case 4: // Almacenero
-      return ['inventario', 'productos', 'inventario_movimiento', 'inventario_reportes'].includes(modulo);
+      return ['rutas_asignadas', 'entregas_pendientes', 'historial_entregas'].includes(modulo);
+   case 4: // Almacenero
+      // Añadimos módulos específicos de almacén: lotes, proveedores, pedidos a proveedor, categorías y marcas
+      return ['inventario', 'productos', 'inventario_movimiento', 'inventario_reportes',
+          'lotes', 'proveedores', 'pedido_proveedor', 'categorias', 'marcas'].includes(modulo);
     default:
       return false;
   }
