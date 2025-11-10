@@ -122,18 +122,32 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
+  <!-- 🟡 1. BOTÓN LIMPIAR -->
+  <button 
+    mat-raised-button 
+    class="limpiar-button" 
+    type="button" 
+    (click)="onLimpiar()">
+    <mat-icon>refresh</mat-icon>
+    Limpiar
+  </button>
+
+  <!-- 🔵 2. BOTÓN GUARDAR -->
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="productForm.invalid || isLoading || !isFormReady()"
+    class="submit-button"
+  >
+    <mat-icon>{{ isEditMode ? 'save' : 'check' }}</mat-icon>
+    {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+  </button>
+
+  <!-- ⚫ 3. BOTÓN CANCELAR -->
   <button mat-button (click)="onCancel()" class="cancel-button">
     <mat-icon>close</mat-icon>
     Cancelar
   </button>
-<button
-  mat-raised-button
-  color="primary"
-  (click)="onSubmit()"
-  [disabled]="productForm.invalid || isLoading || !isFormReady()"
-  class="submit-button"
->
-  <mat-icon>{{ isEditMode ? 'save' : 'check' }}</mat-icon>
-  {{ isEditMode ? 'Actualizar' : 'Guardar' }}
-</button>
 </mat-dialog-actions>
+

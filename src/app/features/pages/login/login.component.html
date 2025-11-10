@@ -1,58 +1,93 @@
-<div class="login-container">
+<div class="login-page">
+  <!-- Fondo con efecto de agua -->
+  <div class="water-effect"></div>
+  
+  <!-- Contenedor principal flotante -->
+  <div class="floating-container">
+    <!-- Tarjeta de login flotante -->
+    <div class="login-box">
+      <!-- Logo y título -->
+      <div class="login-header">
+        <img src="../../../../assets/logo.png" alt="Viña Agua Mineral" class="logo" />
 
-  <div class="card">
-    <div class="card-header">
-      <img src="../../../../assets/company-logo.png" class="logo" />
-      
-    </div>
-
-    <form (ngSubmit)="onSubmit()" *ngIf="!loading" class="login-form">
-      <div class="form-group">
-        <label for="username">USUARIO</label>
-        <input
-          type="text"
-          id="username"
-          [(ngModel)]="credentials.nombre_usuario"
-          name="username"
-          required
-          placeholder="Ingresa tu usuario"
-          [disabled]="loading"
-          autocomplete="username"
-        />
+        <h1></h1>
       </div>
 
-      <div class="form-group">
-        <label for="password">CONTRASEÑA</label>
-        <input
-          type="password"
-          id="password"
-          [(ngModel)]="credentials.password"
-          name="password"
-          required
-          placeholder="Ingresa tu contraseña"
-          [disabled]="loading"
-          autocomplete="current-password"
-        />
+      <!-- Formulario de login -->
+      <form (ngSubmit)="onSubmit()" *ngIf="!loading" class="login-form">
+        <div class="form-group">
+          <div class="input-floating">
+            <input
+              type="text"
+              id="username"
+              [(ngModel)]="credentials.nombre_usuario"
+              name="username"
+              required
+              [disabled]="loading"
+              autocomplete="username"
+              placeholder=" "
+            />
+            <label for="username">USUARIO</label>
+            <i class="fas fa-user"></i>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="input-floating">
+            <input
+              type="password"
+              id="password"
+              [(ngModel)]="credentials.password"
+              name="password"
+              required
+              [disabled]="loading"
+              autocomplete="current-password"
+              placeholder=" "
+            />
+            <label for="password">CONTRASEÑA</label>
+            <i class="fas fa-lock"></i>
+          </div>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div *ngIf="error" class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ error }}
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="loading">
+          <span class="button-content">
+            <i class="fas fa-sign-in-alt"></i>
+            {{ loading ? 'INICIANDO SESIÓN...' : 'INICIAR SESIÓN' }}
+          </span>
+        </button>
+      </form>
+
+      <!-- Loader -->
+      <div *ngIf="loading" class="loading-container">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <p>Verificando credenciales...</p>
       </div>
 
-      <button type="submit" class="btn-primary" [disabled]="loading">
-        {{ loading ? 'INICIANDO SESIÓN...' : 'INICIAR SESIÓN' }}
-      </button>
-    </form>
-
-    <div class="help-links" style="margin-top:12px;">
-  <p style="color:#d9f9ff; font-size:0.95rem;">
-    ¿No tienes cuenta?
-    <a routerLink="/register" class="link-register">Crear cuenta</a>
-  </p>
-</div>
-
-    <div *ngIf="loading" class="loading">
-      <p>Verificando credenciales...</p>
-    </div>
-
-    <div *ngIf="error" class="error-message">
-      {{ error }}
+      <!-- Enlaces y soporte -->
+      <div class="footer-links">
+        <div class="register-link">
+        </div>
+        
+        <div class="support-section">
+          <div class="support-icon">
+            <i class="fas fa-headset"></i>
+          </div>
+          <div class="support-info">
+            <span class="support-label">Soporte Técnico</span>
+            <a href="tel:950879855" class="support-phone">
+              <i class="fas fa-phone"></i> 950 879 855
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

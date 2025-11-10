@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -32,12 +33,15 @@ import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confi
     MatDialogModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatSelectModule
   ],
   templateUrl: './producto-list.component.html',
-  styleUrl: './producto-list.component.css',
+  styleUrls: ['./producto-list.component.css'],
+
 })
 export class ProductoListComponent implements OnInit {
+  pageSize = 10; // Default page size
   displayedColumns: string[] = [
     'nombre',
     'descripcion',
@@ -69,38 +73,48 @@ export class ProductoListComponent implements OnInit {
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+  this.dataSource.paginator = this.paginator;
+  this.dataSource.sort = this.sort;
+
   }
 
   loadProductsWithDetails(): void {
-    this.isLoading = true;
-    this.productService.getProductsWithDetails().subscribe({
-      next: (productsWithDetails) => {
-        console.log('Productos con detalles:', productsWithDetails); 
-        this.dataSource.data = productsWithDetails;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading products with details:', error);
-        this.isLoading = false;
-        this.loadProducts();
-      }
-    });
-  }
+  this.isLoading = true;
+  this.productService.getProductsWithDetails().subscribe({
+    next: (productsWithDetails) => {
+      console.log('Productos con detalles:', productsWithDetails); 
+      this.dataSource = new MatTableDataSource(productsWithDetails);
+
+      // 🔧 Aseguramos que el paginador y el sort se asignen correctamente
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+
+      this.isLoading = false;
+    },
+    error: (error) => {
+      console.error('Error loading products with details:', error);
+      this.isLoading = false;
+      this.loadProducts();
+    }
+  });
+}
+
 
   loadProducts(): void {
-    this.productService.getProducts().subscribe({
-      next: (products) => {
-        this.dataSource.data = products;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading products:', error);
-        this.isLoading = false;
-      }
-    });
-  }
+  this.productService.getProducts().subscribe({
+    next: (products) => {
+      this.dataSource = new MatTableDataSource(products);
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+      this.isLoading = false;
+    },
+    error: (error) => {
+      console.error('Error loading products:', error);
+      this.isLoading = false;
+    }
+  });
+}
+
 
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;

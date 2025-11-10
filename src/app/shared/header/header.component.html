@@ -1,21 +1,85 @@
 <header class="header">
   <!-- Logo clickeable -->
-  <div class="logo" (click)="irAlInicio()">
+  <div class="logo" (click)="nuevaVenta()">
     <img src="../../../assets/company-logo.png" alt="Logo Viña" class="logo-img">
     <span class="logo-text">Viña</span>
   </div>
 
   <!-- Navegación -->
-  <nav class="nav-links">
-    
+  <nav class="nav-links" *ngIf="isLoggedIn">
+    <!-- Ventas -->
+    <button mat-button [matMenuTriggerFor]="ventasMenu" *ngIf="tieneAccesoAVentas()">
+      <mat-icon>point_of_sale</mat-icon>
+      Ventas
+    </button>
+    <mat-menu #ventasMenu="matMenu">
+      <button mat-menu-item *ngIf="tieneAcceso('ventas_nueva')" (click)="nuevaVenta()">
+        <mat-icon>add_shopping_cart</mat-icon>
+        Nueva Venta
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('ventas')" (click)="goToVentas()">
+        <mat-icon>receipt_long</mat-icon>
+        Panel de Ventas
+      </button>
+    </mat-menu>
+
+    <!-- Productos -->
+    <button mat-button *ngIf="tieneAcceso('productos')" (click)="goToProductos()">
+      <mat-icon>inventory_2</mat-icon>
+      Productos
+    </button>
+
+    <!-- Gestión -->
+    <button mat-button [matMenuTriggerFor]="gestionMenu" *ngIf="tieneAccesoAGestion()">
+      <mat-icon>manage_accounts</mat-icon>
+      Gestión
+    </button>
+    <mat-menu #gestionMenu="matMenu">
+      <button mat-menu-item *ngIf="tieneAcceso('usuarios')" (click)="goToUsuarios()">
+        <mat-icon>people</mat-icon>
+        Gestión de Usuarios
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('personas')" (click)="goToPersonas()">
+        <mat-icon>person</mat-icon>
+        Gestión de Personas
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('clientes')" (click)="goToClientes()">
+        <mat-icon>groups</mat-icon>
+        Gestión de Clientes
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('repartidores')" (click)="goToRepartidores()">
+        <mat-icon>local_shipping</mat-icon>
+        Gestión de Repartidores
+      </button>
+    </mat-menu>
+
+    <!-- Rutas -->
+    <button mat-button [matMenuTriggerFor]="rutasMenu" *ngIf="tieneAccesoARutas()">
+      <mat-icon>route</mat-icon>
+      Rutas
+    </button>
+    <mat-menu #rutasMenu="matMenu">
+      <button mat-menu-item *ngIf="tieneAcceso('ventas_asignacion_rutas')" (click)="goToRutas()">
+        <mat-icon>add_road</mat-icon>
+        Asignación de Rutas
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('rutas_asignadas')" (click)="goToRutasAsignadas()">
+        <mat-icon>map</mat-icon>
+        Mis Rutas
+      </button>
+    </mat-menu>
   </nav>
 
   <!-- Lado derecho -->
   <div class="user-actions" *ngIf="isLoggedIn">
-    <span class="user-name">{{ nombreUsuario }}👋</span>
-    <button mat-button (click)="logout()">
+    <button mat-button class="user-btn">
+      <mat-icon>account_circle</mat-icon>
+      {{ nombreUsuario }}
+    </button>
+
+    <button mat-flat-button color="warn" class="logout-btn" (click)="logout()">
       <mat-icon>logout</mat-icon>
-      Cerrar Sesión
+      Cerrar sesión
     </button>
   </div>
 </header>

@@ -9,7 +9,13 @@ import localeEsPe from '@angular/common/locales/es-PE';
 import { registerLocaleData } from '@angular/common';
 
 import { routes } from './app.routes';
-import { authInterceptor } from './interceptors/auth.interceptor'; // ✅ Solo este
+import { authInterceptor } from './interceptors/auth.interceptor';
+
+// Importaciones de Material
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
 
 registerLocaleData(localeEsPe, 'es-PE');
@@ -20,10 +26,14 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authInterceptor]) // ✅ Solo un interceptor
+      withInterceptors([authInterceptor])
     ),
-      provideAnimations(),
-    // Agregar proveedores de Material
+    provideAnimations(),
+    // Proveedores de Material
+    MatToolbarModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatIconModule,
     MatDialogModule
   ]
 };

@@ -35,7 +35,22 @@ export class LoginComponent {
     this.authService.login(this.credentials.nombre_usuario, this.credentials.password)
       .subscribe({
         next: () => {
-          this.router.navigate(['/inicio']);
+          // Si el usuario tiene acceso a crear nueva venta, redirigir directamente
+          try {
+            const canNewSale = this.authService.hasModuleAccess
+              ? this.authService.hasModuleAccess('ventas_nueva')
+              : false;
+
+            if (canNewSale) {
+              this.router.navigate(['/ventas/nueva']);
+            } else {
+              // fallback: ir al inicio
+              this.router.navigate(['/inicio']);
+            }
+          } catch (err) {
+            console.warn('No se pudo comprobar permisos, redirigiendo a inicio', err);
+            this.router.navigate(['/inicio']);
+          }
         },
         error: (error) => {
           this.error = error.error?.error || 'Error al iniciar sesión';

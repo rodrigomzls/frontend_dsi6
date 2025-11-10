@@ -52,118 +52,87 @@ export class ProductoFormComponent implements OnInit {
     this.productForm = this.createForm();
   }
 
- ngOnInit(): void {
-  this.loadData();
-  
-  // No establecer isEditMode inmediatamente, esperar a que los datos estén listos
-  if (this.data?.product) {
-    this.isEditMode = true;
-    // La carga del formulario ahora se hace en loadData después de cargar las listas
-  }
-}
+  ngOnInit(): void {
+    this.loadData();
 
-isFormReady(): boolean {
-  if (this.isEditMode) {
-    // Verificar que todos los campos requeridos tengan valores
-    const values = this.productForm.value;
-    return !!(
-      values.nombre &&
-      values.descripcion &&
-      values.precio &&
-      values.stock !== null &&
-      values.categoriaId &&
-      values.marcaId &&
-      values.proveedorId &&
-      values.paisOrigenId
-    );
+    if (this.data?.product) {
+      this.isEditMode = true;
+    }
   }
-  return true;
-}
+
+  isFormReady(): boolean {
+    if (this.isEditMode) {
+      const values = this.productForm.value;
+      return !!(
+        values.nombre &&
+        values.descripcion &&
+        values.precio &&
+        values.stock !== null &&
+        values.categoriaId &&
+        values.marcaId &&
+        values.proveedorId &&
+        values.paisOrigenId
+      );
+    }
+    return true;
+  }
 
   private createForm(): FormGroup {
-  return this.fb.group({
-    nombre: ['', [Validators.required, Validators.minLength(2)]],
-    descripcion: ['', [Validators.required, Validators.minLength(3)]], // Cambiado de 5 a 3
-    precio: ['', [Validators.required, Validators.min(0.01)]],
-    stock: ['', [Validators.required, Validators.min(0)]],
-    categoriaId: ['', Validators.required],
-    marcaId: ['', Validators.required],
-    proveedorId: ['', Validators.required],
-    paisOrigenId: ['', Validators.required],
-  });
-}
+    return this.fb.group({
+      nombre: ['', [Validators.required, Validators.minLength(2)]],
+      descripcion: ['', [Validators.required, Validators.minLength(3)]],
+      precio: ['', [Validators.required, Validators.min(0.01)]],
+      stock: ['', [Validators.required, Validators.min(0)]],
+      categoriaId: ['', Validators.required],
+      marcaId: ['', Validators.required],
+      proveedorId: ['', Validators.required],
+      paisOrigenId: ['', Validators.required],
+    });
+  }
 
-private loadFormData(product: Product): void {
-  console.log('Cargando datos del producto:', product);
-  console.log('Estado del formulario antes de patch:', this.productForm.valid);
-  
-  // Debug: verificar el estado de cada campo antes
-  Object.keys(this.productForm.controls).forEach(key => {
-    const control = this.productForm.get(key);
-    console.log(`Campo ${key}:`, {
-      value: control?.value,
-      valid: control?.valid,
-      errors: control?.errors,
-      touched: control?.touched
-    });
-  });
-  
-  setTimeout(() => {
-    this.productForm.patchValue({
-      nombre: product.nombre || '',
-      descripcion: product.descripcion || '',
-      precio: product.precio || 0,
-      stock: product.stock || 0,
-      categoriaId: product.categoriaId || '',
-      marcaId: product.marcaId || '',
-      proveedorId: product.proveedorId || '',
-      paisOrigenId: product.paisOrigenId || '',
-    });
-    
-    console.log('Estado del formulario después de patch:', this.productForm.valid);
-    console.log('Valores del formulario:', this.productForm.value);
-    
-    // Debug: verificar el estado de cada campo después del patch
-    Object.keys(this.productForm.controls).forEach(key => {
-      const control = this.productForm.get(key);
-      console.log(`Campo ${key} después de patch:`, {
-        value: control?.value,
-        valid: control?.valid,
-        errors: control?.errors
+  private loadFormData(product: Product): void {
+    setTimeout(() => {
+      this.productForm.patchValue({
+        nombre: product.nombre || '',
+        descripcion: product.descripcion || '',
+        precio: product.precio || 0,
+        stock: product.stock || 0,
+        categoriaId: product.categoriaId || '',
+        marcaId: product.marcaId || '',
+        proveedorId: product.proveedorId || '',
+        paisOrigenId: product.paisOrigenId || '',
       });
-    });
-    
-    this.productForm.updateValueAndValidity();
-  }, 0);
-}
-private loadData(): void {
-  this.isLoading = true;
+      this.productForm.updateValueAndValidity();
+    }, 0);
+  }
 
-  forkJoin({
-    categorias: this.productService.getCategorias(),
-    marcas: this.productService.getMarcas(),
-    proveedores: this.productService.getProveedores(),
-    paises: this.productService.getPaises()
-  }).subscribe({
-    next: (data) => {
-      this.categorias = data.categorias;
-      this.marcas = data.marcas;
-      this.proveedores = data.proveedores;
-      this.paises = data.paises;
-      this.isLoading = false;
+  private loadData(): void {
+    this.isLoading = true;
 
-      // Solo cargar los datos del producto después de que las listas estén disponibles
-      if (this.data?.product) {
-        this.loadFormData(this.data.product);
+    forkJoin({
+      categorias: this.productService.getCategorias(),
+      marcas: this.productService.getMarcas(),
+      proveedores: this.productService.getProveedores(),
+      paises: this.productService.getPaises()
+    }).subscribe({
+      next: (data) => {
+        this.categorias = data.categorias;
+        this.marcas = data.marcas;
+        this.proveedores = data.proveedores;
+        this.paises = data.paises;
+        this.isLoading = false;
+
+        if (this.data?.product) {
+          this.loadFormData(this.data.product);
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando datos:', err);
+        this.isLoading = false;
+        this.showMessage('Error al cargar los datos del formulario', 'error');
       }
-    },
-    error: (err) => {
-      console.error('Error cargando datos:', err);
-      this.isLoading = false;
-      this.showMessage('Error al cargar los datos del formulario', 'error');
-    }
-  });
-}
+    });
+  }
 
   private showMessage(message: string, type: 'success' | 'error' | 'warn'): void {
     this.snackBar.open(message, 'Cerrar', {
@@ -215,5 +184,10 @@ private loadData(): void {
 
   onCancel(): void {
     this.dialogRef.close(false);
+  }
+
+  // ✅ MÉTODO LIMPIAR AGREGADO CORRECTAMENTE
+  onLimpiar(): void {
+    this.productForm.reset();
   }
 }

@@ -1,124 +1,132 @@
-<div class="container">
+<div class="product-container">
+  <!-- Encabezado -->
   <div class="header">
-    <h2>Gestión de Productos</h2>
+    <h2>Modificar Productos</h2>
     <button mat-raised-button color="primary" (click)="openAddDialog()">
-      <mat-icon>add</mat-icon>
-      Agregar Producto
+      <mat-icon>add</mat-icon> Nuevo Producto
     </button>
   </div>
 
-  <div class="filter-container">
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Filtrar</mat-label>
-      <input
-        matInput
-        (keyup)="applyFilter($event)"
-        placeholder="Buscar por nombre, SKU, categoría..."
-      />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-  </div>
-
-  <div class="table-container">
-    <div class="loading-shade" *ngIf="isLoading">
-      <mat-spinner diameter="50"></mat-spinner>
-      <p>Cargando datos...</p>
+  <!-- Filtros -->
+  <div class="filter-bar">
+    <div class="filter-left">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Buscar producto...</mat-label>
+        <input
+          matInput
+          (keyup)="applyFilter($event)"
+          placeholder="Nombre, categoría, marca, proveedor..."
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
     </div>
 
+    <div class="filter-right">
+      <mat-form-field appearance="outline" class="page-size-field">
+        <mat-label>Mostrar</mat-label>
+        <mat-select
+          [(value)]="pageSize"
+          (selectionChange)="paginator.pageSize = $event.value"
+        >
+          <mat-option [value]="5">5</mat-option>
+          <mat-option [value]="10">10</mat-option>
+          <mat-option [value]="20">20</mat-option>
+          <mat-option [value]="30">30</mat-option>
+          <mat-option [value]="50">50</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <span class="total-count">de {{ dataSource.data.length }} productos</span>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-card">
     <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-      <!-- Nombre Column -->
+      <!-- Nº Orden -->
+      <ng-container matColumnDef="numero">
+        <th mat-header-cell *matHeaderCellDef>#</th>
+        <td mat-cell *matCellDef="let product; let i = index">
+          {{ paginator.pageIndex * paginator.pageSize + i + 1 }}
+        </td>
+      </ng-container>
+
+      <!-- Nombre -->
       <ng-container matColumnDef="nombre">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
         <td mat-cell *matCellDef="let product">{{ product.nombre }}</td>
       </ng-container>
 
-      <!-- Descripción Column -->
+      <!-- Descripción -->
       <ng-container matColumnDef="descripcion">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Descripción</th>
         <td mat-cell *matCellDef="let product">{{ product.descripcion }}</td>
       </ng-container>
 
-        <!-- SKU Column -->
-        <ng-container matColumnDef="sku">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>SKU</th>
-          <td mat-cell *matCellDef="let product">{{ product.sku }}</td>
-        </ng-container>
-
-      <!-- Precio Column -->
+      <!-- Precio -->
       <ng-container matColumnDef="precio">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Precio</th>
-        <td mat-cell *matCellDef="let product">{{ product.precio | currency:'PEN': 'symbol':'1.2-2'}}</td>
+        <td mat-cell *matCellDef="let product">
+          {{ product.precio | currency:'PEN':'symbol':'1.2-2' }}
+        </td>
       </ng-container>
 
-      <!-- Stock Column -->
+      <!-- Stock -->
       <ng-container matColumnDef="stock">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Stock</th>
         <td mat-cell *matCellDef="let product">{{ product.stock }}</td>
       </ng-container>
 
-     <!-- Categoría Column -->
-<ng-container matColumnDef="categoria">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoría</th>
-  <td mat-cell *matCellDef="let product">
-    <span class="chip">{{ product.categoriaNombre || 'Cargando...' }}</span>
-  </td>
-</ng-container>
+      <!-- Categoría -->
+      <ng-container matColumnDef="categoria">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoría</th>
+        <td mat-cell *matCellDef="let product">{{ product.categoriaNombre }}</td>
+      </ng-container>
 
-<!-- Marca Column -->
-<ng-container matColumnDef="marca">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>Marca</th>
-  <td mat-cell *matCellDef="let product">
-    <span class="chip">{{ product.marcaNombre || 'Cargando...' }}</span>
-  </td>
-</ng-container>
+      <!-- Marca -->
+      <ng-container matColumnDef="marca">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Marca</th>
+        <td mat-cell *matCellDef="let product">{{ product.marcaNombre }}</td>
+      </ng-container>
 
-<!-- Proveedor Column -->
-<ng-container matColumnDef="proveedor">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>Proveedor</th>
-  <td mat-cell *matCellDef="let product">
-    <span class="chip">{{ product.proveedorNombre || 'Cargando...' }}</span>
-  </td>
-</ng-container>
+      <!-- Proveedor -->
+      <ng-container matColumnDef="proveedor">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Proveedor</th>
+        <td mat-cell *matCellDef="let product">{{ product.proveedorNombre }}</td>
+      </ng-container>
 
-<!-- País de Origen Column -->
-<ng-container matColumnDef="paisOrigen">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>País Origen</th>
-  <td mat-cell *matCellDef="let product">
-    <span class="chip">{{ product.paisOrigenNombre || 'Cargando...' }}</span>
-  </td>
-</ng-container>
-      <!-- Acciones Column -->
+      <!-- País -->
+      <ng-container matColumnDef="paisOrigen">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>País</th>
+        <td mat-cell *matCellDef="let product">{{ product.paisOrigenNombre }}</td>
+      </ng-container>
+
+      <!-- Acciones -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef class="actions-header">Acciones</th>
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let product">
           <div class="actions-container">
-            <!-- Botón de Editar -->
-            <button
-              mat-icon-button
-              color="primary"
-              (click)="openEditDialog(product)"
-              matTooltip="Editar"
-            >
+            <button mat-icon-button color="primary" (click)="openEditDialog(product)" matTooltip="Editar">
               <mat-icon>edit</mat-icon>
             </button>
-
-            <!-- Botón de Eliminar -->
-            <button
-              mat-icon-button
-              color="warn"
-              (click)="deleteProduct(product)"
-              matTooltip="Eliminar"
-            >
+            <button mat-icon-button color="warn" (click)="deleteProduct(product)" matTooltip="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
         </td>
       </ng-container>
 
+      <!-- Filas -->
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
 
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+    <!-- PAGINADOR SOLO BOTONES -->
+    <mat-paginator
+      #paginator
+      [length]="dataSource.data.length"
+      [pageSize]="pageSize"
+      showFirstLastButtons
+      class="paginator-solo-botones"
+    ></mat-paginator>
   </div>
 </div>

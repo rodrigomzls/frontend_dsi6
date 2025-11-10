@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 
 .container {
-  padding: 32px;
+  padding: 30px;
   max-width: 1400px;
   margin: 0 auto;
   font-family: 'Montserrat', sans-serif;
@@ -14,15 +14,15 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 28px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #c5e1a5;
+  padding-bottom: 6px;
+  border-bottom: 1.25px solid #c5e1a5;
 }
 
 .header h2 {
   margin: 0;
   color: #1b5e20;
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 900;
   letter-spacing: 0.5px;
 }
 
@@ -31,7 +31,7 @@
   color: white !important;
   font-weight: 600;
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 5px 16px;
   transition: 0.2s;
 }
 
@@ -234,3 +234,119 @@ td:empty:before {
 .table-container::-webkit-scrollbar-thumb:hover {
   background: #81c784;
 }
+
+.product-container {
+  max-width: 1250px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-field {
+  width: 300px;
+}
+
+.page-size-field {
+  width: 120px;
+  margin-right: 0.5rem;
+}
+
+.total-count {
+  font-weight: 500;
+  color: #1b3b6f;
+}
+
+.table-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th.mat-header-cell {
+  background-color: #f5f7fa;
+  color: #333;
+  font-weight: 600;
+  text-align: left;
+}
+
+td.mat-cell {
+  color: #555;
+}
+
+.actions-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+button[mat-icon-button]:hover {
+  transform: scale(1.1);
+  transition: 0.2s ease;
+}
+
+/* === 🔘 PAGINADOR SOLO BOTONES === */
+::ng-deep .paginator-solo-botones .mat-mdc-paginator-page-size,
+::ng-deep .paginator-solo-botones .mat-paginator-page-size,
+::ng-deep .paginator-solo-botones .mat-mdc-paginator-range-label,
+::ng-deep .paginator-solo-botones .mat-paginator-range-label {
+  display: none !important;
+}
+
+/* Oculta el texto del selector */
+::ng-deep .paginator-solo-botones .mat-paginator-page-size .mat-form-field-infix {
+  display: none !important;
+}
+
+/* Mueve los botones al lado derecho */
+::ng-deep .paginator-solo-botones .mat-mdc-paginator-range-actions,
+::ng-deep .paginator-solo-botones .mat-paginator-range-actions {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding-right: 10px;
+}
+
+/* Estilos de los botones */
+::ng-deep .paginator-solo-botones .mat-mdc-icon-button,
+::ng-deep .paginator-solo-botones button.mat-icon-button {
+  color: #1b5e20 !important;
+  font-size: 20px !important;
+  opacity: 0.9;
+}
+
+::ng-deep .paginator-solo-botones .mat-mdc-icon-button:hover,
+::ng-deep .paginator-solo-botones button.mat-icon-button:hover {
+  color: #43a047 !important;
+  transform: scale(1.1);
+  transition: 0.2s ease;
+}
+
+/* Fondo del paginador */
+::ng-deep .paginator-solo-botones {
+  background: #e8f5e9;
+  border-top: 2px solid #c8e6c9;
+  border-radius: 0 0 8px 8px;
+  padding: 4px 0;
+}
+
+
+
