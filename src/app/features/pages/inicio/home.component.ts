@@ -57,12 +57,46 @@ export class HomeComponent implements OnInit {
                 this.modulosPermitidos = [];
             }
           }
+        // Redirigir si es necesario (opcional)
+      this.redirectToDefaultIfNeeded();
         }
         console.log('HomeComponent: user', user);
         console.log('HomeComponent: modulosPermitidos', this.modulosPermitidos);
       });
   }
 
+private redirectToDefaultIfNeeded(): void {
+  const currentRoute = this.router.url;
+  
+  // Si estamos en /inicio, redirigir según rol
+  if (currentRoute === '/inicio') {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      const role = (user as any).id_rol ?? (user as any).role ?? 0;
+      let targetRoute = '/inicio';
+      
+      switch (Number(role)) {
+        case 1: // Administrador
+          targetRoute = '/ventas/nueva';
+          break;
+        case 2: // Vendedor
+          targetRoute = '/ventas/nueva';
+          break;
+        case 3: // Repartidor
+          targetRoute = '/repartidor/rutas-asignadas';
+          break;
+        case 4: // Almacenero
+          targetRoute = '/inventario';
+          break;
+        // Admin y Vendedor pueden quedarse en inicio
+      }
+      
+      if (targetRoute !== '/inicio') {
+        this.router.navigate([targetRoute]);
+      }
+    }
+  }
+}
    // Nuevo método para verificar acceso
   tieneAcceso(modulo: string): boolean {
     return this.modulosPermitidos.includes(modulo);
