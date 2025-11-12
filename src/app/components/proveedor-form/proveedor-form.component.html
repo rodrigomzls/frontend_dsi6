@@ -1,49 +1,64 @@
-<form [formGroup]="form" (ngSubmit)="submit()" class="form-container">
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>ID Persona</mat-label>
-    <input matInput type="number" formControlName="id_persona">
-    <mat-error *ngIf="form.get('id_persona')?.hasError('required')">
-      El ID de persona es requerido
-    </mat-error>
-  </mat-form-field>
+<div class="form-container" [class.loading]="isLoading">
+  <h2 class="dialog-title">{{ titulo }}</h2>
 
-  <mat-form-field appearance="fill" class="full-width">
-    <mat-label>Razón Social</mat-label>
-    <input matInput type="text" formControlName="razon_social">
-    <mat-error *ngIf="form.get('razon_social')?.hasError('required')">
-      La razón social es requerida
-    </mat-error>
-  </mat-form-field>
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    
+    <div class="form-grid">
+      <!-- Fila 1 -->
+      <mat-form-field appearance="outline" class="field-small">
+        <mat-label>Tipo Doc.</mat-label>
+        <mat-select formControlName="tipo_documento">
+          <mat-option value="RUC">RUC</mat-option>
+          <mat-option value="DNI">DNI</mat-option>
+          <mat-option value="CE">CE</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-  <div class="checkbox-container">
-    <mat-checkbox formControlName="activo" color="primary">
-      Activo
-    </mat-checkbox>
+      <mat-form-field appearance="outline" class="field-medium">
+        <mat-label>N° Documento</mat-label>
+        <input matInput formControlName="numero_documento">
+      </mat-form-field>
+
+      <!-- Fila 2 -->
+      <mat-form-field appearance="outline" class="field-large" style="grid-column: span 2;">
+        <mat-label>Nombre Completo</mat-label>
+        <input matInput formControlName="nombre_completo">
+      </mat-form-field>
+
+      <!-- Fila 3 -->
+      <mat-form-field appearance="outline" class="field-large" style="grid-column: span 2;">
+        <mat-label>Razón Social</mat-label>
+        <input matInput formControlName="razon_social">
+      </mat-form-field>
+
+      <!-- Fila 4 -->
+      <mat-form-field appearance="outline" class="field-small">
+        <mat-label>Teléfono</mat-label>
+        <input matInput formControlName="telefono">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="field-small">
+        <mat-label>Dirección</mat-label>
+        <input matInput formControlName="direccion">
+      </mat-form-field>
+
+      <!-- Fila 5 -->
+      <div class="checkbox-container" style="grid-column: span 2;">
+        <mat-checkbox formControlName="activo" color="primary">
+          Proveedor activo
+        </mat-checkbox>
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="isLoading || form.invalid">
+        {{ data && data.id_proveedor ? 'Actualizar' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="overlay" *ngIf="isLoading">
+    <mat-spinner diameter="40"></mat-spinner>
   </div>
-
-  <div class="buttons-container">
-    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
-      Guardar Proveedor
-    </button>
-  </div>
-</form>
-
-<mat-divider class="section-divider"></mat-divider>
-
-<div class="list-container">
-  <h3 class="mat-h3">Proveedores Registrados</h3>
-  
-  <mat-list role="list">
-    <mat-list-item role="listitem" *ngFor="let prov of proveedores">
-      <span matListItemTitle>{{ prov.razon_social }}</span>
-      <span matListItemLine class="status-text" [class.active]="prov.activo">
-        {{ prov.activo ? 'Activo' : 'Inactivo' }}
-      </span>
-    </mat-list-item>
-  </mat-list>
-
-  <button mat-stroked-button color="primary" (click)="loadProveedores()">
-    <mat-icon>refresh</mat-icon>
-    Actualizar Lista
-  </button>
 </div>

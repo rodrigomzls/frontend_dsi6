@@ -36,7 +36,16 @@ import { Proveedor } from '../../../core/models/proveedor.model';
   styleUrls: ['./proveedor-list.component.css']
 })
 export class ProveedorListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'razon_social', 'nombre', 'documento', 'telefono', 'direccion', 'activo', 'acciones'];
+  displayedColumns: string[] = [
+    'id_proveedor', 
+    'razon_social', 
+    'nombre_completo', 
+    'documento', 
+    'telefono', 
+    'direccion', 
+    'activo', 
+    'acciones'
+  ];
   dataSource = new MatTableDataSource<Proveedor>([]);
   isLoading = true;
 
@@ -65,16 +74,26 @@ export class ProveedorListComponent implements OnInit, AfterViewInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  addProveedor(): void {
-    const dialogRef = this.dialog.open(ProveedorFormComponent, { width: '600px' });
-    dialogRef.afterClosed().subscribe(res => { if(res) this.loadProveedores(); });
-  }
+ addProveedor(): void {
+  const dialogRef = this.dialog.open(ProveedorFormComponent, { 
+    width: '550px',
+    height: 'auto',
+    maxHeight: '500px', // Altura fija máxima
+    autoFocus: false
+  });
+  dialogRef.afterClosed().subscribe(res => { if(res) this.loadProveedores(); });
+}
 
-  editProveedor(proveedor: Proveedor): void {
-    const dialogRef = this.dialog.open(ProveedorFormComponent, { width: '600px', data: { proveedor } });
-    dialogRef.afterClosed().subscribe(res => { if(res) this.loadProveedores(); });
-  }
-
+editProveedor(proveedor: Proveedor): void {
+  const dialogRef = this.dialog.open(ProveedorFormComponent, { 
+    width: '550px',
+    height: 'auto',
+    maxHeight: '500px',
+    autoFocus: false,
+    data: proveedor
+  });
+  dialogRef.afterClosed().subscribe(res => { if(res) this.loadProveedores(); });
+}
   deleteProveedor(proveedor: Proveedor): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, { width: '450px', data: { message: `Eliminar proveedor "${proveedor.razon_social}"?` } });
     dialogRef.afterClosed().subscribe(result => {

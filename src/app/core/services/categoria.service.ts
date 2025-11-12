@@ -14,8 +14,17 @@ export class CategoriaService {
   private handleError(error: any) {
     console.error('CategoriaService error:', error);
     let message = 'Error en el servidor';
-    if (error.status === 0) message = 'No se puede conectar al servidor';
-    else if (error.error?.message) message = error.error.message;
+    
+    if (error.status === 0) {
+      message = 'No se puede conectar al servidor';
+    } else if (error.error?.message) {
+      message = error.error.message;
+    } else if (error.status === 409) {
+      message = 'Ya existe una categoría con este nombre';
+    } else if (error.status === 404) {
+      message = 'Categoría no encontrada';
+    }
+    
     return throwError(() => new Error(message));
   }
 

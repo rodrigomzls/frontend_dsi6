@@ -33,7 +33,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   ]
 })
 export class CategoriaListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'nombre', 'descripcion', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombre', 'acciones'];
   dataSource = new MatTableDataSource<Categoria>([]);
   isLoading = true;
 
@@ -73,10 +73,13 @@ export class CategoriaListComponent implements OnInit, AfterViewInit {
     dialogRef.afterClosed().subscribe(res => { if (res) this.loadCategorias(); });
   }
 
-  editCategoria(categoria: Categoria): void {
-    const dialogRef = this.dialog.open(CategoriaFormComponent, { width: '500px', data: { categoria } });
-    dialogRef.afterClosed().subscribe(res => { if (res) this.loadCategorias(); });
-  }
+ editCategoria(categoria: Categoria): void {
+  const dialogRef = this.dialog.open(CategoriaFormComponent, { 
+    width: '500px', 
+    data: categoria  // ← Cambiar esto: pasar directamente el objeto categoria
+  });
+  dialogRef.afterClosed().subscribe(res => { if (res) this.loadCategorias(); });
+}
 
   deleteCategoria(categoria: Categoria): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, { width: '420px', data: { message: `Eliminar categoría "${categoria.nombre}"?` } });

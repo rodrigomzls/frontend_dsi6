@@ -5,9 +5,10 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { PedidoProveedor, PedidoProveedorCreate, PedidoProveedorUpdate } from '../models/pedido-proveedor.model';
 
+// src/app/core/services/pedido-proveedor.service.ts - CORREGIDO
+
 @Injectable({ providedIn: 'root' })
 export class PedidoProveedorService {
-  // ✅ CORREGIDO: URL actualizada para coincidir con el backend
   private apiUrl = 'http://localhost:4000/api/pedidos-proveedor';
 
   constructor(private http: HttpClient) {}
@@ -28,19 +29,18 @@ export class PedidoProveedorService {
     return this.http.get<PedidoProveedor>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
   }
 
-  createPedido(payload: PedidoProveedorCreate): Observable<PedidoProveedor> {
-    return this.http.post<PedidoProveedor>(this.apiUrl, payload).pipe(catchError(this.handleError));
+  createPedido(payload: PedidoProveedorCreate): Observable<any> {
+    return this.http.post<any>(this.apiUrl, payload).pipe(catchError(this.handleError));
   }
 
-  updatePedido(id: number, payload: PedidoProveedorUpdate): Observable<PedidoProveedor> {
-    return this.http.put<PedidoProveedor>(`${this.apiUrl}/${id}`, payload).pipe(catchError(this.handleError));
+  updatePedido(id: number, payload: PedidoProveedorUpdate): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(catchError(this.handleError));
   }
 
   deletePedido(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
   }
 
-  // Nuevo método para obtener estados de pedido
   getEstadosPedido(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/estados`).pipe(catchError(this.handleError));
   }

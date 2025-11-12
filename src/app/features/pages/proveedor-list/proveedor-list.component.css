@@ -1,6 +1,97 @@
-.container { padding: 32px; font-family: 'Montserrat', sans-serif; }
-.header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-.table-container { position:relative; border-radius:10px; background:white; overflow:hidden; }
-.loading-shade { position:absolute; top:0; left:0; right:0; bottom:0; background: rgba(255,255,255,0.9); display:flex; flex-direction:column; align-items:center; justify-content:center; }
-.filter-field { width:100%; max-width:400px; margin-bottom:12px; }
-.actions-container button { margin-right: 4px; }
+.container { 
+  padding: 20px; 
+  font-family: 'Montserrat', sans-serif; 
+}
+
+.header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 20px; 
+}
+
+.filter-field { 
+  width: 100%; 
+  max-width: 400px; 
+  margin-bottom: 16px; 
+}
+
+.table-container { 
+  position: relative; 
+  border-radius: 8px; 
+  background: white; 
+  overflow: hidden; 
+}
+
+.loading-shade { 
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0; 
+  background: rgba(255,255,255,0.9); 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 10;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Estilos para las badges de estado */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.status-badge.inactive {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Mejorar la tabla */
+.mat-table {
+  min-width: 800px;
+}
+
+.mat-cell, .mat-header-cell {
+  padding: 8px 16px;
+}
+
+/* Hacer la tabla más compacta */
+.mat-row {
+  height: 48px;
+}
+
+/* Botones de acciones */
+.actions-container button { 
+  margin-right: 4px; 
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .filter-field {
+    max-width: 100%;
+  }
+}

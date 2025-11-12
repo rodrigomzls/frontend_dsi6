@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // ✅ SOLO UNA definición de interfaces
+// En ventas.service.ts - CORREGIDO
 export interface Venta {
   id_venta?: number;
   id_cliente: number;
@@ -12,15 +13,15 @@ export interface Venta {
   total: number;
   id_metodo_pago: number;
   id_estado_venta: number;
-  id_repartidor?: number | null;
-  id_vendedor?: number;
+  id_repartidor?: number | null; // ✅ Ya permite null
+  id_vendedor?: number | null;   // ✅ Agregar | null aquí
   notas?: string;
   detalles: VentaDetalle[];
   
   nombre_completo?: string;
   telefono?: string;
   direccion?: string;
-  estado?: string;  // Este campo viene del JOIN con estado_venta
+  estado?: string;
   metodo_pago?: string;
   vendedor?: string;
   repartidor?: string;

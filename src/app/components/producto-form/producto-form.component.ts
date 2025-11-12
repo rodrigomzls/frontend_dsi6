@@ -148,7 +148,7 @@ export class ProductoFormComponent implements OnInit {
       const formData = this.productForm.value;
 
       const request$ = this.isEditMode
-        ? this.productService.updateProduct(this.data.product.id!, formData)
+        ? this.productService.updateProduct(this.data.product.id_producto!, formData)
         : this.productService.createProduct(formData);
 
       this.isLoading = true;

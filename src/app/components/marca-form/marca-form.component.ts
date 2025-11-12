@@ -37,11 +37,11 @@ export class MarcaFormComponent {
     @Inject(MAT_DIALOG_DATA) public data: Marca
   ) {
     this.form = this.fb.group({
-      id_marca: [data?.id_marca || 0],
+      id_marca: [data?.id || 0],
       nombre: [data?.nombre || '', [Validators.required, Validators.minLength(2)]],
     });
 
-    this.titulo = data && data.id_marca ? 'Editar Marca' : 'Nueva Marca';
+    this.titulo = data && data.id ? 'Editar Marca' : 'Nueva Marca';
   }
 
   guardar(): void {
@@ -53,14 +53,14 @@ export class MarcaFormComponent {
     this.isLoading = true;
     const marca = this.form.value as Marca;
 
-    const request = marca.id_marca
-      ? this.marcaService.updateMarca(marca.id_marca, marca)
+    const request = marca.id
+      ? this.marcaService.updateMarca(marca.id, marca)
       : this.marcaService.createMarca(marca);
 
     request.subscribe({
       next: () => {
         this.snackBar.open(
-          marca.id_marca ? 'Marca actualizada correctamente.' : 'Marca registrada correctamente.',
+          marca.id ? 'Marca actualizada correctamente.' : 'Marca registrada correctamente.',
           'Cerrar',
           { duration: 3000 }
         );

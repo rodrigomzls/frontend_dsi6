@@ -73,22 +73,31 @@ export class MarcaListComponent implements OnInit, AfterViewInit {
     dialogRef.afterClosed().subscribe(res => { if (res) this.loadMarcas(); });
   }
 
-  editMarca(marca: Marca): void {
-    const dialogRef = this.dialog.open(MarcaFormComponent, { width: '500px', data: { marca } });
-    dialogRef.afterClosed().subscribe(res => { if (res) this.loadMarcas(); });
-  }
+ editMarca(marca: Marca): void {
+  const dialogRef = this.dialog.open(MarcaFormComponent, { 
+    width: '500px', 
+    data: marca  // ← Cambiar esto: quitar el objeto { marca }
+  });
+  dialogRef.afterClosed().subscribe(res => { if (res) this.loadMarcas(); });
+}
 
-  deleteMarca(marca: Marca): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, { width: '420px', data: { message: `Eliminar marca "${marca.nombre}"?` } });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.marcaService.deleteMarca(marca.id_marca!).subscribe({
-          next: () => { this.showSuccess('Marca eliminada'); this.loadMarcas(); },
-          error: () => this.showError('Error al eliminar marca')
-        });
-      }
-    });
-  }
+deleteMarca(marca: Marca): void {
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, { 
+    width: '420px', 
+    data: { message: `¿Eliminar marca "${marca.nombre}"?` } 
+  });
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.marcaService.deleteMarca(marca.id).subscribe({ // ← Cambiar id_marca por id
+        next: () => { 
+          this.showSuccess('Marca eliminada'); 
+          this.loadMarcas(); 
+        },
+        error: () => this.showError('Error al eliminar marca')
+      });
+    }
+  });
+}
 
   private showSuccess(msg: string) { this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['success-snackbar'] }); }
   private showError(msg: string) { this.snackBar.open(msg, 'Cerrar', { duration: 5000, panelClass: ['error-snackbar'] }); }

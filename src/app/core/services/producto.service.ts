@@ -41,12 +41,12 @@ private handleError(error: any) {
   }
 
 getProveedores(): Observable<Supplier[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/proveedores`).pipe( // Cambiado a "proveedores"
+  return this.http.get<any[]>(`${this.apiUrl}/proveedores`).pipe(
     map(proveedores => {
       console.log('Proveedores crudos:', proveedores);
       return proveedores.map(prov => ({
         id_proveedor: prov.id_proveedor,
-        nombre: prov.nombre // Ahora sí tendrá el campo nombre
+        nombre: prov.razon_social || prov.nombre_completo // Usa razón social o nombre completo
       }));
     }),
     catchError(this.handleError)
@@ -73,7 +73,7 @@ getProductsWithDetails(): Observable<any[]> {
       
       productos.forEach((product, index) => {
         console.log(`Producto ${index}:`, {
-          id: product.id,
+          id: product.id_producto,
           categoriaId: product.categoriaId,
           marcaId: product.marcaId,
           proveedorId: product.proveedorId,
@@ -88,7 +88,7 @@ getProductsWithDetails(): Observable<any[]> {
         const marca = marcas.find(m => m.id_marca === product.marcaId);
         const proveedor = proveedores.find(prov => prov.id_proveedor === product.proveedorId);
 
-        console.log(`Proveedor encontrado para producto ${product.id}:`, proveedor);
+        console.log(`Proveedor encontrado para producto ${product.id_producto}:`, proveedor);
 
         return {
           ...product,

@@ -169,7 +169,7 @@ openEditDialog(product: Product): void {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.productService.deleteProduct(product.id!).subscribe({
+        this.productService.deleteProduct(product.id_producto!).subscribe({
           next: () => {
             this.loadProductsWithDetails();
             this.showSuccessMessage('Producto eliminado correctamente');

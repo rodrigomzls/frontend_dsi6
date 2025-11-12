@@ -1,14 +1,30 @@
+/* pedido-proveedor-form.component.css - CORREGIDO */
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px 0;
+}
+
 .form-container {
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  max-width: 600px;
-  margin: 0 auto;
+  padding: 20px 0;
+  min-width: 500px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .full-width {
   width: 100%;
-  margin-bottom: 15px;
+}
+
+.half-width {
+  flex: 1;
 }
 
 .buttons-container {
@@ -18,11 +34,22 @@
   gap: 10px;
 }
 
-/* Estilos para botones Material */
-button[mat-raised-button] {
-  min-width: 120px;
-}
-
+/* Loading state */
 button[mat-raised-button]:disabled {
   opacity: 0.7;
+}
+
+/* Error states */
+mat-form-field.ng-invalid.ng-touched .mat-form-field-outline {
+  color: #f44336;
+}
+
+.success-snackbar {
+  background-color: #4caf50;
+  color: white;
+}
+
+.error-snackbar {
+  background-color: #f44336;
+  color: white;
 }

@@ -33,15 +33,20 @@ export class NuevaVentaComponent implements OnInit {
   private dialog = inject(MatDialog);
 
   // Datos de la venta
-  venta: Venta = {
-    id_cliente: 0,
-    fecha: new Date().toISOString().split('T')[0],
-    hora: new Date().toTimeString().split(' ')[0],
-    total: 0,
-    id_metodo_pago: 1, // Efectivo por defecto
-    id_estado_venta: 1, // Pendiente
-    detalles: []
-  };
+// En la definición de la venta
+// En la definición de la venta - VERSIÓN COMPLETA
+venta: Venta = {
+  id_cliente: 0,
+  fecha: new Date().toISOString().split('T')[0],
+  hora: new Date().toTimeString().split(' ')[0],
+  total: 0,
+  id_metodo_pago: 1,
+  id_estado_venta: 1,
+  id_repartidor: null,
+  id_vendedor: null, // ✅ Cambiar undefined por null
+  notas: '',
+  detalles: []
+};
 
   // Datos auxiliares - usar ClienteVenta[]
   clientes: ClienteVenta[] = []; // ✅ Cambiar a ClienteVenta[]
@@ -150,6 +155,7 @@ private mostrarMensajeExito(mensaje: string) {
     });
   }
 
+// En nueva-venta.component.ts - mejorar el debug de productos
 async cargarDatosIniciales() {
   try {
     // Cargar clientes para ventas
@@ -169,13 +175,15 @@ async cargarDatosIniciales() {
         
         // Verificar estructura del primer producto
         if (productos.length > 0) {
+          const primerProducto = productos[0];
           console.log('🔍 Estructura detallada del primer producto:');
-          console.log('   - id:', productos[0].id);
-          console.log('   - nombre:', productos[0].nombre);
-          console.log('   - precio:', productos[0].precio);
-          console.log('   - stock:', productos[0].stock);
-          console.log('   - categoriaId:', productos[0].categoriaId);
-          console.log('   - marcaId:', productos[0].marcaId);
+          console.log('   - id_producto:', primerProducto.id_producto);
+          console.log('   - id:', primerProducto.id_producto);
+          console.log('   - nombre:', primerProducto.nombre);
+          console.log('   - precio:', primerProducto.precio);
+          console.log('   - stock:', primerProducto.stock);
+          console.log('   - categoriaId:', primerProducto.categoriaId);
+          console.log('   - marcaId:', primerProducto.marcaId);
         }
         
         this.productos = productos;
@@ -242,9 +250,14 @@ cargarRepartidores() {
   }
 
 // En nueva-venta.component.ts - corrige seleccionarProducto
+// En nueva-venta.component.ts - CORREGIDO
 seleccionarProducto(producto: any) {
   console.log('🎯 Producto seleccionado (estructura completa):', producto);
-  console.log('   - ID del producto:', producto.id); // Solo para confirmar
+  console.log('   - ID del producto (id_producto):', producto.id_producto);
+  console.log('   - ID del producto (id):', producto.id);
+  console.log('   - nombre:', producto.nombre);
+  console.log('   - precio:', producto.precio);
+  console.log('   - stock:', producto.stock);
   
   this.productoSeleccionado = producto;
   this.cantidad = 1;
@@ -254,6 +267,7 @@ seleccionarProducto(producto: any) {
   // Agregar producto al carrito
 // En nueva-venta.component.ts - corrige la función agregarProducto()
 // En nueva-venta.component.ts - corrige completamente agregarProducto()
+// En nueva-venta.component.ts - CORREGIDO
 agregarProducto() {
   if (!this.productoSeleccionado || this.cantidad <= 0) {
     this.error = 'Selecciona un producto y cantidad válida';
@@ -267,14 +281,23 @@ agregarProducto() {
 
   // DEBUG: Verificar estructura del producto seleccionado
   console.log('🔍 Producto seleccionado (estructura completa):', this.productoSeleccionado);
+  console.log('   - id_producto:', this.productoSeleccionado.id_producto);
   console.log('   - id:', this.productoSeleccionado.id);
   console.log('   - nombre:', this.productoSeleccionado.nombre);
   console.log('   - precio:', this.productoSeleccionado.precio);
   console.log('   - stock:', this.productoSeleccionado.stock);
 
-  // Los productos solo tienen 'id', no 'id_producto'
+  // ✅ CORREGIDO: Usar id_producto en lugar de id
+  const idProducto = this.productoSeleccionado.id_producto || this.productoSeleccionado.id;
+  
+  if (!idProducto) {
+    this.error = 'Error: No se pudo obtener el ID del producto';
+    console.error('❌ Producto sin ID válido:', this.productoSeleccionado);
+    return;
+  }
+
   const detalle: VentaDetalle = {
-    id_producto: this.productoSeleccionado.id, // ✅ Usar 'id' directamente
+    id_producto: idProducto, // ✅ Usar id_producto o id
     cantidad: this.cantidad,
     precio_unitario: this.productoSeleccionado.precio,
     producto_nombre: this.productoSeleccionado.nombre
@@ -306,57 +329,122 @@ agregarProducto() {
   }
 
   // Finalizar venta
-  finalizarVenta() {
-    if (this.venta.id_cliente === 0) {
-      this.error = 'Selecciona un cliente';
-      return;
-    }
-
-    if (this.venta.detalles.length === 0) {
-      this.error = 'Agrega al menos un producto';
-      return;
-    }
-
-    // Crear objeto con TODOS los campos requeridos
-    const ventaParaEnviar = {
-      id_cliente: this.venta.id_cliente,
-      fecha: this.venta.fecha,
-      hora: this.venta.hora,
-      total: this.venta.total,
-      id_metodo_pago: this.venta.id_metodo_pago,
-      id_estado_venta: this.venta.id_estado_venta,
-      id_repartidor: this.venta.id_repartidor || undefined, // ✅ Usar undefined en lugar de null
-      detalles: this.venta.detalles.map(detalle => ({
-        id_producto: detalle.id_producto,
-        cantidad: detalle.cantidad,
-        precio_unitario: detalle.precio_unitario
-      })),
-      notas: this.venta.notas || ''
-    };
-
-  // DEBUG: Verificar datos antes de enviar
-    console.log('📤 Datos que se enviarán al backend:', ventaParaEnviar);
-    this.loading = true;
-    this.error = '';
-
-    this.ventasService.createVenta(ventaParaEnviar).subscribe({
-      next: (ventaCreada) => {
-        this.loading = false;
-        alert('✅ Venta registrada correctamente');
-        this.router.navigate(['/ventas']);
-      },
-      error: (error) => {
-        this.loading = false;
-        this.error = error.error?.error || 'Error al registrar la venta';
-        console.error('❌ Error detallado creando venta:', error);
-        
-        if (error.error) {
-          console.error('📋 Error del servidor:', error.error);
-        }
-      }
-    });
+// Finalizar venta - VERSIÓN CORREGIDA COMPLETA
+// Finalizar venta - VERSIÓN CON DEBUGGING MEJORADO
+// En nueva-venta.component.ts - VERSIÓN MEJORADA
+// En nueva-venta.component.ts - VERSIÓN MEJORADA CON DEBUGGING
+finalizarVenta() {
+  if (this.venta.id_cliente === 0) {
+    this.error = 'Selecciona un cliente';
+    return;
   }
 
+  if (this.venta.detalles.length === 0) {
+    this.error = 'Agrega al menos un producto';
+    return;
+  }
+
+  // ✅ OBTENER EL USUARIO ACTUAL DEL AUTH SERVICE
+  const currentUser = this.authService.getCurrentUser();
+  if (!currentUser || !currentUser.id_usuario) {
+    this.error = 'No se pudo identificar al vendedor. Por favor, inicie sesión nuevamente.';
+    return;
+  }
+
+  // ✅ VERIFICAR DETALLES ANTES DE ENVIAR
+  console.log('🔍 VERIFICANDO DETALLES DE LA VENTA:');
+  this.venta.detalles.forEach((detalle, index) => {
+    console.log(`   Detalle ${index + 1}:`, {
+      id_producto: detalle.id_producto,
+      cantidad: detalle.cantidad,
+      precio_unitario: detalle.precio_unitario,
+      producto_nombre: detalle.producto_nombre
+    });
+    
+    if (!detalle.id_producto) {
+      console.error(`❌ ERROR: Detalle ${index + 1} tiene id_producto undefined`);
+      this.error = `Error: El producto "${detalle.producto_nombre}" no tiene ID válido`;
+      return;
+    }
+  });
+
+  if (this.error) return;
+
+  // ✅ FUNCIÓN MEJORADA PARA SANITIZAR VALORES
+  const safeValue = (value: any, fieldName: string = 'campo'): any => {
+    if (value === undefined || value === '') {
+      console.warn(`⚠️  Campo '${fieldName}' es undefined o vacío, convirtiendo a null`);
+      return null;
+    }
+    return value;
+  };
+
+  // ✅ CREAR OBJETO CON EL VENDEDOR CORRECTO
+  const ventaParaEnviar = {
+    id_cliente: this.venta.id_cliente,
+    fecha: this.venta.fecha,
+    hora: this.venta.hora,
+    total: this.venta.total,
+    id_metodo_pago: this.venta.id_metodo_pago,
+    id_estado_venta: this.venta.id_estado_venta,
+    id_repartidor: safeValue(this.venta.id_repartidor, 'id_repartidor'),
+    id_vendedor: currentUser.id_usuario, // ✅ Usar el ID del usuario autenticado
+    notas: safeValue(this.venta.notas || '', 'notas'),
+    detalles: this.venta.detalles.map(detalle => ({
+      id_producto: detalle.id_producto,
+      cantidad: detalle.cantidad,
+      precio_unitario: detalle.precio_unitario,
+      producto_nombre: safeValue(detalle.producto_nombre, 'producto_nombre')
+    }))
+  };
+
+  // ✅ VERIFICACIÓN FINAL MEJORADA
+  console.log('🔍 OBJETO FINAL PARA ENVIAR:', ventaParaEnviar);
+  
+  // Verificar específicamente los detalles
+  const detallesConProblemas = ventaParaEnviar.detalles.filter(detalle => 
+    !detalle.id_producto || detalle.id_producto === undefined
+  );
+
+  if (detallesConProblemas.length > 0) {
+    console.error('❌ ERROR: Detalles con id_producto undefined:', detallesConProblemas);
+    this.error = 'Error interno: productos inválidos en el carrito';
+    return;
+  }
+
+  const hasUndefined = Object.values(ventaParaEnviar).some(val => 
+    val === undefined || (Array.isArray(val) && val.some(item => 
+      Object.values(item).some(v => v === undefined)
+    ))
+  );
+
+  if (hasUndefined) {
+    console.error('❌ ERROR: Se encontró undefined en el objeto final:', ventaParaEnviar);
+    this.error = 'Error interno: datos inválidos';
+    return;
+  }
+
+  console.log('📤 ENVIANDO DATOS AL BACKEND...');
+  this.loading = true;
+  this.error = '';
+
+  this.ventasService.createVenta(ventaParaEnviar).subscribe({
+    next: (ventaCreada) => {
+      this.loading = false;
+      alert('✅ Venta registrada correctamente');
+      this.router.navigate(['/ventas']);
+    },
+    error: (error) => {
+      this.loading = false;
+      this.error = error.error?.error || 'Error al registrar la venta';
+      console.error('❌ Error detallado creando venta:', error);
+      
+      if (error.error) {
+        console.error('📋 Error del servidor:', error.error);
+      }
+    }
+  });
+}
   // Limpiar búsquedas
 // En nueva-venta.component.ts - actualiza el método limpiarBusquedaCliente
 limpiarBusquedaCliente() {
