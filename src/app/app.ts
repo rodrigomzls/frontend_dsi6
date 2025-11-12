@@ -5,11 +5,13 @@ import { HeaderComponent } from './shared/header/header.component';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
 import { Subscription } from 'rxjs';
-
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, HeaderComponent, CommonModule],
+  imports: [RouterOutlet, HeaderComponent, CommonModule,MatDatepickerModule,
+    MatNativeDateModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

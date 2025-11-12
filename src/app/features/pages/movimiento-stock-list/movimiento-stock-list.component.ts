@@ -33,7 +33,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   ]
 })
 export class MovimientoStockListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'producto', 'tipo', 'cantidad', 'fecha', 'acciones'];
+  // En la clase MovimientoStockListComponent, actualizar displayedColumns:
+displayedColumns: string[] = ['id', 'producto', 'tipo', 'lote', 'cantidad', 'fecha', 'acciones'];
   dataSource = new MatTableDataSource<MovimientoStock>([]);
   isLoading = true;
 
@@ -62,16 +63,31 @@ export class MovimientoStockListComponent implements OnInit, AfterViewInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  addMovimiento(): void {
-    const dialogRef = this.dialog.open(MovimientoStockFormComponent, { width: '600px' });
-    dialogRef.afterClosed().subscribe(res => { if(res) this.loadMovimientos(); });
-  }
+ addMovimiento(): void {
+  const dialogRef = this.dialog.open(MovimientoStockFormComponent, { 
+    width: '500px',
+    maxWidth: '95vw',
+    maxHeight: '85vh', // ✅ LIMITAR ALTURA MÁXIMA
+    panelClass: 'movimiento-stock-dialog' // ✅ CLASE PARA ESTILOS GLOBALES
+  });
+  
+  dialogRef.afterClosed().subscribe(res => { 
+    if (res) this.loadMovimientos(); 
+  });
+}
 
-  editMovimiento(movimiento: MovimientoStock): void {
-    const dialogRef = this.dialog.open(MovimientoStockFormComponent, { width: '600px', data: { movimiento } });
-    dialogRef.afterClosed().subscribe(res => { if(res) this.loadMovimientos(); });
-  }
-
+editMovimiento(movimiento: MovimientoStock): void {
+  const dialogRef = this.dialog.open(MovimientoStockFormComponent, { 
+    width: '500px',
+    maxWidth: '95vw',
+    maxHeight: '85vh',
+    panelClass: 'movimiento-stock-dialog',
+    data: movimiento // ✅ CORREGIDO: Enviar el objeto directamente, no {movimiento}
+  });
+  dialogRef.afterClosed().subscribe(res => { 
+    if(res) this.loadMovimientos(); 
+  });
+}
   deleteMovimiento(movimiento: MovimientoStock): void {
     const nombreProducto = movimiento.producto?.nombre ?? 'desconocido';
     const dialogRef = this.dialog.open(ConfirmDialogComponent, { width: '420px', data: { message: `Eliminar movimiento del producto "${nombreProducto}"?` } });

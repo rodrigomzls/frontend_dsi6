@@ -29,23 +29,74 @@
         <td mat-cell *matCellDef="let row">{{ row.producto?.nombre }}</td>
       </ng-container>
 
-      <ng-container matColumnDef="cantidad">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Cantidad</th>
-        <td mat-cell *matCellDef="let row">{{ row.cantidad_actual }}</td>
+      <!-- ✅ NUEVA: Número de Lote -->
+      <ng-container matColumnDef="numero_lote">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>N° Lote</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="numero-lote">{{ row.numero_lote }}</span>
+        </td>
+      </ng-container>
+
+      <!-- ✅ NUEVA: Cantidad Inicial -->
+      <ng-container matColumnDef="cantidad_inicial">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Inicial</th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.cantidad_inicial }}
+        </td>
+      </ng-container>
+
+      <!-- ✅ NUEVA: Cantidad Actual -->
+      <ng-container matColumnDef="cantidad_actual">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Actual</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="getStockClass(row)">
+            {{ row.cantidad_actual }}
+          </span>
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="fecha_caducidad">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha Caducidad</th>
-        <td mat-cell *matCellDef="let row">{{ row.fecha_caducidad | date:'shortDate' }}</td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Caducidad</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="getDiasClass(row.fecha_caducidad)">
+            {{ row.fecha_caducidad | date:'dd/MM/yyyy' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- ✅ SOLO UNA VEZ: Días para Caducar -->
+      <ng-container matColumnDef="dias_caducar">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Días</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="getDiasClass(row.fecha_caducidad)">
+            {{ calcularDiasParaCaducar(row.fecha_caducidad) }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- ✅ NUEVA: Fecha de Creación -->
+      <ng-container matColumnDef="fecha_creacion">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Creado</th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.fecha_creacion | date:'dd/MM/yyyy' }}
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let row">
-          <button mat-icon-button color="primary" (click)="editLote(row)"><mat-icon>edit</mat-icon></button>
-          <button mat-icon-button color="warn" (click)="deleteLote(row)"><mat-icon>delete</mat-icon></button>
+          <button mat-icon-button color="primary" (click)="editLote(row)" matTooltip="Editar">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="deleteLote(row)" matTooltip="Eliminar">
+            <mat-icon>delete</mat-icon>
+          </button>
         </td>
       </ng-container>
+
+      <!-- ❌ ELIMINAR: Estas columnas duplicadas -->
+      <!-- <ng-container matColumnDef="stock"> ... </ng-container> -->
+      <!-- <ng-container matColumnDef="dias_caducar"> ... </ng-container> -->
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>

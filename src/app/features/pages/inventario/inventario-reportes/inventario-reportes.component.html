@@ -122,25 +122,26 @@
         </mat-card-content>
       </mat-card>
 
-      <mat-card class="metrica-card info">
-        <mat-card-content>
-          <div class="metrica">
-            <div class="metrica-icon">
-              <mat-icon>swap_vert</mat-icon>
-            </div>
-            <div class="metrica-info">
-              <h3>Movimientos Registrados</h3>
-              <p class="metrica-valor">{{ metricas.totalMovimientos }}</p>
-              <span class="metrica-desc" *ngIf="filtrosForm.value.fechaInicio && filtrosForm.value.fechaFin">
-                En el período seleccionado
-              </span>
-              <span class="metrica-desc" *ngIf="!filtrosForm.value.fechaInicio || !filtrosForm.value.fechaFin">
-                Total en el sistema
-              </span>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
+      <!-- En inventario-reportes.component.html - mejorar el tooltip de movimientos -->
+<mat-card class="metrica-card info">
+  <mat-card-content>
+    <div class="metrica">
+      <div class="metrica-icon">
+        <mat-icon>swap_vert</mat-icon>
+      </div>
+      <div class="metrica-info">
+        <h3>Movimientos Registrados</h3>
+        <p class="metrica-valor">{{ metricas.totalMovimientos }}</p>
+        <span class="metrica-desc" *ngIf="filtrosForm.value.fechaInicio && filtrosForm.value.fechaFin">
+          Del {{ filtrosForm.value.fechaInicio | date:'dd/MM/yyyy' }} al {{ filtrosForm.value.fechaFin | date:'dd/MM/yyyy' }}
+        </span>
+        <span class="metrica-desc" *ngIf="!filtrosForm.value.fechaInicio || !filtrosForm.value.fechaFin">
+          Total en el sistema
+        </span>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>
 
       <mat-card class="metrica-card warning" *ngIf="productosConProblemas > 0">
         <mat-card-content>

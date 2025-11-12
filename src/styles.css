@@ -265,3 +265,14 @@ app-footer {
     font-size: 14px !important;
   }
 }
+/* Estilos globales para diálogos de movimiento stock */
+.movimiento-stock-dialog .mat-dialog-container {
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Mejorar scroll en diálogos de Angular Material */
+.mat-dialog-content {
+  max-height: 65vh !important;
+}

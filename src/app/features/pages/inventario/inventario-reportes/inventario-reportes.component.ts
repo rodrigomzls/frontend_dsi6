@@ -68,47 +68,48 @@ export class InventarioReportesComponent implements OnInit {
 
   ngOnInit() {}
 
-    generarReporte() {
-    if (this.filtrosForm.invalid) {
-      this.snackBar.open('Por favor complete los filtros requeridos', 'Cerrar', {
-        duration: 3000
-      });
-      return;
-    }
-
-    this.cargando = true;
-    const filtros = this.filtrosForm.value;
-    this.filtrosAplicados = { ...filtros };
-
-    // Formatear fechas para el backend
-    const filtrosParaBackend = {
-      tipoReporte: filtros.tipoReporte,
-      fechaInicio: filtros.fechaInicio ? this.formatearFecha(filtros.fechaInicio) : null,
-      fechaFin: filtros.fechaFin ? this.formatearFecha(filtros.fechaFin) : null
-    };
-
-    this.inventarioService.getReporteStock(filtrosParaBackend).subscribe({
-      next: (response: any) => {
-        this.cargando = false;
-        this.datosCargados = true;
-        
-        // Procesar datos del backend
-        this.procesarDatosReporte(response);
-        
-        this.snackBar.open('Reporte generado exitosamente', 'Cerrar', {
-          duration: 3000
-        });
-      },
-      error: (error) => {
-        this.cargando = false;
-        console.error('Error al generar reporte:', error);
-        this.snackBar.open('Error al generar el reporte', 'Cerrar', {
-          duration: 3000
-        });
-      }
+generarReporte() {
+  if (this.filtrosForm.invalid) {
+    this.snackBar.open('Por favor complete los filtros requeridos', 'Cerrar', {
+      duration: 3000
     });
+    return;
   }
 
+  this.cargando = true;
+  const filtros = this.filtrosForm.value;
+  this.filtrosAplicados = { ...filtros };
+
+  // ✅ CORRECCIÓN: Formatear fechas para incluir días completos
+  const filtrosParaBackend = {
+    tipoReporte: filtros.tipoReporte,
+    fechaInicio: filtros.fechaInicio ? this.formatearFecha(filtros.fechaInicio, 'inicio') : null,
+    fechaFin: filtros.fechaFin ? this.formatearFecha(filtros.fechaFin, 'fin') : null
+  };
+
+  console.log('Filtros enviados al backend:', filtrosParaBackend);
+
+  this.inventarioService.getReporteStock(filtrosParaBackend).subscribe({
+    next: (response: any) => {
+      this.cargando = false;
+      this.datosCargados = true;
+      
+      // Procesar datos del backend
+      this.procesarDatosReporte(response);
+      
+      this.snackBar.open('Reporte generado exitosamente', 'Cerrar', {
+        duration: 3000
+      });
+    },
+    error: (error) => {
+      this.cargando = false;
+      console.error('Error al generar reporte:', error);
+      this.snackBar.open('Error al generar el reporte', 'Cerrar', {
+        duration: 3000
+      });
+    }
+  });
+}
   /**
    * Exportar a PDF
    */
@@ -251,34 +252,41 @@ export class InventarioReportesComponent implements OnInit {
     }
   }
 
-  private procesarDatosReporte(response: any) {
-    // Actualizar métricas
-    this.metricas = {
-      totalProductos: response.metricas?.total_productos || 0,
-      valorTotal: parseFloat(response.metricas?.valor_total) || 0,
-      totalMovimientos: response.movimientos?.reduce((sum: number, mov: any) => 
-        sum + (mov.cantidad_movimientos || 0), 0) || 0
-    };
+// En inventario-reportes.component.ts - actualizar procesarDatosReporte
+private procesarDatosReporte(response: any) {
+  console.log('Respuesta del backend:', response);
+  
+  // Actualizar métricas
+  this.metricas = {
+    totalProductos: response.metricas?.total_productos || 0,
+    valorTotal: parseFloat(response.metricas?.valor_total) || 0,
+    // ✅ USAR el total de movimientos calculado por el backend
+    totalMovimientos: response.metricas?.total_movimientos || 
+                     response.movimientos?.reduce((sum: number, mov: any) => 
+                       sum + (mov.cantidad_movimientos || 0), 0) || 0
+  };
 
-    // Procesar productos para la tabla
-    this.datosReporte = response.productos?.map((producto: any) => ({
-      producto: producto.nombre,
-      descripcion: producto.descripcion,
-      stockActual: producto.stock,
-      stockMinimo: producto.stock_minimo,
-      precio: producto.precio,
-      estado: producto.estado_stock,
-      categoria: producto.categoria,
-      marca: producto.marca,
-      valorTotal: producto.valor_total
-    })) || [];
+  // Procesar productos para la tabla
+  this.datosReporte = response.productos?.map((producto: any) => ({
+    producto: producto.nombre,
+    descripcion: producto.descripcion,
+    stockActual: producto.stock,
+    stockMinimo: producto.stock_minimo,
+    precio: producto.precio,
+    estado: producto.estado_stock,
+    categoria: producto.categoria,
+    marca: producto.marca,
+    valorTotal: producto.valor_total
+  })) || [];
 
-    // Calcular productos con problemas
-    this.productosConProblemas = this.datosReporte.filter(item => 
-      item.estado === 'bajo' || item.estado === 'agotado'
-    ).length;
-  }
+  // Calcular productos con problemas
+  this.productosConProblemas = this.datosReporte.filter(item => 
+    item.estado === 'bajo' || item.estado === 'agotado'
+  ).length;
 
+  console.log('Métricas calculadas:', this.metricas);
+  console.log('Productos con problemas:', this.productosConProblemas);
+}
 
   // Métodos auxiliares para la vista
   getRowClass(item: any): string {
@@ -332,7 +340,13 @@ export class InventarioReportesComponent implements OnInit {
     return this.datosReporte.filter(item => item.estado === estado).length;
   }
 
-  private formatearFecha(fecha: Date): string {
+  // ✅ CORRECCIÓN: Mejorar el formateo de fechas
+private formatearFecha(fecha: Date, tipo: 'inicio' | 'fin' = 'inicio'): string {
+  if (tipo === 'fin') {
+    // Para fecha fin, no ajustamos - el backend se encarga de incluir todo el día
     return fecha.toISOString().split('T')[0];
   }
+  // Para fecha inicio, usar el día completo desde las 00:00
+  return fecha.toISOString().split('T')[0];
+}
 }

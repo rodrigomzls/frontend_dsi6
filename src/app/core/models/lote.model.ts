@@ -20,13 +20,13 @@ export interface Lote {
 export interface LoteCreate {
   id_producto: number;
   numero_lote: string;
-  fecha_caducidad: string;
+  fecha_caducidad: string; // Siempre string para el backend
   cantidad_inicial: number;
 }
 
 export interface LoteUpdate {
   numero_lote?: string;
-  fecha_caducidad?: string;
+  fecha_caducidad?: string; // Siempre string para el backend
   cantidad_actual?: number;
   activo?: boolean;
 }

@@ -39,6 +39,22 @@ h2 {
   pointer-events: none;
   opacity: 0.8;
 }
+
+/* ✅ Asegurar que el datepicker se muestre correctamente */
 mat-form-field {
   width: 100%;
+}
+
+/* ✅ Asegurar que el calendario tenga alta prioridad z-index */
+.mat-datepicker-content {
+  z-index: 2000 !important;
+}
+
+.mat-datepicker-popup {
+  z-index: 2000 !important;
+}
+
+/* ✅ Estilo para el ícono del calendario */
+.mat-datepicker-toggle {
+  color: #3f51b5;
 }
