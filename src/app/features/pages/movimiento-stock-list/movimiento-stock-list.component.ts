@@ -50,13 +50,18 @@ displayedColumns: string[] = ['id', 'producto', 'tipo', 'lote', 'cantidad', 'fec
   ngOnInit(): void { this.loadMovimientos(); }
   ngAfterViewInit(): void { this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; }
 
-  loadMovimientos(): void {
-    this.isLoading = true;
-    this.movimientoService.getMovimientos().subscribe({
-      next: rows => { this.dataSource.data = rows; this.isLoading = false; },
-      error: () => { this.isLoading = false; this.showError('Error al cargar movimientos'); }
-    });
-  }
+ // En el método loadMovimientos() del componente
+loadMovimientos(): void {
+  this.isLoading = true;
+  this.movimientoService.getMovimientos().subscribe({
+    next: rows => { 
+      console.log('📦 Movimientos cargados:', rows); // ✅ DEBUG: Ver datos
+      this.dataSource.data = rows; 
+      this.isLoading = false; 
+    },
+    error: () => { this.isLoading = false; this.showError('Error al cargar movimientos'); }
+  });
+}
 
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
