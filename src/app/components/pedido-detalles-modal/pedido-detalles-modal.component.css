@@ -1,0 +1,409 @@
+/* pedido-detalles-modal.component.css */
+.detalles-modal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: white;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2c3e50;
+}
+
+.title-icon {
+  font-size: 1.4rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  color: #3498db;
+}
+
+.close-btn {
+  color: #7f8c8d !important;
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.close-btn:hover {
+  background-color: #f8f9fa !important;
+}
+
+.modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.info-section {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section-title {
+  margin: 0 0 16px 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title mat-icon {
+  color: #3498db;
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e1e8ed;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.info-value {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.total-amount {
+  color: #27ae60;
+  font-size: 1.1rem;
+}
+
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estado-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Estados de pedido */
+.estado-solicitado {
+  color: #ff9800;
+  background-color: #fff3e0;
+}
+
+.estado-confirmado {
+  color: #2196f3;
+  background-color: #e3f2fd;
+}
+
+.estado-en-camino {
+  color: #9c27b0;
+  background-color: #f3e5f5;
+}
+
+.estado-recibido {
+  color: #4caf50;
+  background-color: #e8f5e8;
+}
+
+.estado-cancelado {
+  color: #f44336;
+  background-color: #ffebee;
+}
+
+.estado-desconocido {
+  color: #666;
+  background-color: #f5f5f5;
+}
+
+.detalles-section {
+  padding: 20px 24px;
+}
+
+.detalles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.detalle-item {
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  background: #f8f9fa;
+  overflow: hidden;
+}
+
+.detalle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  border-bottom: 1px solid #e1e8ed;
+}
+
+.item-number {
+  font-weight: 600;
+  color: #3498db;
+  font-size: 0.9rem;
+}
+
+.item-subtotal {
+  font-weight: 700;
+  color: #27ae60;
+  font-size: 1rem;
+}
+
+.detalle-content {
+  padding: 16px;
+}
+
+.detalle-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.detalle-info strong {
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.unidad-medida {
+  color: #666;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.detalle-cantidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e1e8ed;
+}
+
+.cantidad-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.cantidad-item .label {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.cantidad-item .value {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.cantidad-item .subtotal {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.no-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  color: #6c757d;
+  text-align: center;
+}
+
+.no-items mat-icon {
+  color: #6c757d;
+  font-size: 3rem;
+  width: 3rem;
+  height: 3rem;
+  opacity: 0.5;
+}
+
+.no-items p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px !important;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.cancel-btn {
+  font-size: 0.95rem;
+  height: 42px;
+  min-width: 110px;
+  border: none;
+  background: transparent;
+  color: #666;
+}
+
+.edit-btn {
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  height: 42px;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .modal-header {
+    padding: 12px 16px;
+  }
+  
+  .info-section,
+  .detalles-section {
+    padding: 16px;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .detalle-cantidades {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-actions {
+    padding: 16px !important;
+    flex-direction: column-reverse;
+  }
+  
+  .cancel-btn,
+  .edit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Scrollbar personalizado */
+.detalles-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detalles-list::-webkit-scrollbar-track {
+  background: #f8f8f8;
+  border-radius: 3px;
+}
+
+.detalles-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.detalles-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+/* Agregar al final del archivo existente */
+
+/* Mejoras de consistencia visual */
+.modal-title {
+  color: #2c3e50;
+}
+
+.section-title {
+  color: #2c3e50;
+}
+
+.info-label {
+  color: #2c3e50;
+}
+
+.detalle-info strong {
+  color: #2c3e50;
+}
+
+/* Mejoras en hover states */
+.detalle-item:hover {
+  border-color: #3498db;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+}
+
+.edit-btn:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(63, 81, 181, 0.3);
+}
+
+/* Estados mejorados */
+.estado-solicitado .estado-badge {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.estado-confirmado .estado-badge {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.estado-en-camino .estado-badge {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.estado-recibido .estado-badge {
+  background: #e8f5e8;
+  color: #388e3c;
+}
+
+.estado-cancelado .estado-badge {
+  background: #ffebee;
+  color: #d32f2f;
+}

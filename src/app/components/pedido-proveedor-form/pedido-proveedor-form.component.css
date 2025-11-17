@@ -1,10 +1,10 @@
-/* pedido-proveedor-form.component.css - VERSIÓN COMPLETAMENTE RESPONSIVE */
+/* MEJORAS ESPECÍFICAS PARA EL SCROLL - COMPLEMENTO */
+
 :host {
   display: block;
   height: 100%;
 }
 
-/* Contenedor principal del diálogo */
 .dialog-container {
   display: flex;
   flex-direction: column;
@@ -54,7 +54,7 @@
   background-color: #f8f9fa !important;
 }
 
-/* Área de contenido principal CON SCROLL */
+/* Contenido principal con scroll */
 .dialog-content {
   flex: 1;
   overflow-y: auto;
@@ -143,13 +143,12 @@
   height: 1.2rem;
 }
 
-/* Contenedor de detalles CON SCROLL PROPIO */
+/* Sección de detalles con scroll PROPIO */
 .detalles-section {
   display: flex;
   flex-direction: column;
   min-height: 200px;
-  max-height: 50vh;
-  overflow: hidden;
+  max-height: 400px; /* Altura máxima fija */
 }
 
 .detalles-container {
@@ -162,16 +161,39 @@
   padding-right: 4px;
   margin-bottom: 12px;
   min-height: 100px;
+  
+  /* Scrollbar personalizado */
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
 }
 
-/* Items individuales de detalle */
+.detalles-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detalles-container::-webkit-scrollbar-track {
+  background: #f8f8f8;
+  border-radius: 3px;
+}
+
+.detalles-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.detalles-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Items de detalle */
 .detalle-item {
+  flex-shrink: 0; /* Previene que los items se compriman */
+  min-height: 120px; /* Altura mínima consistente */
   border: 1px solid #e1e8ed;
   border-radius: 8px;
   background: #f8f9fa;
   overflow: hidden;
   transition: all 0.2s ease;
-  position: relative;
 }
 
 .detalle-item:hover {
@@ -234,7 +256,7 @@
   cursor: not-allowed;
 }
 
-/* Grid de campos del detalle - RESPONSIVE */
+/* Asegurar que el grid de detalles sea responsive */
 .detalle-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
@@ -306,7 +328,7 @@
   line-height: 1.5;
 }
 
-/* Sección de Resumen - SIEMPRE VISIBLE */
+/* Sección de Resumen */
 .summary-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
@@ -363,7 +385,7 @@
   color: white;
 }
 
-/* Acciones del Dialog - FIJAS EN LA PARTE INFERIOR */
+/* Acciones fijas en la parte inferior */
 .dialog-actions {
   display: flex;
   justify-content: space-between;
@@ -439,39 +461,8 @@
   margin-right: 8px;
 }
 
-/* ===== RESPONSIVE DESIGN MEJORADO ===== */
-
-/* Desktop grande */
-@media (min-width: 1200px) {
-  .form-container {
-    padding: 24px 32px;
-  }
-  
-  .detalle-grid {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 16px;
-  }
-}
-
-/* Tabletas grandes */
-@media (min-width: 768px) and (max-width: 1199px) {
-  .detalle-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  
-  .detalle-field:nth-child(3),
-  .detalle-field:nth-child(4) {
-    grid-column: span 1;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-/* Tabletas pequeñas */
-@media (min-width: 600px) and (max-width: 767px) {
+/* RESPONSIVE MEJORADO */
+@media (max-width: 767px) {
   .dialog-header {
     padding: 12px 16px;
   }
@@ -485,10 +476,18 @@
     padding: 12px;
   }
   
+  .detalles-section {
+    max-height: 300px; /* Menor altura en móviles */
+  }
+  
   .detalle-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 10px;
     padding: 12px;
+  }
+  
+  .detalle-item {
+    min-height: auto;
   }
   
   .section-header {
@@ -504,68 +503,6 @@
   .summary-grid {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-}
-
-/* Móviles */
-@media (max-width: 599px) {
-  .dialog-container {
-    height: 100vh;
-    max-height: 100vh;
-  }
-  
-  .dialog-header {
-    padding: 12px 16px;
-    position: relative;
-  }
-  
-  .form-container {
-    padding: 12px 16px;
-    gap: 12px;
-  }
-  
-  .form-section {
-    padding: 12px;
-    border-radius: 6px;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .detalle-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 12px;
-  }
-  
-  .detalle-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    padding: 10px 12px;
-  }
-  
-  .detalle-info {
-    justify-content: space-between;
-  }
-  
-  .section-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  
-  .add-btn {
-    width: 100%;
-    justify-content: center;
-    height: 44px;
-  }
-  
-  .summary-grid {
-    grid-template-columns: 1fr;
-    gap: 10px;
   }
   
   .dialog-actions {
@@ -590,41 +527,20 @@
   }
 }
 
-/* Scrollbars personalizados */
-.dialog-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.dialog-content::-webkit-scrollbar-track {
-  background: #f1f2f6;
-  border-radius: 4px;
-}
-
-.dialog-content::-webkit-scrollbar-thumb {
-  background: #3498db;
-  border-radius: 4px;
-}
-
-.dialog-content::-webkit-scrollbar-thumb:hover {
-  background: #2980b9;
-}
-
-.detalles-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.detalles-container::-webkit-scrollbar-track {
-  background: #f8f9fa;
-  border-radius: 3px;
-}
-
-.detalles-container::-webkit-scrollbar-thumb {
-  background: #bdc3c7;
-  border-radius: 3px;
-}
-
-.detalles-container::-webkit-scrollbar-thumb:hover {
-  background: #95a5a6;
+@media (min-width: 768px) and (max-width: 1023px) {
+  .detalle-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  
+  .detalle-field:nth-child(3),
+  .detalle-field:nth-child(4) {
+    grid-column: span 1;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* Estados de validación mejorados */
@@ -658,28 +574,13 @@
 }
 
 /* Mejoras de accesibilidad */
-@media (prefers-reduced-motion: reduce) {
-  .detalle-item,
-  .add-btn,
-  .cancel-btn,
-  .submit-btn,
-  .delete-btn {
-    animation: none;
-    transition: none;
-  }
-}
-
-/* High contrast mode */
-@media (prefers-contrast: high) {
-  .form-section {
-    border: 2px solid #000;
-  }
-  
-  .detalle-item {
-    border: 2px solid #000;
-  }
-  
-  .summary-section {
-    border: 2px solid #000;
-  }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }

@@ -1,0 +1,103 @@
+<!-- pedido-detalles-modal.component.html - SIN WARNINGS -->
+<div class="detalles-modal-container">
+  <!-- Header -->
+  <div class="modal-header">
+    <h2 mat-dialog-title class="modal-title">
+      <mat-icon class="title-icon">list_alt</mat-icon>
+      Detalles del Pedido #{{ data.pedido.id_pedido }}
+    </h2>
+    <button mat-icon-button (click)="onClose()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Contenido -->
+  <mat-dialog-content class="modal-content">
+    <!-- Información General -->
+    <div class="info-section">
+      <h3 class="section-title">
+        <mat-icon>info</mat-icon>
+        Información General
+      </h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Proveedor:</span>
+          <span class="info-value">{{ data.pedido.proveedor?.razon_social }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Fecha:</span>
+          <span class="info-value">{{ data.pedido.fecha | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Estado:</span>
+          <span class="info-value estado-badge" 
+                [class]="'estado-' + (data.pedido.estado?.estado?.toLowerCase()?.replace(' ', '-') || 'desconocido')">
+            <mat-icon class="estado-icon">{{ getEstadoIcon(data.pedido.estado?.estado) }}</mat-icon>
+            {{ data.pedido.estado?.estado || 'Desconocido' }}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Total:</span>
+          <span class="info-value total-amount">{{ data.pedido.total | currency:'PEN':'S/ ' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles de Insumos -->
+    <div class="detalles-section">
+      <h3 class="section-title">
+        <mat-icon>inventory_2</mat-icon>
+        Insumos del Pedido ({{ data.pedido.detalles.length || 0 }})
+      </h3>
+      
+      <div class="detalles-list">
+        <div *ngFor="let detalle of data.pedido.detalles; let i = index" class="detalle-item">
+          <div class="detalle-header">
+            <span class="item-number">Item {{ i + 1 }}</span>
+            <span class="item-subtotal">{{ detalle.subtotal | currency:'PEN':'S/ ' }}</span>
+          </div>
+          
+          <div class="detalle-content">
+            <div class="detalle-info">
+              <strong>{{ detalle.insumo?.nombre }}</strong>
+              <span class="unidad-medida">{{ detalle.insumo?.unidad_medida }}</span>
+            </div>
+            
+            <div class="detalle-cantidades">
+              <div class="cantidad-item">
+                <span class="label">Cantidad:</span>
+                <span class="value">{{ detalle.cantidad }}</span>
+              </div>
+              <div class="cantidad-item">
+                <span class="label">Costo Unitario:</span>
+                <span class="value">{{ detalle.costo_unitario | currency:'PEN':'S/ ' }}</span>
+              </div>
+              <div class="cantidad-item">
+                <span class="label">Subtotal:</span>
+                <span class="value subtotal">{{ detalle.subtotal | currency:'PEN':'S/ ' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-items" *ngIf="data.pedido.detalles.length === 0">
+        <mat-icon>inventory</mat-icon>
+        <p>No hay insumos en este pedido</p>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <!-- Acciones -->
+  <mat-dialog-actions align="end" class="modal-actions">
+    <button mat-button (click)="onClose()" class="cancel-btn">
+      <mat-icon>close</mat-icon>
+      Cerrar
+    </button>
+    <button mat-raised-button color="primary" (click)="onEdit()" class="edit-btn"
+            *ngIf="data.pedido.id_estado_pedido !== 4 && data.pedido.id_estado_pedido !== 5">
+      <mat-icon>edit</mat-icon>
+      Editar Pedido
+    </button>
+  </mat-dialog-actions>
+</div>
