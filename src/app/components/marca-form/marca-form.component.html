@@ -12,15 +12,9 @@
         Mínimo 2 caracteres
       </mat-error>
     </mat-form-field>
-<!--  <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Descripción</mat-label>
-      <textarea matInput formControlName="descripcion" rows="3"></textarea>
-    </mat-form-field>-->
-  
-
     <div class="buttons">
       <button mat-raised-button color="primary" type="submit" [disabled]="isLoading">
-        {{ data && data.id? 'Actualizar' : 'Guardar' }}
+        {{ data && data.id_marca? 'Actualizar' : 'Guardar' }}
       </button>
       <button mat-button type="button" (click)="cancelar()">Cancelar</button>
     </div>

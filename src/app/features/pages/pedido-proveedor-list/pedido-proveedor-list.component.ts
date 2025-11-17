@@ -1,3 +1,4 @@
+// pedido-proveedor-list.component.ts - CORREGIDO
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
@@ -36,7 +37,7 @@ import { PedidoProveedor } from '../../../core/models/pedido-proveedor.model';
   styleUrls: ['./pedido-proveedor-list.component.css']
 })
 export class PedidoProveedorListComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['id', 'proveedor', 'fecha', 'total', 'estado', 'acciones'];
+  displayedColumns: string[] = ['id_pedido', 'proveedor', 'fecha', 'total', 'estado', 'detalles', 'acciones']; // ✅ Agregar 'detalles'
   dataSource = new MatTableDataSource<PedidoProveedor>([]);
   isLoading = true;
 
@@ -50,13 +51,23 @@ export class PedidoProveedorListComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void { this.loadPedidos(); }
-  ngAfterViewInit(): void { this.dataSource.paginator = this.paginator; this.dataSource.sort = this.sort; }
+  
+  ngAfterViewInit(): void { 
+    this.dataSource.paginator = this.paginator; 
+    this.dataSource.sort = this.sort; 
+  }
 
   loadPedidos(): void {
     this.isLoading = true;
     this.pedidoService.getPedidos().subscribe({
-      next: rows => { this.dataSource.data = rows; this.isLoading = false; },
-      error: () => { this.isLoading = false; this.showError('Error al cargar pedidos'); }
+      next: rows => { 
+        this.dataSource.data = rows; 
+        this.isLoading = false; 
+      },
+      error: () => { 
+        this.isLoading = false; 
+        this.showError('Error al cargar pedidos'); 
+      }
     });
   }
 
@@ -65,28 +76,87 @@ export class PedidoProveedorListComponent implements OnInit, AfterViewInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  addPedido(): void {
-    const dialogRef = this.dialog.open(PedidoProveedorFormComponent, { width: '700px' });
-    dialogRef.afterClosed().subscribe(res => { if(res) this.loadPedidos(); });
-  }
+// En pedido-proveedor-list.component.ts
+// En pedido-proveedor-list.component.ts - actualizar el método addPedido
+addPedido(): void {
+  const dialogRef = this.dialog.open(PedidoProveedorFormComponent, { 
+    width: '800px', // Más ancho para mejor visualización
+    maxWidth: '95vw',
+    height: '85vh', // Mayor altura
+    maxHeight: '85vh',
+    panelClass: ['responsive-dialog', 'pedido-proveedor-dialog'],
+    autoFocus: false,
+    disableClose: true
+  });
+  dialogRef.afterClosed().subscribe(res => { 
+    if(res) this.loadPedidos(); 
+  });
+}
 
-  editPedido(pedido: PedidoProveedor): void {
-    const dialogRef = this.dialog.open(PedidoProveedorFormComponent, { width: '700px', data: { pedido } });
-    dialogRef.afterClosed().subscribe(res => { if(res) this.loadPedidos(); });
-  }
+editPedido(pedido: PedidoProveedor): void {
+  const dialogRef = this.dialog.open(PedidoProveedorFormComponent, { 
+    width: '800px',
+    maxWidth: '95vw',
+    height: '85vh',
+    maxHeight: '85vh',
+    panelClass: ['responsive-dialog', 'pedido-proveedor-dialog'],
+    autoFocus: false,
+    disableClose: true,
+    data: { pedido } 
+  });
+  dialogRef.afterClosed().subscribe(res => { 
+    if(res) this.loadPedidos(); 
+  });
+}
 
   deletePedido(pedido: PedidoProveedor): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, { width: '450px', data: { message: `Eliminar pedido "${pedido.id_pedido}"?` } });
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, { 
+      width: '450px', 
+      data: { message: `¿Eliminar pedido "${pedido.id_pedido}"?` } 
+    });
     dialogRef.afterClosed().subscribe(result => {
       if(result) {
-        this.pedidoService.deletePedido(pedido.id_pedido!).subscribe({
-          next: () => { this.showSuccess('Pedido eliminado'); this.loadPedidos(); },
+        this.pedidoService.deletePedido(pedido.id_pedido).subscribe({
+          next: () => { 
+            this.showSuccess('Pedido eliminado'); 
+            this.loadPedidos(); 
+          },
           error: () => this.showError('Error al eliminar pedido')
         });
       }
     });
   }
 
-  private showSuccess(msg: string) { this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['success-snackbar'] }); }
-  private showError(msg: string) { this.snackBar.open(msg, 'Cerrar', { duration: 5000, panelClass: ['error-snackbar'] }); }
+  // ✅ MÉTODO VER DETALLES CORREGIDO
+  verDetalles(pedido: PedidoProveedor): void {
+    const detallesText = pedido.detalles.map(det => {
+      const subtotalFormateado = new Intl.NumberFormat('es-PE', {
+        style: 'currency',
+        currency: 'PEN',
+        minimumFractionDigits: 2
+      }).format(det.subtotal);
+      
+      return `${det.insumo?.nombre}: ${det.cantidad} ${det.insumo?.unidad_medida} - ${subtotalFormateado}`;
+    }).join('\n');
+
+    this.snackBar.open(`Detalles del pedido:\n${detallesText}`, 'Cerrar', {
+      duration: 8000,
+      panelClass: ['info-snackbar']
+    });
+  }
+
+  // ✅ MOVER MÉTODOS PRIVADOS ARRIBA O DEJARLOS PÚBLICOS
+  private showSuccess(msg: string): void { 
+    this.snackBar.open(msg, 'Cerrar', { 
+      duration: 3000, 
+      panelClass: ['success-snackbar'] 
+    }); 
+  }
+
+  private showError(msg: string): void { 
+    this.snackBar.open(msg, 'Cerrar', { 
+      duration: 5000, 
+      panelClass: ['error-snackbar'] 
+    }); 
+  }
 }

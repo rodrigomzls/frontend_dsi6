@@ -1,11 +1,9 @@
-// src/app/core/services/pedido-proveedor.service.ts
+// pedido-proveedor.service.ts - ACTUALIZADO PARA NUEVA ESTRUCTURA
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { PedidoProveedor, PedidoProveedorCreate, PedidoProveedorUpdate } from '../models/pedido-proveedor.model';
-
-// src/app/core/services/pedido-proveedor.service.ts - CORREGIDO
 
 @Injectable({ providedIn: 'root' })
 export class PedidoProveedorService {

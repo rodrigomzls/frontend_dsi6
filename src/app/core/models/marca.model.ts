@@ -1,6 +1,6 @@
 // src/app/core/models/marca.model.ts
 export interface Marca {
-  id: number;        // ← Cambiar id_marca por id para coincidir con la BD
+  id_marca: number;        // ← Cambiar id_marca por id para coincidir con la BD
   nombre: string;
 }
 

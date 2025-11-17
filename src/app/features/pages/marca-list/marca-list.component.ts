@@ -88,7 +88,7 @@ deleteMarca(marca: Marca): void {
   });
   dialogRef.afterClosed().subscribe(result => {
     if (result) {
-      this.marcaService.deleteMarca(marca.id).subscribe({ // ← Cambiar id_marca por id
+      this.marcaService.deleteMarca(marca.id_marca).subscribe({ // ← Cambiar id_marca por id
         next: () => { 
           this.showSuccess('Marca eliminada'); 
           this.loadMarcas(); 

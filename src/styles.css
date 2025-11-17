@@ -276,3 +276,78 @@ app-footer {
 .mat-dialog-content {
   max-height: 65vh !important;
 }
+/* Estilos globales para diálogos responsivos */
+.responsive-dialog .mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.fullscreen-dialog .mat-mdc-dialog-container {
+  max-width: none !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Asegurar que el contenido del diálogo sea responsive */
+.mat-mdc-dialog-content {
+  max-height: none !important;
+}
+
+/* Corrección para el scroll */
+.dialog-content {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+/* Estilos específicos para diálogos de pedidos proveedor */
+.responsive-dialog .mat-mdc-dialog-container {
+  border-radius: 8px !important;
+}
+
+.responsive-dialog .mat-mdc-dialog-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-height: none !important;
+}
+
+/* Prevenir espacios sobrantes en diálogos */
+.cdk-overlay-pane.responsive-dialog {
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+}
+
+/* Asegurar que el contenido ocupe todo el espacio disponible */
+.responsive-dialog .dialog-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Eliminar márgenes sobrantes */
+.responsive-dialog .form-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+/* Estilos específicos para diálogos de pedidos proveedor */
+.pedido-proveedor-dialog .mat-mdc-dialog-container {
+  border-radius: 12px !important;
+}
+
+.pedido-proveedor-dialog .mat-mdc-dialog-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Asegurar que el diálogo ocupe el espacio completo */
+.cdk-overlay-pane.pedido-proveedor-dialog {
+  max-width: 95vw !important;
+  max-height: 95vh !important;
+}
+
+/* Prevenir overflow en el contenido del diálogo */
+.pedido-proveedor-dialog .dialog-content {
+  flex: 1;
+  overflow: hidden;
+}

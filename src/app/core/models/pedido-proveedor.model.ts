@@ -1,43 +1,46 @@
-// src/app/core/models/pedido-proveedor.model.ts
+// src/app/core/models/pedido-proveedor.model.ts - ACTUALIZADO
 export interface PedidoProveedor {
   id_pedido: number;
   id_proveedor: number;
-  id_producto: number;
   fecha: string;
-  cantidad: number;
   id_estado_pedido: number;
-  costo_unitario?: number;
-  total?: number;
+  total: number;
   fecha_creacion: string;
   fecha_actualizacion: string;
 
-  // Datos del proveedor y producto (JOIN)
+  // Datos del proveedor y estado
   proveedor?: {
     razon_social: string;
-  };
-  producto?: {
-    nombre: string;
-    descripcion?: string;
   };
   estado?: {
     id_estado_pedido: number;
     estado: string;
   };
+  
+  // NUEVO: Array de detalles con insumos
+  detalles: PedidoProveedorDetalle[];
+}
+
+export interface PedidoProveedorDetalle {
+  id_detalle?: number;
+  id_insumo: number;
+  cantidad: number;
+  costo_unitario: number;
+  subtotal: number;
+  insumo?: {
+    nombre: string;
+    unidad_medida: string;
+  };
 }
 
 export interface PedidoProveedorCreate {
   id_proveedor: number;
-  id_producto: number;
   fecha: string;
-  cantidad: number;
   id_estado_pedido: number;
-  costo_unitario?: number;
-  total?: number;
+  detalles: Omit<PedidoProveedorDetalle, 'id_detalle' | 'subtotal' | 'insumo'>[];
 }
 
 export interface PedidoProveedorUpdate {
-  cantidad?: number;
   id_estado_pedido?: number;
-  costo_unitario?: number;
-  total?: number;
+  // Para updates simples del estado
 }

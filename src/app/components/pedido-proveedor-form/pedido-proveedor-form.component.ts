@@ -1,15 +1,13 @@
-// src/components/pedido-proveedor-form/pedido-proveedor-form.component.ts - CORREGIDO
-
+// pedido-proveedor-form.component.ts - CORREGIDO
 import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { PedidoProveedorCreate, PedidoProveedor } from '../../core/models/pedido-proveedor.model';
+import { PedidoProveedorCreate, PedidoProveedor, PedidoProveedorDetalle } from '../../core/models/pedido-proveedor.model';
 import { PedidoProveedorService } from '../../core/services/pedido-proveedor.service';
 import { ProveedorService } from '../../core/services/proveedor.service';
-import { ProductService } from '../../core/services/producto.service';
+import { InsumoService, Insumo } from '../../core/services/insumo.service';
 import { Proveedor } from '../../core/models/proveedor.model';
-import { Product } from '../../core/models/producto.model';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -19,6 +17,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { Subject, takeUntil } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 interface EstadoPedido {
   id_estado_pedido: number;
@@ -41,39 +40,52 @@ interface EstadoPedido {
     MatDatepickerModule,
     MatNativeDateModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressSpinnerModule
   ]
 })
 export class PedidoProveedorFormComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   proveedores: Proveedor[] = [];
-  productos: Product[] = [];
+  insumos: Insumo[] = [];
   estados: EstadoPedido[] = [];
   isEditMode = false;
   isLoading = false;
+    // AGREGAR ESTAS PROPIEDADES PARA EL DATEPICKER
+  minDate: Date;
+  maxDate: Date;
 
   private destroy$ = new Subject<void>();
 
-  constructor(
-    private fb: FormBuilder,
-    private pedidoService: PedidoProveedorService,
-    private proveedorService: ProveedorService,
-    private productService: ProductService,
-    private snackBar: MatSnackBar,
-    public dialogRef: MatDialogRef<PedidoProveedorFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { pedido?: PedidoProveedor }
-  ) { 
-    this.isEditMode = !!data?.pedido;
-  }
+ // En el constructor de pedido-proveedor-form.component.ts
+constructor(
+  private fb: FormBuilder,
+  private pedidoService: PedidoProveedorService,
+  private proveedorService: ProveedorService,
+  private insumoService: InsumoService,
+  private snackBar: MatSnackBar,
+  public dialogRef: MatDialogRef<PedidoProveedorFormComponent>,
+  @Inject(MAT_DIALOG_DATA) public data: { pedido?: PedidoProveedor }
+) { 
+  this.isEditMode = !!data?.pedido;
+  
+  // ✅ CONFIGURACIÓN CORRECTA DE FECHAS
+  const today = new Date();
+  this.minDate = new Date(today); // Hoy como fecha mínima
+  this.maxDate = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()); // 1 año en el futuro
+}
 
   ngOnInit(): void {
     this.initForm();
     this.loadProveedores();
-    this.loadProductos();
+    this.loadInsumos();
     this.loadEstados();
     
     if (this.isEditMode && this.data.pedido) {
       this.loadPedidoData(this.data.pedido);
+    } else {
+      // Agregar un detalle vacío por defecto
+      this.agregarDetalle();
     }
   }
 
@@ -82,37 +94,101 @@ export class PedidoProveedorFormComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  initForm(): void {
-    this.form = this.fb.group({
-      id_proveedor: [null, Validators.required],
-      id_producto: [null, Validators.required],
-      fecha: [new Date().toISOString().split('T')[0], Validators.required],
-      cantidad: [1, [Validators.required, Validators.min(1)]],
-      id_estado_pedido: [1, Validators.required],
-      costo_unitario: [0, [Validators.required, Validators.min(0)]],
-      total: [{ value: 0, disabled: true }]
-    });
+  // Getters para facilitar el acceso a los FormArrays
+  get detalles(): FormArray {
+    return this.form.get('detalles') as FormArray;
+  }
 
-    // Actualizar total automáticamente
-    this.form.get('cantidad')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.updateTotal());
-      
-    this.form.get('costo_unitario')?.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.updateTotal());
+  getDetalleControl(index: number, controlName: string) {
+    return this.detalles.at(index).get(controlName);
+  }
+
+// Y en initForm(), cambia:
+initForm(): void {
+  this.form = this.fb.group({
+    id_proveedor: [null, Validators.required],
+    fecha: [this.getCurrentDate(), [Validators.required]], // ✅ Ahora usa Date
+    id_estado_pedido: [1, Validators.required],
+    total: [0],
+    detalles: this.fb.array([])
+  });
+
+  // Escuchar cambios para calcular total automáticamente
+  this.detalles.valueChanges
+    .pipe(takeUntil(this.destroy$))
+    .subscribe(() => this.calcularTotal());
+}
+  crearDetalleFormGroup(detalle?: any): FormGroup {
+    return this.fb.group({
+      id_insumo: [detalle?.id_insumo || null, Validators.required],
+      cantidad: [detalle?.cantidad || 1, [Validators.required, Validators.min(1)]],
+      costo_unitario: [detalle?.costo_unitario || 0, [Validators.required, Validators.min(0)]],
+      subtotal: [{ value: detalle?.subtotal || 0, disabled: true }]
+    });
+  }
+
+ // Mejorar la adición de detalles
+agregarDetalle(): void {
+  this.detalles.push(this.crearDetalleFormGroup());
+  
+  // Scroll al nuevo elemento después de un breve delay
+  setTimeout(() => {
+    const detallesContainer = document.querySelector('.detalles-container');
+    if (detallesContainer) {
+      detallesContainer.scrollTop = detallesContainer.scrollHeight;
+    }
+  }, 100);
+}
+  eliminarDetalle(index: number): void {
+    if (this.detalles.length > 1) {
+      this.detalles.removeAt(index);
+    }
+  }
+
+ actualizarSubtotal(index: number): void {
+  const detalleGroup = this.detalles.at(index) as FormGroup;
+  const cantidad = detalleGroup.get('cantidad')?.value || 0;
+  const costo = detalleGroup.get('costo_unitario')?.value || 0;
+  const subtotal = cantidad * costo;
+  
+  detalleGroup.get('subtotal')?.setValue(subtotal, { emitEvent: false });
+  this.calcularTotal();
+  
+  // Forzar detección de cambios para actualizar la UI
+  this.detalles.updateValueAndValidity();
+}
+
+  calcularTotal(): void {
+    let total = 0;
+    this.detalles.controls.forEach(detalle => {
+      const detalleGroup = detalle as FormGroup;
+      const subtotal = detalleGroup.get('subtotal')?.value || 0;
+      total += subtotal;
+    });
+    this.form.get('total')?.setValue(total, { emitEvent: false });
   }
 
   loadPedidoData(pedido: PedidoProveedor): void {
     this.form.patchValue({
       id_proveedor: pedido.id_proveedor,
-      id_producto: pedido.id_producto,
       fecha: pedido.fecha,
-      cantidad: pedido.cantidad,
       id_estado_pedido: pedido.id_estado_pedido,
-      costo_unitario: pedido.costo_unitario || 0
+      total: pedido.total
     });
-    this.updateTotal();
+
+    // Limpiar detalles existentes y cargar los del pedido
+    while (this.detalles.length !== 0) {
+      this.detalles.removeAt(0);
+    }
+
+    pedido.detalles.forEach(detalle => {
+      this.detalles.push(this.crearDetalleFormGroup({
+        id_insumo: detalle.id_insumo,
+        cantidad: detalle.cantidad,
+        costo_unitario: detalle.costo_unitario,
+        subtotal: detalle.subtotal
+      }));
+    });
   }
 
   loadProveedores(): void {
@@ -122,10 +198,10 @@ export class PedidoProveedorFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadProductos(): void {
-    this.productService.getProducts().subscribe({
-      next: data => this.productos = data,
-      error: () => this.showError('Error al cargar productos')
+  loadInsumos(): void {
+    this.insumoService.getInsumos().subscribe({
+      next: data => this.insumos = data,
+      error: () => this.showError('Error al cargar insumos')
     });
   }
 
@@ -145,30 +221,31 @@ export class PedidoProveedorFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateTotal(): void {
-    const cantidad = this.form.get('cantidad')?.value || 0;
-    const costo = this.form.get('costo_unitario')?.value || 0;
-    const total = cantidad * costo;
-    this.form.get('total')?.setValue(total);
-  }
-
   submit(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.detalles.length === 0) {
       this.markFormGroupTouched();
+      if (this.detalles.length === 0) {
+        this.showError('Debe agregar al menos un insumo al pedido');
+      }
       return;
     }
 
     this.isLoading = true;
 
     const formValue = this.form.getRawValue();
+    
+    // Preparar detalles para el backend (sin subtotal)
+    const detallesParaBackend = formValue.detalles.map((detalle: any) => ({
+      id_insumo: detalle.id_insumo,
+      cantidad: detalle.cantidad,
+      costo_unitario: detalle.costo_unitario
+    }));
+
     const payload: PedidoProveedorCreate = {
       id_proveedor: formValue.id_proveedor,
-      id_producto: formValue.id_producto,
       fecha: formValue.fecha,
-      cantidad: formValue.cantidad,
       id_estado_pedido: formValue.id_estado_pedido,
-      costo_unitario: formValue.costo_unitario,
-      total: formValue.total
+      detalles: detallesParaBackend
     };
 
     const request = this.isEditMode 
@@ -192,10 +269,39 @@ export class PedidoProveedorFormComponent implements OnInit, OnDestroy {
     });
   }
 
+
+// Agregar estos métodos en la clase PedidoProveedorFormComponent
+
+getUnidadMedida(index: number): string {
+  const idInsumo = this.getDetalleControl(index, 'id_insumo')?.value;
+  if (!idInsumo) return 'und';
+  
+  const insumo = this.insumos.find(i => i.id_insumo === idInsumo);
+  return insumo?.unidad_medida || 'und';
+}
+
+getNombreInsumo(index: number): string {
+  const idInsumo = this.getDetalleControl(index, 'id_insumo')?.value;
+  if (!idInsumo) return '';
+  
+  const insumo = this.insumos.find(i => i.id_insumo === idInsumo);
+  return insumo?.nombre || '';
+}
+
+
+  // ✅ MÉTODO CORREGIDO - USAR FormGroup en lugar de AbstractControl
   private markFormGroupTouched(): void {
     Object.keys(this.form.controls).forEach(key => {
       const control = this.form.get(key);
       control?.markAsTouched();
+    });
+
+    // Marcar todos los detalles como touched
+    this.detalles.controls.forEach((detalle, index) => {
+      const detalleGroup = this.detalles.at(index) as FormGroup;
+      Object.keys(detalleGroup.controls).forEach(controlName => {
+        detalleGroup.get(controlName)?.markAsTouched();
+      });
     });
   }
 
@@ -213,6 +319,14 @@ export class PedidoProveedorFormComponent implements OnInit, OnDestroy {
     });
   }
 
+// AGREGAR ESTE MÉTODO para obtener la fecha correcta
+// En pedido-proveedor-form.component.ts - REEMPLAZAR EL MÉTODO getCurrentDate
+// En pedido-proveedor-form.component.ts - REEMPLAZAR EL MÉTODO getCurrentDate
+private getCurrentDate(): Date {
+  const now = new Date();
+  // ✅ ESTO GARANTIZA QUE SIEMPRE USE LA FECHA ACTUAL
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
   onCancel(): void {
     this.dialogRef.close(false);
   }
