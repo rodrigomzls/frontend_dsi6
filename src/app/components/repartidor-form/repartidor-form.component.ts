@@ -6,6 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -28,6 +30,8 @@ import { Persona } from '../../core/models/persona.model';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     MatProgressSpinnerModule,
     MatCheckboxModule
   ],
@@ -49,6 +53,8 @@ export class RepartidorFormComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: { repartidor?: Repartidor }
   ) {
     this.repartidorForm = this.createForm();
+    // ✅ CONFIGURACIÓN CORRECTA DE FECHAS
+  const today = new Date();
   }
 
   ngOnInit(): void {
@@ -58,6 +64,22 @@ export class RepartidorFormComponent implements OnInit {
       this.loadFormData(this.data.repartidor);
     }
   }
+
+// Y en initForm(), cambia:
+initForm(): void {
+  this.repartidorForm = this.fb.group({
+    id_repartidor: [null, Validators.required],
+    fecha_contratacion: [this.getCurrentDate(), [Validators.required]], // ✅ Ahora usa Date
+  });
+}
+
+
+
+
+
+
+
+
 
   private createForm(): FormGroup {
     return this.fb.group({
@@ -111,6 +133,14 @@ export class RepartidorFormComponent implements OnInit {
       this.snackBar.open('Complete los campos requeridos', 'Cerrar', { duration: 3000, panelClass: ['warn-snackbar'] });
     }
   }
+
+private getCurrentDate(): Date {
+  const now = new Date();
+  // ✅ ESTO GARANTIZA QUE SIEMPRE USE LA FECHA ACTUAL
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+
 
   onCancel(): void {
     this.dialogRef.close(false);

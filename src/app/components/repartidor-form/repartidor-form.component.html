@@ -15,7 +15,15 @@
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Fecha de contratación</mat-label>
-      <input matInput type="date" formControlName="fecha_contratacion" />
+      <input matInput
+            [matDatepicker]="picker" 
+            formControlName="fecha_contratacion"
+            placeholder="DD/MM/AAAA">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="repartidorForm.get('fecha_contratacion')?.hasError('required')">
+              Fecha requerida
+            </mat-error>
     </mat-form-field>
 
     <mat-checkbox formControlName="activo">Activo</mat-checkbox>
