@@ -1,4 +1,4 @@
-<!-- pedido-detalles-modal.component.html - SIN WARNINGS -->
+<!-- pedido-detalles-modal.component.html - ESTRUCTURA CORREGIDA -->
 <div class="detalles-modal-container">
   <!-- Header -->
   <div class="modal-header">
@@ -11,7 +11,7 @@
     </button>
   </div>
 
-  <!-- Contenido -->
+  <!-- Contenido principal SIN scroll -->
   <mat-dialog-content class="modal-content">
     <!-- Información General -->
     <div class="info-section">
@@ -22,7 +22,7 @@
       <div class="info-grid">
         <div class="info-item">
           <span class="info-label">Proveedor:</span>
-          <span class="info-value">{{ data.pedido.proveedor?.razon_social }}</span>
+          <span class="info-value">{{ data.pedido.proveedor?.razon_social || 'No especificado' }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">Fecha:</span>
@@ -43,37 +43,44 @@
       </div>
     </div>
 
-    <!-- Detalles de Insumos -->
+    <!-- Detalles de Insumos CON SCROLL PROPIO -->
     <div class="detalles-section">
-      <h3 class="section-title">
-        <mat-icon>inventory_2</mat-icon>
-        Insumos del Pedido ({{ data.pedido.detalles.length || 0 }})
-      </h3>
+      <div class="section-header">
+        <h3 class="section-title">
+          <mat-icon>inventory_2</mat-icon>
+          Insumos del Pedido
+        </h3>
+        <div class="items-count-badge" *ngIf="data.pedido.detalles.length > 0">
+          {{ data.pedido.detalles.length }} items
+        </div>
+      </div>
       
-      <div class="detalles-list">
-        <div *ngFor="let detalle of data.pedido.detalles; let i = index" class="detalle-item">
-          <div class="detalle-header">
-            <span class="item-number">Item {{ i + 1 }}</span>
-            <span class="item-subtotal">{{ detalle.subtotal | currency:'PEN':'S/ ' }}</span>
-          </div>
-          
-          <div class="detalle-content">
-            <div class="detalle-info">
-              <strong>{{ detalle.insumo?.nombre }}</strong>
-              <span class="unidad-medida">{{ detalle.insumo?.unidad_medida }}</span>
+      <!-- Contenedor de scroll para detalles -->
+      <div class="detalles-scroll-container" *ngIf="data.pedido.detalles.length > 0">
+        <div class="detalles-list" [class.compact-view]="data.pedido.detalles.length > 3">
+          <div *ngFor="let detalle of data.pedido.detalles; let i = index" class="detalle-item">
+            <div class="detalle-header">
+              <div class="item-info">
+                <div class="item-name">{{ detalle.insumo?.nombre || 'Insumo no especificado' }}</div>
+                <span class="unidad-medida">
+                  <mat-icon>scale</mat-icon>
+                  {{ detalle.insumo?.unidad_medida || 'No especificada' }}
+                </span>
+              </div>
+              <div class="item-subtotal">{{ detalle.subtotal | currency:'PEN':'S/ ' }}</div>
             </div>
             
             <div class="detalle-cantidades">
               <div class="cantidad-item">
-                <span class="label">Cantidad:</span>
-                <span class="value">{{ detalle.cantidad }}</span>
+                <span class="label">Cantidad</span>
+                <span class="value">{{ detalle.cantidad | number }}</span>
               </div>
               <div class="cantidad-item">
-                <span class="label">Costo Unitario:</span>
+                <span class="label">Costo Unit.</span>
                 <span class="value">{{ detalle.costo_unitario | currency:'PEN':'S/ ' }}</span>
               </div>
               <div class="cantidad-item">
-                <span class="label">Subtotal:</span>
+                <span class="label">Subtotal</span>
                 <span class="value subtotal">{{ detalle.subtotal | currency:'PEN':'S/ ' }}</span>
               </div>
             </div>
@@ -88,7 +95,7 @@
     </div>
   </mat-dialog-content>
 
-  <!-- Acciones -->
+  <!-- Acciones fijas -->
   <mat-dialog-actions align="end" class="modal-actions">
     <button mat-button (click)="onClose()" class="cancel-btn">
       <mat-icon>close</mat-icon>

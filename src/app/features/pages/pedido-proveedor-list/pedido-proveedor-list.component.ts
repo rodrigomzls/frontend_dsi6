@@ -247,13 +247,6 @@ export class PedidoProveedorListComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
-
-
-
-
-
-
   // ✅ NUEVO MÉTODO: Obtener cantidad de items de forma segura
   getCantidadItems(pedido: PedidoProveedor): number {
     return pedido.detalles?.length || 0;
@@ -326,29 +319,21 @@ export class PedidoProveedorListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // ✅ NUEVO MÉTODO - Modal de detalles mejorado
-  verDetallesModal(pedido: PedidoProveedor): void {
-    const dialogRef = this.dialog.open(PedidoDetallesModalComponent, {
-      width: this.isMobileView ? '95vw' : '600px',
-      maxWidth: '95vw',
-      maxHeight: '90vh',
-      panelClass: ['responsive-dialog', 'detalles-modal'],
-      data: { 
-        pedido,
-        onEdit: (pedidoToEdit: PedidoProveedor) => {
-          // ✅ Callback para editar directamente desde el modal
-          this.editPedido(pedidoToEdit);
-        }
+verDetallesModal(pedido: PedidoProveedor): void {
+  const dialogRef = this.dialog.open(PedidoDetallesModalComponent, {
+    width: this.isMobileView ? '95vw' : '700px', // Ancho reducido para mejor aspecto
+    maxWidth: '95vw',
+    height: this.isMobileView ? '85vh' : '600px', // Altura fija controlada
+    maxHeight: '90vh',
+    panelClass: ['responsive-dialog', 'detalles-modal'],
+    data: { 
+      pedido,
+      onEdit: (pedidoToEdit: PedidoProveedor) => {
+        this.editPedido(pedidoToEdit);
       }
-    });
-    
-    dialogRef.afterClosed().subscribe(result => {
-      if (result === 'edit') {
-        this.editPedido(pedido);
-      }
-    });
-  }
-
+    }
+  });
+}
   // ✅ MÉTODO PARA CAMBIAR ESTADO RÁPIDO
   cambiarEstado(pedido: PedidoProveedor, nuevoEstado: number): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {

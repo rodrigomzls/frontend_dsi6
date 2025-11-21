@@ -31,7 +31,7 @@
           <span *ngIf="clienteForm.get('tipo_documento')?.value === 'DNI'">8 dígitos (opcional)</span>
           <span *ngIf="clienteForm.get('tipo_documento')?.value === 'RUC'">11 dígitos (opcional)</span>
           <span *ngIf="clienteForm.get('tipo_documento')?.value === 'CE'">9-12 caracteres (opcional)</span>
-          <span *ngIf="clienteForm.get('tipo_documento')?.value === 'NO_ESPECIFICADO'">Opcional - se generará automáticamente</span>
+          <span *ngIf="clienteForm.get('tipo_documento')?.value === 'NO_ESPECIFICADO'"></span>
         </mat-hint>
         <mat-error>{{ getDocumentoError() }}</mat-error>
       </mat-form-field>
@@ -58,7 +58,7 @@
                (keypress)="prevenirCaracteresNoPermitidos($event, 'numero')"
                placeholder="912345678"
                maxlength="9"/>
-        <mat-hint>9 dígitos que empiezan con 9</mat-hint>
+        <mat-hint>9 dígitos</mat-hint>
         <mat-error>{{ getTelefonoError() }}</mat-error>
       </mat-form-field>
 
@@ -91,11 +91,6 @@
                   rows="2" 
                   placeholder="Dirección del cliente (opcional)"></textarea>
       </mat-form-field>
-    </div>
-
-    <div class="info-message">
-      <mat-icon>info</mat-icon>
-      <span>Solo los campos marcados con * son obligatorios. El documento es opcional para ventas rápidas.</span>
     </div>
 
   </form>

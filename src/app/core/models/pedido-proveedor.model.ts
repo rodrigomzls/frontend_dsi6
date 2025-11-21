@@ -40,7 +40,11 @@ export interface PedidoProveedorCreate {
   detalles: Omit<PedidoProveedorDetalle, 'id_detalle' | 'subtotal' | 'insumo'>[];
 }
 
+// En src/app/core/models/pedido-proveedor.model.ts
 export interface PedidoProveedorUpdate {
   id_estado_pedido?: number;
-  // Para updates simples del estado
+  // ✅ AGREGAR PARA PERMITIR ACTUALIZACIÓN COMPLETA
+  id_proveedor?: number;
+  fecha?: string;
+  detalles?: Omit<PedidoProveedorDetalle, 'id_detalle' | 'subtotal' | 'insumo'>[];
 }

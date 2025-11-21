@@ -104,16 +104,16 @@ constructor(
   }
 
 // Y en initForm(), cambia:
+// Asegurar que en creación siempre sea "Solicitado"
 initForm(): void {
   this.form = this.fb.group({
     id_proveedor: [null, Validators.required],
-    fecha: [this.getCurrentDate(), [Validators.required]], // ✅ Ahora usa Date
-    id_estado_pedido: [1, Validators.required],
-    total: [0],
+    fecha: [this.getCurrentDate(), [Validators.required]],
+    id_estado_pedido: [1, Validators.required], // ✅ SIEMPRE 1 en creación
+    total: [0, Validators.min(0)],
     detalles: this.fb.array([])
   });
 
-  // Escuchar cambios para calcular total automáticamente
   this.detalles.valueChanges
     .pipe(takeUntil(this.destroy$))
     .subscribe(() => this.calcularTotal());
@@ -163,9 +163,9 @@ agregarDetalle(): void {
     this.detalles.controls.forEach(detalle => {
       const detalleGroup = detalle as FormGroup;
       const subtotal = detalleGroup.get('subtotal')?.value || 0;
-      total += subtotal;
+      total += Number(subtotal); // ✅ Convertir a número
     });
-    this.form.get('total')?.setValue(total, { emitEvent: false });
+    this.form.get('total')?.setValue(Number(total.toFixed(2)), { emitEvent: false }); // ✅ Asegurar número con 2 decimales
   }
 
   loadPedidoData(pedido: PedidoProveedor): void {
@@ -173,7 +173,7 @@ agregarDetalle(): void {
       id_proveedor: pedido.id_proveedor,
       fecha: pedido.fecha,
       id_estado_pedido: pedido.id_estado_pedido,
-      total: pedido.total
+      total: Number(pedido.total) || 0 // ✅ Convertir a número
     });
 
     // Limpiar detalles existentes y cargar los del pedido
@@ -221,54 +221,55 @@ agregarDetalle(): void {
     });
   }
 
-  submit(): void {
-    if (this.form.invalid || this.detalles.length === 0) {
-      this.markFormGroupTouched();
-      if (this.detalles.length === 0) {
-        this.showError('Debe agregar al menos un insumo al pedido');
-      }
-      return;
+// En pedido-proveedor-form.component.ts - ACTUALIZAR EL MÉTODO SUBMIT
+submit(): void {
+  if (this.form.invalid || this.detalles.length === 0) {
+    this.markFormGroupTouched();
+    if (this.detalles.length === 0) {
+      this.showError('Debe agregar al menos un insumo al pedido');
     }
-
-    this.isLoading = true;
-
-    const formValue = this.form.getRawValue();
-    
-    // Preparar detalles para el backend (sin subtotal)
-    const detallesParaBackend = formValue.detalles.map((detalle: any) => ({
-      id_insumo: detalle.id_insumo,
-      cantidad: detalle.cantidad,
-      costo_unitario: detalle.costo_unitario
-    }));
-
-    const payload: PedidoProveedorCreate = {
-      id_proveedor: formValue.id_proveedor,
-      fecha: formValue.fecha,
-      id_estado_pedido: formValue.id_estado_pedido,
-      detalles: detallesParaBackend
-    };
-
-    const request = this.isEditMode 
-      ? this.pedidoService.updatePedido(this.data.pedido!.id_pedido, payload)
-      : this.pedidoService.createPedido(payload);
-
-    request.subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.showSuccess(
-          this.isEditMode 
-            ? 'Pedido actualizado correctamente' 
-            : 'Pedido creado correctamente'
-        );
-        this.dialogRef.close(true);
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.showError(error.message || 'Error al guardar el pedido');
-      }
-    });
+    return;
   }
 
+  this.isLoading = true;
+
+  const formValue = this.form.getRawValue();
+  
+  // Preparar detalles para el backend (sin subtotal)
+  const detallesParaBackend = formValue.detalles.map((detalle: any) => ({
+    id_insumo: detalle.id_insumo,
+    cantidad: detalle.cantidad,
+    costo_unitario: detalle.costo_unitario
+  }));
+
+  // ✅ PAYLOAD COMPLETO PARA ACTUALIZACIÓN
+  const payload: any = {
+    id_proveedor: formValue.id_proveedor,
+    fecha: formValue.fecha,
+    id_estado_pedido: formValue.id_estado_pedido,
+    detalles: detallesParaBackend
+  };
+
+  const request = this.isEditMode 
+    ? this.pedidoService.updatePedido(this.data.pedido!.id_pedido, payload)
+    : this.pedidoService.createPedido(payload);
+
+  request.subscribe({
+    next: (response) => {
+      this.isLoading = false;
+      this.showSuccess(
+        this.isEditMode 
+          ? 'Pedido actualizado correctamente' 
+          : 'Pedido creado correctamente'
+      );
+      this.dialogRef.close(true);
+    },
+    error: (error) => {
+      this.isLoading = false;
+      this.showError(error.message || 'Error al guardar el pedido');
+    }
+  });
+}
 
 // Agregar estos métodos en la clase PedidoProveedorFormComponent
 
@@ -326,6 +327,45 @@ private getCurrentDate(): Date {
   const now = new Date();
   // ✅ ESTO GARANTIZA QUE SIEMPRE USE LA FECHA ACTUAL
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+// Agregar este método en la clase
+getTotalFormateado(): string {
+  const total = this.form.get('total')?.value;
+  if (total === null || total === undefined || isNaN(total)) {
+    return 'S/ 0.00';
+  }
+  
+  // Asegurar que sea número y formatear
+  const numero = Number(total);
+  return new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(numero);
+}
+
+// Método para verificar si se puede editar
+puedeEditarPedido(): boolean {
+  if (!this.isEditMode || !this.data.pedido) {
+    return true; // Siempre se puede crear nuevo pedido
+  }
+  
+  const estadoActual = this.data.pedido.id_estado_pedido;
+  
+  // ✅ SOLO impedir edición en estados finales
+  const estadosNoEditables = [4, 5]; // Recibido, Cancelado
+  
+  return !estadosNoEditables.includes(estadoActual);
+}
+
+// Método para obtener el estado actual formateado
+getEstadoActual(): string {
+  if (!this.data.pedido) return 'Solicitado';
+  
+  const estado = this.estados.find(e => e.id_estado_pedido === this.data.pedido!.id_estado_pedido);
+  return estado?.estado || 'Desconocido';
 }
   onCancel(): void {
     this.dialogRef.close(false);

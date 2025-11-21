@@ -31,9 +31,10 @@ export class PedidoProveedorService {
     return this.http.post<any>(this.apiUrl, payload).pipe(catchError(this.handleError));
   }
 
-  updatePedido(id: number, payload: PedidoProveedorUpdate): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(catchError(this.handleError));
-  }
+  // En pedido-proveedor.service.ts - ya debería estar bien, pero verifica
+updatePedido(id: number, payload: PedidoProveedorUpdate): Observable<any> {
+  return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(catchError(this.handleError));
+}
 
   deletePedido(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));

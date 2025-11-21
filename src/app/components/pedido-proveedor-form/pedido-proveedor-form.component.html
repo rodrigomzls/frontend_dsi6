@@ -1,4 +1,4 @@
-<!-- pedido-proveedor-form.component.html - VERSIÓN MEJORADA -->
+<!-- pedido-proveedor-form.component.html - VERSIÓN FINAL MEJORADA -->
 <div class="dialog-container">
   <!-- Header fijo -->
   <div class="dialog-header">
@@ -55,17 +55,27 @@
             </mat-error>
           </mat-form-field>
 
-          <!-- Estado -->
-          <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Estado *</mat-label>
-            <mat-select formControlName="id_estado_pedido">
-              <mat-option *ngFor="let estado of estados" [value]="estado.id_estado_pedido">
-                {{ estado.estado }}
-              </mat-option>
-            </mat-select>
-            <mat-icon matSuffix>flag</mat-icon>
-          </mat-form-field>
+          <!-- Estado: SOLO información visual MEJORADA -->
+          <div class="estado-display" [class.estado-creacion]="!isEditMode" [class.estado-info]="isEditMode">
+            <mat-icon>{{ isEditMode ? 'info' : 'pending_actions' }}</mat-icon>
+            <div class="estado-info-content">
+              <span class="estado-label">{{ isEditMode ? 'Estado actual' : 'Estado del Pedido' }}</span>
+              <span class="estado-value">{{ isEditMode ? getEstadoActual() : 'Solicitado' }}</span>
+              <small>
+                {{ isEditMode 
+                  ? 'Use el menú de acciones en la lista para cambiar el estado' 
+                  : 'Los pedidos nuevos se crean en estado "Solicitado" por defecto' 
+                }}
+              </small>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Mensaje de advertencia para pedidos no editables -->
+      <div *ngIf="isEditMode && !puedeEditarPedido()" class="edit-warning">
+        <mat-icon color="warn">warning</mat-icon>
+        <span>Este pedido no se puede editar porque está en estado "{{ getEstadoActual() }}"</span>
       </div>
 
       <!-- Detalles del Pedido CON SCROLL PROPIO -->
@@ -195,7 +205,7 @@
               Total del Pedido
             </div>
             <div class="summary-value total-value">
-              {{ form.get('total')?.value | currency:'PEN':'S/ ':'1.2-2' }}
+              {{ getTotalFormateado() }}
             </div>
           </div>
         </div>
@@ -210,17 +220,19 @@
       <mat-icon>cancel</mat-icon>
       Cancelar
     </button>
+    
     <button 
       mat-raised-button 
       color="primary" 
       (click)="submit()" 
-      [disabled]="form.invalid || isLoading || detalles.length === 0"
+      [disabled]="form.invalid || isLoading || detalles.length === 0 || !puedeEditarPedido()"
       class="submit-btn"
       aria-describedby="submit-help">
       <mat-icon *ngIf="!isLoading">{{ isEditMode ? 'update' : 'add_task' }}</mat-icon>
       <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
       <span>{{ isEditMode ? 'Actualizar' : 'Crear' }} Pedido</span>
     </button>
+    
     <div id="submit-help" class="visually-hidden">
       {{ form.invalid ? 'Formulario incompleto' : detalles.length === 0 ? 'Agregue al menos un insumo' : 'Listo para enviar' }}
     </div>

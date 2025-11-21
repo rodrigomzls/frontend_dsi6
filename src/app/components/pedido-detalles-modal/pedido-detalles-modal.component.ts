@@ -28,7 +28,21 @@ export class PedidoDetallesModalComponent {
   constructor(
     public dialogRef: MatDialogRef<PedidoDetallesModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: PedidoDetallesModalData
-  ) {}
+  ) {
+ // Debug para verificar datos
+    console.log('📦 Datos recibidos en modal:', data.pedido);
+    if (data.pedido.detalles) {
+      console.log('🔍 Detalles del pedido:');
+      data.pedido.detalles.forEach((detalle, index) => {
+        console.log(`   Item ${index + 1}:`, {
+          nombre: detalle.insumo?.nombre,
+          unidad: detalle.insumo?.unidad_medida,
+          cantidad: detalle.cantidad,
+          costo: detalle.costo_unitario
+        });
+      });
+    }
+  }
 
   getEstadoIcon(estado: string | undefined): string {
     if (!estado) return 'help';
