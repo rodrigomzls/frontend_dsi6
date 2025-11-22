@@ -15,6 +15,11 @@ export interface RepartidorVenta {
   metodo_pago: string;
   notas?: string;
   fecha_creacion: string;
+  // Nuevos campos para tracking de ruta
+  fecha_inicio_ruta?: string;
+  fecha_fin_ruta?: string;
+  ubicacion_inicio_ruta?: string;
+  tracking_activo?: boolean;
   
   // Detalles de la venta
   detalles?: VentaDetalle[];

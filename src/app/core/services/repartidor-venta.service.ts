@@ -91,4 +91,18 @@ getVentaDetalle(idVenta: number): Observable<RepartidorVenta> {
     })
   );
 }
+
+// En repartidor-venta.service.ts
+iniciarRutaEntrega(idVenta: number, coordenadas?: string): Observable<any> {
+  console.log(`🔄 Iniciando ruta física para venta ${idVenta}...`);
+  const body = coordenadas ? { coordenadas } : {};
+  
+  return this.http.patch(`${this.apiUrl}/repartidor/${idVenta}/iniciar-ruta`, body).pipe(
+    tap((response) => console.log(`✅ Ruta física iniciada para venta ${idVenta}`, response)),
+    catchError(error => {
+      console.error(`❌ Error iniciando ruta ${idVenta}:`, error);
+      return throwError(() => error);
+    })
+  );
+}
 }
