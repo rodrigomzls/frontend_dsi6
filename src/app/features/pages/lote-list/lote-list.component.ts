@@ -48,7 +48,8 @@ export class LoteListComponent implements OnInit, AfterViewInit {
   
   dataSource = new MatTableDataSource<Lote>([]);
   isLoading = true;
-
+  
+  searchTerm: string = '';
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -65,15 +66,32 @@ export class LoteListComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+
+     // ✅ CORREGIDO: Configurar filtro personalizado simplificado
+    this.dataSource.filterPredicate = this.createFilterPredicate();
+  }
+
+ // ✅ NUEVO: Método para debug
+  private debugFiltros(): void {
+    console.log('🔍 DEBUG FILTROS:');
+    console.log('   - Término búsqueda:', this.searchTerm);
+    
+    console.log('📋 DATOS ORIGINALES:');
+    this.dataSource.data.forEach(lote => {
+      console.log(`   lote ${lote.id_lote}`);
+    });
   }
 
   loadLotes(): void {
     this.isLoading = true;
     this.loteService.getLotes().subscribe({
-      next: (rows) => { 
+      next: (rows: Lote[]) => { 
         this.dataSource.data = rows; 
         this.isLoading = false;
         console.log('✅ Lotes cargados:', rows);
+         setTimeout(() => {
+          this.debugFiltros();
+        }, 500);
       },
       error: (error) => { 
         this.isLoading = false; 
@@ -85,9 +103,30 @@ export class LoteListComponent implements OnInit, AfterViewInit {
 
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+     this.searchTerm = filterValue.trim().toLowerCase();
+     this.applyFilterToDataSource();
   }
 
+
+   // ✅ CORREGIDO: Filtro simplificado
+// ✅ CORREGIDO: Filtro que incluye nombre del producto
+private createFilterPredicate() {
+  return (data: Lote, filter: string): boolean => {
+    const searchTerms = JSON.parse(filter);
+    const { searchTerm } = searchTerms;
+
+    if (!searchTerm) return true;
+
+    const term = searchTerm.toLowerCase();
+    
+    // Buscar en múltiples campos
+    const matchesId = data.id_lote.toString().includes(term);
+    const matchesNumeroLote = data.numero_lote.toLowerCase().includes(term);
+    const matchesProductoNombre = data.producto?.nombre?.toLowerCase().includes(term) || false;
+
+    return matchesId || matchesNumeroLote || matchesProductoNombre;
+  };
+}
   addLote(): void {
     const dialogRef = this.dialog.open(LoteFormComponent, { width: '600px' });
     dialogRef.afterClosed().subscribe(res => { if (res) this.loadLotes(); });
@@ -116,6 +155,23 @@ export class LoteListComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+   // ✅ CORREGIDO: Aplicar filtros simplificado
+  private applyFilterToDataSource(): void {
+    const filterObject = {
+      searchTerm: this.searchTerm
+    };
+    console.log('📊 Aplicando filtros:', filterObject);
+    this.dataSource.filter = JSON.stringify(filterObject);
+    
+    // Debug: mostrar resultados
+    setTimeout(() => {
+      console.log('📋 Resultados filtrados:', this.dataSource.filteredData.length);
+      console.log('✅ Pedidos encontrados:', this.dataSource.filteredData.map(l => ({
+        id: l.id_lote
+      })));
+    }, 100);
   }
 
   // ✅ MÉTODOS HELPER MEJORADOS
