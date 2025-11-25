@@ -85,6 +85,9 @@ export class CustomValidators {
   styleUrls: ['./cliente-form.component.css'],
 })
 export class ClienteFormComponent implements OnInit {
+clearForm() {
+throw new Error('Method not implemented.');
+}
   clienteForm: FormGroup;
   isEditMode = false;
 

@@ -30,6 +30,9 @@ import { PersonaFormComponent } from '../persona-form/persona-form.component';
   styleUrls: ['./usuario-form.component.css']
 })
 export class UsuarioFormComponent implements OnInit {
+clearForm() {
+throw new Error('Method not implemented.');
+}
   form: FormGroup;
   isEdit = false;
   isLoading = false;
