@@ -25,11 +25,41 @@
       <div class="entrega-header">
         <div class="entrega-info">
           <h3>Entrega #{{ entrega.id_venta }}</h3>
-          <span class="badge badge-warning">{{ entrega.estado }}</span>
+          <span class="badge" [ngClass]="getEstadoBadgeClass(entrega.estado)">
+            {{ entrega.estado }}
+          </span>
+          <span *ngIf="isRutaIniciada(entrega)" class="badge badge-info">
+            <i class="fas fa-clock"></i> 
+            {{ calcularTiempoTranscurrido(entrega.fecha_inicio_ruta) }}
+          </span>
         </div>
         <div class="entrega-fecha">
           <small>{{ entrega.fecha }} {{ entrega.hora }}</small>
+          <small *ngIf="entrega.fecha_inicio_ruta" class="text-info">
+            <br><i class="fas fa-play-circle"></i> Iniciada: {{ formatearFechaHora(entrega.fecha_inicio_ruta) }}
+          </small>
         </div>
+      </div>
+
+      <!-- SOLO UNA sección de estado de ruta - ELIMINAR LA DUPLICADA -->
+      <div class="ruta-estado-section">
+        <div class="ruta-estado" *ngIf="isRutaIniciada(entrega); else rutaNoIniciada">
+          <span class="badge badge-success">
+            <i class="fas fa-play-circle"></i> Ruta Iniciada
+          </span>
+          <small>Iniciada: {{ formatearFechaHora(entrega.fecha_inicio_ruta) }}</small>
+          <small *ngIf="entrega.ubicacion_inicio_ruta" class="text-muted">
+            | <i class="fas fa-map-marker-alt"></i> {{ entrega.ubicacion_inicio_ruta }}
+          </small>
+        </div>
+
+        <ng-template #rutaNoIniciada>
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Ruta no iniciada</strong>
+            <p>Para gestionar esta entrega, primero debe iniciar la ruta desde "Mis Rutas Asignadas".</p>
+          </div>
+        </ng-template>
       </div>
 
       <div class="entrega-body">
@@ -47,20 +77,49 @@
         </div>
       </div>
 
-      <div class="entrega-actions">
-        <button class="btn btn-success" (click)="marcarComoEntregado(entrega.id_venta)">
-          <i class="fas fa-check-circle"></i> Marcar como Pagado
-        </button>
-        <button class="btn btn-danger" (click)="marcarComoCancelado(entrega.id_venta)">
-          <i class="fas fa-times-circle"></i> Cancelar Entrega
-        </button>
-        <button class="btn btn-info" (click)="abrirMapa(entrega.direccion, entrega.coordenadas)">
-          <i class="fas fa-map"></i> Ver en Mapa
-        </button>
-        <button class="btn btn-secondary" (click)="verDetalleVenta(entrega.id_venta)">
-          <i class="fas fa-eye"></i> Ver Detalles
-        </button>
-      </div>
+     <!-- REEMPLAZAR la sección de acciones con esta versión mejorada -->
+<div class="entrega-actions">
+  <!-- Botón de Cambiar Método de Pago - SOLO cuando ruta está iniciada -->
+  <button class="btn btn-warning" 
+          (click)="cambiarMetodoPago(entrega.id_venta)"
+          *ngIf="isRutaIniciada(entrega)"
+          [title]="'Cambiar método de pago'">
+    <i class="fas fa-exchange-alt"></i> Cambiar Pago
+  </button>
+  
+  <!-- Botón de Marcar como Pagado - SOLO cuando ruta está iniciada -->
+  <button class="btn btn-success" 
+          (click)="marcarComoEntregado(entrega.id_venta)"
+          *ngIf="isRutaIniciada(entrega)"
+          [title]="'Marcar entrega como completada y pagada'">
+    <i class="fas fa-check-circle"></i> Marcar como Pagado
+  </button>
+  
+  <!-- Botón de Cancelar Entrega - SIEMPRE disponible -->
+  <button class="btn btn-danger" 
+          (click)="marcarComoCancelado(entrega.id_venta)"
+          [title]="'Cancelar esta entrega'">
+    <i class="fas fa-times-circle"></i> Cancelar Entrega
+  </button>
+  
+  <!-- Botón de Iniciar Ruta - SOLO cuando ruta NO está iniciada -->
+  <button class="btn btn-primary" 
+          *ngIf="!isRutaIniciada(entrega)"
+          (click)="irARutasAsignadas()"
+          [title]="'Iniciar ruta desde Mis Rutas Asignadas'">
+    <i class="fas fa-play-circle"></i> Iniciar Ruta
+  </button>
+  
+  <!-- Botón de Mapa - SIEMPRE disponible -->
+  <button class="btn btn-info" (click)="abrirMapa(entrega.direccion, entrega.coordenadas)">
+    <i class="fas fa-map"></i> Ver en Mapa
+  </button>
+  
+  <!-- Botón de Ver Detalles - SIEMPRE disponible -->
+  <button class="btn btn-secondary" (click)="verDetalleVenta(entrega.id_venta)">
+    <i class="fas fa-eye"></i> Ver Detalles
+  </button>
+</div>
     </div>
 
     <div class="empty-state" *ngIf="entregas.length === 0">

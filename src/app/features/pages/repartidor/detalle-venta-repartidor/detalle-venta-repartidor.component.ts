@@ -27,69 +27,38 @@ export class DetalleVentaRepartidorComponent implements OnInit {
     this.cargarDetalleVenta();
   }
 
-  cargarDetalleVenta() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.error = 'ID de venta no válido';
+ cargarDetalleVenta() {
+  const id = this.route.snapshot.paramMap.get('id');
+  if (!id) {
+    this.error = 'ID de venta no válido';
+    this.loading = false;
+    return;
+  }
+
+  const ventaId = parseInt(id);
+  this.repartidorVentaService.getVentaDetalle(ventaId).subscribe({
+    next: (venta) => {
+      this.venta = venta;
       this.loading = false;
-      return;
+      console.log('✅ Detalle de venta cargado:', venta);
+      console.log('📅 Fecha recibida:', venta.fecha);
+      console.log('⏰ Hora recibida:', venta.hora);
+      console.log('🗓️ Fecha inicio ruta:', venta.fecha_inicio_ruta);
+      console.log('🏁 Fecha fin ruta:', venta.fecha_fin_ruta);
+    },
+    error: (error) => {
+      console.error('Error cargando detalle de venta:', error);
+      this.error = 'Error al cargar los detalles de la venta';
+      this.loading = false;
     }
-
-    const ventaId = parseInt(id);
-    this.repartidorVentaService.getVentaDetalle(ventaId).subscribe({
-      next: (venta) => {
-        this.venta = venta;
-        this.loading = false;
-        console.log('✅ Detalle de venta cargado:', venta);
-      },
-      error: (error) => {
-        console.error('Error cargando detalle de venta:', error);
-        this.error = 'Error al cargar los detalles de la venta';
-        this.loading = false;
-      }
-    });
-  }
-
-  // Métodos para acciones del repartidor
-  marcarComoPagado() {
-    if (!this.venta) return;
-
-    if (confirm('¿Confirmar que esta entrega ha sido completada y pagada?')) {
-      this.repartidorVentaService.marcarComoPagado(this.venta.id_venta).subscribe({
-        next: () => {
-          alert('Entrega marcada como pagada correctamente');
-          this.venta!.estado = 'Pagado';
-          this.venta!.id_estado_venta = 7;
-        },
-        error: (error) => {
-          console.error('Error marcando como pagado:', error);
-          alert('Error al marcar la entrega como pagada');
-        }
-      });
-    }
-  }
-
-  marcarComoCancelado() {
-    if (!this.venta) return;
-
-    const motivo = prompt('Ingrese el motivo de la cancelación:');
-    if (motivo !== null) {
-      this.repartidorVentaService.marcarComoCancelado(this.venta.id_venta, motivo).subscribe({
-        next: () => {
-          alert('Entrega cancelada correctamente');
-          this.venta!.estado = 'Cancelado';
-          this.venta!.id_estado_venta = 8;
-          if (motivo) {
-            this.venta!.notas = motivo;
-          }
-        },
-        error: (error) => {
-          console.error('Error cancelando entrega:', error);
-          alert('Error al cancelar la entrega');
-        }
-      });
-    }
-  }
+  });
+}
+// Método mejorado y restrictivo para marcar como pagado
+// Corrige el método marcarComoPagado en detalle-venta-repartidor.component.ts
+// Agrega este método para navegar a rutas asignadas
+irARutasAsignadas() {
+  this.router.navigate(['/repartidor/rutas-asignadas']);
+}
 
   abrirMapa() {
     if (!this.venta) return;
@@ -120,35 +89,182 @@ export class DetalleVentaRepartidorComponent implements OnInit {
     return estadoClass[estado] || 'badge-secondary';
   }
 
-  formatearFecha(fecha: string): string {
-    if (!fecha) return '';
-    try {
-      const fechaObj = new Date(fecha);
-      return fechaObj.toLocaleDateString('es-PE', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch (error) {
-      return fecha;
+formatearFecha(fecha: string): string {
+  if (!fecha) return '';
+  try {
+    // Intentar parsear la fecha de diferentes formas
+    let fechaObj: Date;
+    
+    if (fecha.includes('-')) {
+      // Formato YYYY-MM-DD
+      const [year, month, day] = fecha.split('-').map(Number);
+      fechaObj = new Date(year, month - 1, day);
+    } else {
+      // Otros formatos
+      fechaObj = new Date(fecha);
     }
+    
+    return fechaObj.toLocaleDateString('es-PE', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  } catch (error) {
+    console.error('Error formateando fecha:', error);
+    return fecha;
   }
+}
 
   formatearHora(hora: string): string {
-    if (!hora) return '';
-    try {
-      const [horas, minutos, segundos] = hora.split(':');
-      const fecha = new Date();
-      fecha.setHours(parseInt(horas), parseInt(minutos), parseInt(segundos || '0'));
-      
-      return fecha.toLocaleTimeString('es-PE', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch (error) {
-      return hora;
-    }
+  if (!hora) return '';
+  try {
+    const [horas, minutos, segundos] = hora.split(':');
+    const fecha = new Date();
+    fecha.setHours(parseInt(horas), parseInt(minutos), parseInt(segundos || '0'));
+    
+    return fecha.toLocaleTimeString('es-PE', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  } catch (error) {
+    console.error('Error formateando hora:', error);
+    return hora;
   }
+}
+  // Nuevo método para formatear fecha y hora completa
+// Nuevo método para formatear fecha y hora completa - CORREGIDO
+// Método para formatear fecha y hora completa (mantener este)
+formatearFechaHora(fechaHora: string | undefined): string {
+  if (!fechaHora) return '';
+  try {
+    const fecha = new Date(fechaHora);
+    return fecha.toLocaleString('es-PE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  } catch (error) {
+    console.error('Error formateando fecha/hora:', error);
+    return fechaHora || '';
+  }
+}
+
+  // Verificar si la ruta fue iniciada
+  isRutaIniciada(): boolean {
+    return !!this.venta?.fecha_inicio_ruta;
+  }
+
+  // Verificar si la ruta fue finalizada
+  isRutaFinalizada(): boolean {
+    return !!this.venta?.fecha_fin_ruta;
+  }
+
+ // Calcular tiempo transcurrido - CORREGIDO
+calcularTiempoTranscurrido(): string {
+  if (!this.venta?.fecha_inicio_ruta) return '';
+  
+  try {
+    const inicio = new Date(this.venta.fecha_inicio_ruta);
+    const ahora = new Date();
+    const diffMs = ahora.getTime() - inicio.getTime();
+    
+    const horas = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (horas > 0) {
+      return `${horas} horas ${minutos} minutos`;
+    } else {
+      return `${minutos} minutos`;
+    }
+  } catch (error) {
+    return '';
+  }
+}
+
+// Método para formatear fecha completa del pedido (fecha + hora)
+formatearFechaCompleta(fechaHora: string): string {
+  if (!fechaHora) return '';
+  try {
+    const fecha = new Date(fechaHora);
+    return fecha.toLocaleString('es-PE', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    // Si falla, intentar con formato separado
+    return this.formatearFechaSeparada(fechaHora);
+  }
+}
+
+// Método alternativo para formatear fecha y hora por separado
+formatearFechaSeparada(fechaHora: string): string {
+  if (!fechaHora) return '';
+  
+  try {
+    // Intentar diferentes formatos de fecha
+    let fechaObj: Date;
+    
+    if (fechaHora.includes('T')) {
+      // Formato ISO
+      fechaObj = new Date(fechaHora);
+    } else if (fechaHora.includes(' ')) {
+      // Formato con espacio
+      const [fechaPart, horaPart] = fechaHora.split(' ');
+      const [year, month, day] = fechaPart.split('-').map(Number);
+      const [hours, minutes, seconds] = horaPart.split(':').map(Number);
+      fechaObj = new Date(year, month - 1, day, hours, minutes, seconds || 0);
+    } else {
+      // Solo fecha, sin hora
+      const [year, month, day] = fechaHora.split('-').map(Number);
+      fechaObj = new Date(year, month - 1, day);
+    }
+    
+    return fechaObj.toLocaleString('es-PE', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    console.error('Error formateando fecha:', error);
+    return fechaHora; // Devolver original si falla
+  }
+}
+// Método para calcular tiempo total de entrega (solo para entregas completadas)
+calcularTiempoTotalEntrega(): string {
+  if (!this.venta?.fecha_inicio_ruta || !this.venta?.fecha_fin_ruta) return '';
+  
+  try {
+    const inicio = new Date(this.venta.fecha_inicio_ruta);
+    const fin = new Date(this.venta.fecha_fin_ruta);
+    const diffMs = fin.getTime() - inicio.getTime();
+    
+    const horas = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (horas > 0) {
+      return `${horas}h ${minutos}m`;
+    } else {
+      return `${minutos} minutos`;
+    }
+  } catch (error) {
+    return '';
+  }
+}
+// Método para navegar a entregas pendientes
+irAEntregasPendientes() {
+  this.router.navigate(['/repartidor/entregas-pendientes']);
+}
+
 }

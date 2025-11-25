@@ -88,7 +88,8 @@
           <th>Total</th>
           <th>Estado</th>
           <th>Método Pago</th>
-          <th *ngIf="authService.isAdmin() || authService.isVendedor()">Cambiar Estado</th>
+            <!-- Tabla de ventas <th *ngIf="authService.isAdmin() || authService.isVendedor()">Cambiar Estado</th>-->
+         
           <th>Detalles</th>
         </tr>
       </thead>
@@ -118,7 +119,8 @@
           <td class="venta-metodo">
             {{ venta.metodo_pago }}
           </td>
-          <!-- En panel-ventas.component.html - verifica el select -->
+          <!-- En panel-ventas.component.html -
+           
           <td *ngIf="authService.isAdmin() || authService.isVendedor()" class="venta-acciones">
           <select 
               [value]="venta.id_estado_venta" 
@@ -129,6 +131,10 @@
               </option>
           </select>
       </td>
+          
+          
+          verifica el select -->
+          
           <td class="venta-detalle">
             <button 
               (click)="verDetalleVenta(venta.id_venta!)"

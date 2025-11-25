@@ -24,11 +24,6 @@ import { LoteListComponent } from './features/pages/lote-list/lote-list.componen
 import {MovimientoStockListComponent} from './features/pages/movimiento-stock-list/movimiento-stock-list.component';
 import { InventarioDashboardComponent } from './features/pages/inventario/inventario-dashboard/inventario-dashboard.component';
 import { InventarioReportesComponent } from './features/pages/inventario/inventario-reportes/inventario-reportes.component';
-
-
-
-
-
 // Guards para standalone
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';

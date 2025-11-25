@@ -25,6 +25,13 @@ export interface Venta {
   metodo_pago?: string;
   vendedor?: string;
   repartidor?: string;
+
+  // ✅ AGREGAR estas propiedades que vienen de la base de datos
+  fecha_creacion?: string;
+  fecha_actualizacion?: string;
+  razon_social?: string;
+  coordenadas?: string;
+  placa_furgon?: string;
 }
 
 export interface VentaDetalle {

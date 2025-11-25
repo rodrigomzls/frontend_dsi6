@@ -49,6 +49,7 @@ export class RepartidorVentaService {
 
   // Marcar entrega como pagada
 // Marcar entrega como pagada - USANDO RUTA DE REPARTIDOR
+// Método mejorado y más restrictivo para marcar como pagado
 marcarComoPagado(idVenta: number): Observable<any> {
   console.log(`🔄 Marcando venta ${idVenta} como pagada...`);
   return this.http.patch(`${this.apiUrl}/repartidor/${idVenta}/pagado`, {}).pipe(
@@ -59,6 +60,38 @@ marcarComoPagado(idVenta: number): Observable<any> {
     })
   );
 }
+
+// Método para verificar si puede marcar como pagado
+verificarPuedeMarcarPagado(idVenta: number): Observable<{puede: boolean, mensaje?: string}> {
+  return this.http.get<{puede: boolean, mensaje?: string}>(`${this.apiUrl}/repartidor/${idVenta}/verificar-pago`);
+}
+
+// Método para obtener ubicación actual
+obtenerUbicacionActual(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject('Geolocalización no soportada');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coordenadas = `${position.coords.latitude},${position.coords.longitude}`;
+        resolve(coordenadas);
+      },
+      (error) => {
+        reject(`Error obteniendo ubicación: ${error.message}`);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  });
+}
+
+
 
 // Marcar entrega como cancelada - USANDO RUTA DE REPARTIDOR
 marcarComoCancelado(idVenta: number, motivo?: string): Observable<any> {
@@ -93,14 +126,37 @@ getVentaDetalle(idVenta: number): Observable<RepartidorVenta> {
 }
 
 // En repartidor-venta.service.ts
-iniciarRutaEntrega(idVenta: number, coordenadas?: string): Observable<any> {
+// En repartidor-venta.service.ts - mejorar el método
+// En repartidor-venta.service.ts - CORREGIR EL TIPO
+iniciarRutaEntrega(idVenta: number, coordenadas?: string | null): Observable<any> {
   console.log(`🔄 Iniciando ruta física para venta ${idVenta}...`);
-  const body = coordenadas ? { coordenadas } : {};
+  
+  // ✅ Asegurar que coordenadas nunca sea undefined en el body
+  const body = { 
+    coordenadas: coordenadas || null 
+  };
+  
+  console.log(`📍 Enviando coordenadas:`, body.coordenadas);
   
   return this.http.patch(`${this.apiUrl}/repartidor/${idVenta}/iniciar-ruta`, body).pipe(
     tap((response) => console.log(`✅ Ruta física iniciada para venta ${idVenta}`, response)),
     catchError(error => {
       console.error(`❌ Error iniciando ruta ${idVenta}:`, error);
+      return throwError(() => error);
+    })
+  );
+}
+
+// src/app/core/services/repartidor-venta.service.ts - AGREGAR ESTE MÉTODO
+
+cambiarMetodoPago(idVenta: number, idMetodoPago: number): Observable<any> {
+  console.log(`🔄 Cambiando método de pago de venta ${idVenta} a ${idMetodoPago}`);
+  return this.http.patch(`${this.apiUrl}/repartidor/${idVenta}/cambiar-metodo-pago`, { 
+    id_metodo_pago: idMetodoPago 
+  }).pipe(
+    tap(() => console.log(`✅ Método de pago cambiado para venta ${idVenta}`)),
+    catchError(error => {
+      console.error(`❌ Error cambiando método de pago para venta ${idVenta}:`, error);
       return throwError(() => error);
     })
   );

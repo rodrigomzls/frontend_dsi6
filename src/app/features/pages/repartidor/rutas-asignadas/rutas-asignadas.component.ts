@@ -22,8 +22,31 @@ export class RutasAsignadasComponent implements OnInit {
   loading = true;
   error = '';
 
+  verificarEstadoGPS() {
+    console.log('🔍 Diagnóstico de GPS:');
+    console.log(' - Geolocation disponible:', !!navigator.geolocation);
+    console.log(' - Protocolo:', window.location.protocol);
+    console.log(' - Host:', window.location.host);
+    
+    if (navigator.geolocation) {
+      // Test rápido de geolocalización
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          console.log('✅ GPS funciona correctamente');
+          console.log('📍 Posición actual:', pos.coords.latitude, pos.coords.longitude);
+        },
+        (err) => {
+          console.log('❌ Error GPS:', err.message, 'Código:', err.code);
+        },
+        { timeout: 5000 }
+      );
+    }
+  }
+
+  // Llamar este método en ngOnInit para diagnóstico
   ngOnInit() {
     this.cargarVentasAsignadas();
+    this.verificarEstadoGPS(); // ← Agregar esta línea
   }
 
   cargarVentasAsignadas() {
@@ -45,70 +68,156 @@ export class RutasAsignadasComponent implements OnInit {
     this.router.navigate(['/repartidor/venta', idVenta]);
   }
 
- iniciarEntrega(idVenta: number) {
+  iniciarEntrega(idVenta: number, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    console.log('📍 Solicitando permisos de ubicación...');
+    
     // Obtener ubicación GPS si está disponible
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log('✅ Ubicación obtenida correctamente');
           const coords = `${position.coords.latitude},${position.coords.longitude}`;
-          this.confirmarInicioRuta(idVenta, coords);
+          console.log('📍 Coordenadas:', coords);
+          this.confirmarInicioRuta(idVenta, coords, event);
         },
         (error) => {
-          console.warn('No se pudo obtener la ubicación GPS:', error);
-          // Iniciar sin coordenadas
-          this.confirmarInicioRuta(idVenta);
+          console.warn('❌ Error obteniendo ubicación GPS:', error);
+          
+          let mensajeError = 'No se pudo obtener la ubicación GPS. ';
+          
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              mensajeError += 'Permiso denegado por el usuario.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              mensajeError += 'Ubicación no disponible.';
+              break;
+            case error.TIMEOUT:
+              mensajeError += 'Tiempo de espera agotado.';
+              break;
+            default:
+              mensajeError += 'Error desconocido.';
+              break;
+          }
+          
+          console.warn(mensajeError);
+          
+          // Preguntar si quiere continuar sin coordenadas
+          if (confirm(mensajeError + '\n\n¿Desea iniciar la ruta sin registrar ubicación?')) {
+            this.confirmarInicioRuta(idVenta, undefined, event);
+          }
         },
         { 
-          timeout: 10000,
-          enableHighAccuracy: true 
+          timeout: 15000, // Aumentar a 15 segundos
+          enableHighAccuracy: true,
+          maximumAge: 60000 // Usar ubicación cache de máximo 1 minuto
         }
       );
     } else {
-      this.confirmarInicioRuta(idVenta);
+      console.warn('❌ Geolocalización no soportada por el navegador');
+      this.confirmarInicioRuta(idVenta, undefined, event);
     }
   }
-private confirmarInicioRuta(idVenta: number, coordenadas?: string) {
-    const venta = this.ventas.find(v => v.id_venta === idVenta);
-    
-    if (venta?.fecha_inicio_ruta) {
-      alert('Esta ruta ya fue iniciada anteriormente.');
-      return;
-    }
 
+  private confirmarInicioRuta(idVenta: number, coordenadas?: string, event?: Event) {
     if (confirm('¿Está seguro de iniciar la ruta de entrega?\n\nSe activará el seguimiento y se registrará su ubicación de inicio.')) {
+      
+      // Mostrar loading en el botón
+      let button: HTMLButtonElement | null = null;
+      if (event) {
+        button = event.target as HTMLButtonElement;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+        button.disabled = true;
+      }
+
+      // ✅ CORRECCIÓN: No necesitas convertir a null, el servicio ahora maneja ambos tipos
       this.repartidorVentaService.iniciarRutaEntrega(idVenta, coordenadas).subscribe({
         next: (response) => {
-          if (response.success) {
-            alert('¡Ruta iniciada correctamente! El seguimiento está ahora activo.');
-            this.cargarVentasAsignadas(); // Recargar para actualizar estado
-            
-            // Opcional: Redirigir al mapa con la ruta activa
-            // this.router.navigate(['/repartidor/mapa'], { 
-            //   queryParams: { venta: idVenta } 
-            // });
+          alert('¡Ruta iniciada! El seguimiento está activo.');
+          this.cargarVentasAsignadas(); // Recargar la lista
+          
+          // Restaurar botón en caso de éxito
+          if (button) {
+            button.innerHTML = '<i class="fas fa-play"></i> Iniciar Entrega';
+            button.disabled = false;
           }
         },
         error: (error) => {
           console.error('Error iniciando ruta:', error);
-          const mensajeError = error.error?.error || 'Error al iniciar la ruta';
+          
+          let mensajeError = 'Error al iniciar la ruta';
+          
+          if (error.status === 503) {
+            mensajeError = 'El sistema está ocupado. Por favor, intente nuevamente en unos segundos.';
+          } else if (error.error?.error) {
+            mensajeError = error.error.error;
+          }
+          
           alert(mensajeError);
+          
+          // Restaurar botón en caso de error
+          if (button) {
+            button.innerHTML = '<i class="fas fa-play"></i> Iniciar Entrega';
+            button.disabled = false;
+          }
         }
       });
     }
   }
 
- // Verificar si una ruta ya fue iniciada
+  // Verificar si una ruta ya fue iniciada
   isRutaIniciada(venta: RepartidorVenta): boolean {
     return !!venta.fecha_inicio_ruta;
   }
-   // Obtener texto del botón según estado
+
+  // Obtener texto del botón según estado
   getTextoBoton(venta: RepartidorVenta): string {
     return this.isRutaIniciada(venta) ? 'Ruta en Curso' : 'Iniciar Entrega';
   }
 
+  // Obtener clase del botón según estado
+  getClaseBoton(venta: RepartidorVenta): string {
+    return this.isRutaIniciada(venta) ? 'btn-secondary' : 'btn-success';
+  }
 
+  // Obtener icono del botón según estado
+  getIconoBoton(venta: RepartidorVenta): string {
+    return this.isRutaIniciada(venta) ? 'fa-play-circle' : 'fa-play';
+  }
 
-   getEstadoBadgeClass(estado: string): string {
+  // Método para tooltip informativo
+  getTooltipUbicacion(venta: RepartidorVenta): string {
+    if (this.isRutaIniciada(venta)) {
+      return venta.ubicacion_inicio_ruta 
+        ? `Ruta iniciada desde: ${venta.ubicacion_inicio_ruta}`
+        : 'Ruta iniciada (sin ubicación GPS)';
+    }
+    return 'Iniciar ruta de entrega con ubicación GPS';
+  }
+
+  // Formatear fecha de inicio de ruta
+  formatearFechaInicio(fechaInicio: string | undefined): string {
+    if (!fechaInicio) return '';
+    try {
+      const fecha = new Date(fechaInicio);
+      return fecha.toLocaleString('es-PE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return fechaInicio || '';
+    }
+  }
+
+  getEstadoBadgeClass(estado: string): string {
     const estadoClass: { [key: string]: string } = {
       'En ruta': 'badge-warning',
       'Listo para repartos': 'badge-info',

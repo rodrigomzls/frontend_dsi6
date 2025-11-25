@@ -12,6 +12,8 @@ export interface RepartidorVenta {
   direccion: string;
   coordenadas?: string;
   razon_social?: string;
+    // ✅ AGREGAR ESTAS PROPIEDADES FALTANTES
+  id_metodo_pago: number;  // NUEVA
   metodo_pago: string;
   notas?: string;
   fecha_creacion: string;

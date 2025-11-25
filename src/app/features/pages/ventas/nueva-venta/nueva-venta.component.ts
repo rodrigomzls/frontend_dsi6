@@ -333,6 +333,7 @@ agregarProducto() {
 // Finalizar venta - VERSIÓN CON DEBUGGING MEJORADO
 // En nueva-venta.component.ts - VERSIÓN MEJORADA
 // En nueva-venta.component.ts - VERSIÓN MEJORADA CON DEBUGGING
+// En nueva-venta.component.ts - modificar el método finalizarVenta
 finalizarVenta() {
   if (this.venta.id_cliente === 0) {
     this.error = 'Selecciona un cliente';
@@ -386,9 +387,9 @@ finalizarVenta() {
     hora: this.venta.hora,
     total: this.venta.total,
     id_metodo_pago: this.venta.id_metodo_pago,
-    id_estado_venta: this.venta.id_estado_venta,
+    id_estado_venta: 4, // ✅ CAMBIAR: Estado "Listo para reparto" en lugar de "Pendiente"
     id_repartidor: safeValue(this.venta.id_repartidor, 'id_repartidor'),
-    id_vendedor: currentUser.id_usuario, // ✅ Usar el ID del usuario autenticado
+    id_vendedor: currentUser.id_usuario,
     notas: safeValue(this.venta.notas || '', 'notas'),
     detalles: this.venta.detalles.map(detalle => ({
       id_producto: detalle.id_producto,
@@ -401,7 +402,6 @@ finalizarVenta() {
   // ✅ VERIFICACIÓN FINAL MEJORADA
   console.log('🔍 OBJETO FINAL PARA ENVIAR:', ventaParaEnviar);
   
-  // Verificar específicamente los detalles
   const detallesConProblemas = ventaParaEnviar.detalles.filter(detalle => 
     !detalle.id_producto || detalle.id_producto === undefined
   );
@@ -431,8 +431,15 @@ finalizarVenta() {
   this.ventasService.createVenta(ventaParaEnviar).subscribe({
     next: (ventaCreada) => {
       this.loading = false;
-      alert('✅ Venta registrada correctamente');
-      this.router.navigate(['/ventas']);
+      
+      // ✅ NUEVO: Redirigir directamente a asignación de rutas
+      console.log('✅ Venta registrada correctamente, ID:', ventaCreada.id_venta);
+      
+      // Mostrar mensaje y redirigir
+      alert('✅ Venta registrada correctamente. Ahora asigna un repartidor.');
+      
+      // Redirigir a asignación de rutas
+      this.router.navigate(['/ventas/asignacion-rutas']);
     },
     error: (error) => {
       this.loading = false;
