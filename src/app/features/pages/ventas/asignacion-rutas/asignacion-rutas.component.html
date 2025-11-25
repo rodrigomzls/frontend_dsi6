@@ -37,61 +37,52 @@
   </div>
 
   <!-- Sección: Ventas Listas para Reparto -->
-  <div class="section" *ngIf="!loading && ventasListas.length > 0">
-    <h2>📦 Ventas Listas para Reparto ({{ ventasListas.length }})</h2>
-    <!-- Asignación por Zona -->
-    <div class="asignacion-zona" *ngIf="zonasConVentas.length > 0">
-      <h3>📍 Asignación por Zona</h3>
-      <div class="zonas-grid">
-        <!-- ✅ CORREGIDO: Usar zonasConVentas en lugar de expresión compleja -->
-        <div *ngFor="let zonaInfo of zonasConVentas" class="zona-card">
-          <h4>{{ zonaInfo.zona }}</h4>
-          <p>{{ zonaInfo.cantidad }} ventas</p>
-          <!-- ✅ CORREGIDO: Pasar solo el ID del repartidor -->
-          <select (change)="asignarZona($any($event.target).value, zonaInfo.zona)" class="form-select">
-            <option value="">Seleccionar repartidor...</option>
-            <option *ngFor="let repartidor of repartidores" [value]="repartidor.id_repartidor">
-              {{ repartidor.persona?.nombre_completo }} - {{ repartidor.placa_furgon }}
-            </option>
-          </select>
+<div class="ventas-listas">
+  <h3>🛒 Asignación Individual</h3>
+  
+  <!-- ✅ NUEVO: Mensaje informativo -->
+  <div *ngIf="success && success.includes('lista para asignar')" class="info-message">
+    💡 {{ success }}
+  </div>
+  
+  <div class="ventas-grid">
+    <div *ngFor="let venta of ventasListas" 
+         [id]="'venta-' + venta.id_venta"
+         class="venta-card"
+         [class.nueva-venta]="esVentaReciente(venta)"> <!-- ✅ Clase para ventas recientes -->
+      
+      <!-- ✅ NUEVO: Badge para venta reciente -->
+      <div *ngIf="esVentaReciente(venta)" class="nueva-badge">
+        🆕 Nueva
+      </div>
+      
+      <div class="venta-info">
+        <div class="venta-header">
+          <strong>#{{ venta.id_venta }}</strong>
+          <span class="cliente-nombre">{{ venta.nombre_completo}}</span>
+        </div>
+        <div class="venta-detalles">
+          <small>📞 {{ venta.telefono }}</small>
+          <small>📍 {{ venta.direccion }}</small>
+          <small>💰 S/ {{ venta.total }}</small>
+          <small>📅 {{ formatearFecha(venta.fecha) }} {{ formatearHora(venta.hora) }}</small>
         </div>
       </div>
-    </div>
-
-    <!-- Lista de ventas individuales -->
-    <div class="ventas-listas">
-      <h3>🛒 Asignación Individual</h3>
-      <div class="ventas-grid">
-        <div *ngFor="let venta of ventasListas" class="venta-card">
-          <div class="venta-info">
-            <div class="venta-header">
-              <strong>#{{ venta.id_venta }}</strong>
-              <span class="cliente-nombre">{{ venta.nombre_completo}}</span>
-            </div>
-            <div class="venta-detalles">
-              <small>📞 {{ venta.telefono }}</small>
-              <small>📍 {{ venta.direccion }}</small>
-              <small>💰 S/ {{ venta.total }}</small>
-              <small>📅 {{ formatearFecha(venta.fecha) }}</small>
-            </div>
-          </div>
-          <div class="venta-acciones">
-            <!-- ✅ CORREGIDO: Pasar solo el ID del repartidor -->
-            <select (change)="asignarRepartidor(venta, $any($event.target).value)" class="form-select">
-              <option value="">Asignar repartidor...</option>
-              <option *ngFor="let repartidor of repartidores" [value]="repartidor.id_repartidor">
-                {{ repartidor.persona?.nombre_completo }} - {{ repartidor.placa_furgon }}
-              </option>
-            </select>
-                    <!-- En la sección de ventas individuales -->
-            <button (click)="verDetalleVenta(venta.id_venta)" class="btn-detalle" 
-                    [disabled]="!venta.id_venta">
-            👁️ Ver
-            </button>
-          </div>
-        </div>
+      <div class="venta-acciones">
+        <select (change)="asignarRepartidor(venta, $any($event.target).value)" class="form-select">
+          <option value="">Asignar repartidor...</option>
+          <option *ngFor="let repartidor of repartidores" [value]="repartidor.id_repartidor">
+            {{ repartidor.persona?.nombre_completo }} - {{ repartidor.placa_furgon }}
+          </option>
+        </select>
+        <button (click)="verDetalleVenta(venta.id_venta)" class="btn-detalle" 
+                [disabled]="!venta.id_venta">
+          👁️ Ver
+        </button>
       </div>
     </div>
+  </div>
+</div>
   </div>
 
   <!-- Sección: Ventas En Ruta -->
@@ -133,4 +124,3 @@
   <div *ngIf="!loading && ventasListas.length === 0 && ventasEnRuta.length === 0" class="no-data">
     <p>📭 No hay ventas para asignar en este momento</p>
   </div>
-</div>

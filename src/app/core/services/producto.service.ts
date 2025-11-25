@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, forkJoin, throwError, catchError } from 'rxjs';
+import { Observable, map, forkJoin, throwError, catchError,of  } from 'rxjs';
 import { Product, Country, Category, Brand, Supplier } from '../models/producto.model';
 
 @Injectable({ providedIn: 'root' })
@@ -41,12 +41,12 @@ private handleError(error: any) {
   }
 
 getProveedores(): Observable<Supplier[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/proveedores`).pipe( // Cambiado a "proveedores"
+  return this.http.get<any[]>(`${this.apiUrl}/proveedores`).pipe(
     map(proveedores => {
       console.log('Proveedores crudos:', proveedores);
       return proveedores.map(prov => ({
         id_proveedor: prov.id_proveedor,
-        nombre: prov.nombre // Ahora sí tendrá el campo nombre
+        nombre: prov.razon_social || prov.nombre_completo // Usa razón social o nombre completo
       }));
     }),
     catchError(this.handleError)
@@ -59,45 +59,57 @@ getProveedores(): Observable<Supplier[]> {
   }
 
   // ========= PRODUCTOS =========
+// En producto.service.ts - MODIFICAR el método getProductsWithDetails
 getProductsWithDetails(): Observable<any[]> {
   return forkJoin({
     productos: this.http.get<Product[]>(`${this.apiUrl}/productos`),
-    paises: this.http.get<Country[]>(`${this.apiUrl}/paises`),
-    categorias: this.http.get<Category[]>(`${this.apiUrl}/categorias`),
-    marcas: this.http.get<Brand[]>(`${this.apiUrl}/marcas`),
-    proveedores: this.getProveedores() // ← Cambiar esto para usar el método corregido
+    paises: this.http.get<Country[]>(`${this.apiUrl}/paises`).pipe(catchError(() => of([]))),
+    categorias: this.http.get<Category[]>(`${this.apiUrl}/categorias`).pipe(catchError(() => of([]))),
+    marcas: this.http.get<Brand[]>(`${this.apiUrl}/marcas`).pipe(catchError(() => of([]))),
+    proveedores: this.getProveedores().pipe(catchError(() => of([])))
   }).pipe(
     map(({ productos, paises, categorias, marcas, proveedores }) => {
       console.log('=== DEBUG PRODUCTOS ===');
-      console.log('Proveedores disponibles:', proveedores); // Debug
-      
-      productos.forEach((product, index) => {
-        console.log(`Producto ${index}:`, {
-          id: product.id,
-          categoriaId: product.categoriaId,
-          marcaId: product.marcaId,
-          proveedorId: product.proveedorId,
-          paisOrigenId: product.paisOrigenId
-        });
-      });
-      console.log('=== FIN DEBUG ===');
       
       return productos.map(product => {
-        const pais = paises.find(p => p.id === product.paisOrigenId);
-        const categoria = categorias.find(c => c.id_categoria === product.categoriaId);
-        const marca = marcas.find(m => m.id_marca === product.marcaId);
-        const proveedor = proveedores.find(prov => prov.id_proveedor === product.proveedorId);
-
-        console.log(`Proveedor encontrado para producto ${product.id}:`, proveedor);
+        const pais = paises?.find(p => p.id === product.paisOrigenId);
+        const categoria = categorias?.find(c => c.id_categoria === product.categoriaId);
+        const marca = marcas?.find(m => m.id_marca === product.marcaId);
+        const proveedor = proveedores?.find(prov => prov.id_proveedor === product.proveedorId);
 
         return {
           ...product,
-          paisOrigenNombre: pais ? pais.nombre : 'No encontrado',
-          categoriaNombre: categoria ? categoria.nombre : 'No encontrado',
-          marcaNombre: marca ? marca.nombre : 'No encontrado',
-          proveedorNombre: proveedor ? proveedor.nombre : 'No encontrado'
+          paisOrigenNombre: pais ? pais.nombre : 'No disponible',
+          categoriaNombre: categoria ? categoria.nombre : 'No disponible',
+          marcaNombre: marca ? marca.nombre : 'No disponible',
+          proveedorNombre: proveedor ? proveedor.nombre : 'No disponible'
         };
       });
+    }),
+    catchError(this.handleError)
+  );
+}
+
+// AGREGAR este nuevo método para vendedores
+getProductsForSales(): Observable<any[]> {
+  return this.http.get<Product[]>(`${this.apiUrl}/productos`).pipe(
+    map(productos => {
+      // Solo información esencial para ventas
+      return productos.map(producto => ({
+        id_producto: producto.id_producto,
+        nombre: producto.nombre,
+        descripcion: producto.descripcion,
+        precio: producto.precio,
+        stock: producto.stock,
+        categoriaId: producto.categoriaId,
+        marcaId: producto.marcaId,
+        proveedorId: producto.proveedorId,
+        // Placeholders para la vista
+        categoriaNombre: 'Categoría',
+        marcaNombre: 'Marca', 
+        proveedorNombre: 'Proveedor',
+        paisOrigenNombre: 'País'
+      }));
     }),
     catchError(this.handleError)
   );

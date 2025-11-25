@@ -37,11 +37,36 @@ export class PanelVentasComponent implements OnInit {
   itemsPerPage = 10;
   totalItems = 0;
 
-  ngOnInit() {
-    this.cargarVentas();
-    this.estadosVenta = this.ventasService.getEstadosVenta();
-  }
+  // Método temporal para debug
+verificarEstadosVentas() {
+  console.log('🔍 VERIFICANDO ESTADOS DE VENTAS:');
+  this.ventas.forEach(venta => {
+    console.log(`Venta ${venta.id_venta}: Estado ID = ${venta.id_estado_venta}, Estado = ${venta.estado}`);
+  });
+  
+  console.log('📋 ESTADOS DISPONIBLES:');
+  this.estadosVenta.forEach(estado => {
+    console.log(`ID: ${estado.id_estado_venta}, Nombre: ${estado.estado}`);
+  });
+}
 
+// En panel-ventas.component.ts - agregar método de debug
+verificarFechasVentas() {
+  console.log('🔍 VERIFICANDO FECHAS DE VENTAS:');
+  this.ventas.forEach(venta => {
+    console.log(`Venta ${venta.id_venta}: Fecha BD = ${venta.fecha}, Hora BD = ${venta.hora}`);
+  });
+}
+
+// Llamar después de cargar las ventas
+ngOnInit() {
+  this.cargarVentas();
+  this.estadosVenta = this.ventasService.getEstadosVenta();
+  setTimeout(() => {
+    this.verificarEstadosVentas();
+    this.verificarFechasVentas(); // ✅ NUEVO
+  }, 1000);
+}
   cargarVentas() {
     this.loading = true;
     this.error = '';
@@ -62,22 +87,41 @@ export class PanelVentasComponent implements OnInit {
   }
 
   // Formatear fecha para mostrar en tabla
-  formatearFechaTabla(fecha: string): string {
-    if (!fecha) return '';
+// En panel-ventas.component.ts - CORREGIR formatearFechaTabla
+formatearFechaTabla(fecha: string): string {
+  if (!fecha) return '';
+  
+  try {
+    // ✅ CORREGIDO: Manejar correctamente la zona horaria
+    // Si la fecha viene como '2025-11-09', agregar 'T00:00:00' para evitar ajustes de zona horaria
+    let fechaAjustada = fecha;
+    if (fecha.length === 10) { // Formato YYYY-MM-DD
+      fechaAjustada = fecha + 'T00:00:00';
+    }
     
-    try {
-      const fechaObj = new Date(fecha);
-      if (isNaN(fechaObj.getTime())) return fecha;
-      
-      return fechaObj.toLocaleDateString('es-PE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    } catch (error) {
+    const fechaObj = new Date(fechaAjustada);
+    
+    if (isNaN(fechaObj.getTime())) {
+      console.warn('❌ Fecha inválida en formatearFechaTabla:', fecha);
       return fecha;
     }
+    
+    // ✅ Usar toLocaleDateString con timeZone explícita
+    const fechaFormateada = fechaObj.toLocaleDateString('es-PE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone: 'America/Lima' // Especificar zona horaria de Perú
+    });
+    
+    console.log(`📅 Formateando fecha: ${fecha} -> ${fechaFormateada}`);
+    return fechaFormateada;
+    
+  } catch (error) {
+    console.error('❌ Error en formatearFechaTabla:', error, 'Fecha:', fecha);
+    return fecha;
   }
+}
 
   // Formatear hora para mostrar en tabla
   formatearHoraTabla(hora: string): string {
@@ -99,57 +143,67 @@ export class PanelVentasComponent implements OnInit {
   }
 
   // ✅ CORREGIDO: Método aplicarFiltros mejorado
-  aplicarFiltros() {
-    console.log('🔍 Aplicando filtros:', {
-      estado: this.filtroEstado,
-      fecha: this.filtroFecha,
-      busqueda: this.searchTerm
+// En panel-ventas.component.ts - CORREGIR filtro por fecha
+aplicarFiltros() {
+  console.log('🔍 Aplicando filtros:', {
+    estado: this.filtroEstado,
+    fecha: this.filtroFecha,
+    busqueda: this.searchTerm
+  });
+
+  let filtered = [...this.ventas];
+
+  // ✅ CORREGIDO: Filtro por estado con conversión de tipo
+  if (this.filtroEstado > 0) {
+    const estadoFiltro = Number(this.filtroEstado);
+    console.log(`🎯 Filtrando por estado: ${estadoFiltro} (tipo: ${typeof estadoFiltro})`);
+    
+    filtered = filtered.filter(venta => {
+      const coincide = venta.id_estado_venta === estadoFiltro;
+      console.log(`   Estado venta ${venta.id_venta}: ${venta.id_estado_venta} (tipo: ${typeof venta.id_estado_venta}) -> ${coincide}`);
+      return coincide;
     });
-
-    let filtered = [...this.ventas];
-
-    // Filtro por estado - CORREGIDO
-    if (this.filtroEstado > 0) {
-      filtered = filtered.filter(venta => {
-        const coincide = venta.id_estado_venta === this.filtroEstado;
-        console.log(`Estado venta ${venta.id_venta}: ${venta.id_estado_venta} vs filtro: ${this.filtroEstado} -> ${coincide}`);
-        return coincide;
-      });
-    }
-
-    // Filtro por fecha - CORREGIDO
-    if (this.filtroFecha) {
-      filtered = filtered.filter(venta => {
-        // Normalizar ambas fechas para comparación
-        const fechaVenta = new Date(venta.fecha).toISOString().split('T')[0];
-        const fechaFiltro = new Date(this.filtroFecha).toISOString().split('T')[0];
-        const coincide = fechaVenta === fechaFiltro;
-        
-        console.log(`Fecha venta ${venta.id_venta}: ${fechaVenta} vs filtro: ${fechaFiltro} -> ${coincide}`);
-        return coincide;
-      });
-    }
-
-    // Filtro por búsqueda
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(venta => {
-        const coincide = 
-          venta.nombre_completo?.toLowerCase().includes(term) ||
-          venta.id_venta?.toString().includes(term) ||
-          venta.estado?.toLowerCase().includes(term) ||
-          venta.telefono?.includes(term);
-        
-        console.log(`Búsqueda venta ${venta.id_venta}: "${venta.nombre_completo}" -> ${coincide}`);
-        return coincide;
-      });
-    }
-
-    console.log(`📊 Resultados filtrados: ${filtered.length} de ${this.ventas.length}`);
-    this.ventasFiltradas = filtered;
-    this.totalItems = filtered.length;
-    this.currentPage = 1; // Resetear a primera página al filtrar
   }
+
+  // ✅ CORREGIDO: Filtro por fecha simplificado
+  if (this.filtroFecha) {
+    console.log(`📅 Filtrando por fecha: ${this.filtroFecha}`);
+    
+    filtered = filtered.filter(venta => {
+      if (!venta.fecha) {
+        console.log(`   Venta ${venta.id_venta}: sin fecha -> false`);
+        return false;
+      }
+      
+      const fechaVenta = new Date(venta.fecha).toISOString().split('T')[0];
+      const coincide = fechaVenta === this.filtroFecha;
+      
+      console.log(`   Venta ${venta.id_venta}: ${fechaVenta} -> ${coincide}`);
+      return coincide;
+    });
+  }
+
+  // Filtro por búsqueda
+  if (this.searchTerm) {
+    const term = this.searchTerm.toLowerCase();
+    filtered = filtered.filter(venta => {
+      const coincide = 
+        venta.nombre_completo?.toLowerCase().includes(term) ||
+        venta.id_venta?.toString().includes(term) ||
+        venta.estado?.toLowerCase().includes(term) ||
+        venta.telefono?.includes(term);
+      
+      return coincide;
+    });
+  }
+
+  console.log(`📊 Resultados filtrados: ${filtered.length} de ${this.ventas.length}`);
+  console.log('✅ Ventas filtradas:', filtered.map(v => ({ id: v.id_venta, estado: v.id_estado_venta, fecha: v.fecha })));
+  
+  this.ventasFiltradas = filtered;
+  this.totalItems = filtered.length;
+  this.currentPage = 1;
+}
 
   // Propiedades computadas para estadísticas - CORREGIDAS
   get ventasPendientes(): number {

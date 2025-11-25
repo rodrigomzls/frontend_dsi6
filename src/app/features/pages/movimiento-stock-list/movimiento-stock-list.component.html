@@ -1,0 +1,83 @@
+<div class="container">
+  <div class="header">
+    <h2>Movimientos de Stock</h2>
+    <button mat-raised-button color="primary" (click)="addMovimiento()">
+      <mat-icon>add</mat-icon> Agregar
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline" class="filter-field">
+    <mat-label>Filtrar</mat-label>
+    <input matInput (keyup)="applyFilter($event)" placeholder="Buscar por producto"/>
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+
+  <div class="table-container">
+    <div class="loading-shade" *ngIf="isLoading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Cargando datos...</p>
+    </div>
+
+    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+        <td mat-cell *matCellDef="let row">{{ row.id_movimiento }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="producto">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Producto</th>
+        <td mat-cell *matCellDef="let row">{{ row.producto?.nombre }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="'tipo-' + row.tipo_movimiento">
+            {{ row.tipo_movimiento }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- ✅ NUEVO: Columna de lote -->
+      <ng-container matColumnDef="lote">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Lote</th>
+        <td mat-cell *matCellDef="let row">
+          <span *ngIf="row.lote" class="lote-info">
+            {{ row.lote.numero_lote }}
+            <small *ngIf="row.lote.fecha_caducidad">
+              ({{ row.lote.fecha_caducidad | date:'dd/MM/yyyy' }})
+            </small>
+          </span>
+          <span *ngIf="!row.lote" class="sin-lote">--</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="cantidad">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Cantidad</th>
+        <td mat-cell *matCellDef="let row">
+          <span [class]="row.cantidad > 0 ? 'cantidad-positiva' : 'cantidad-negativa'">
+            {{ row.cantidad }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="fecha">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
+        <td mat-cell *matCellDef="let row">{{ row.fecha | date:'short' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let row">
+          <button mat-icon-button color="primary" (click)="editMovimiento(row)"><mat-icon>edit</mat-icon></button>
+          <button mat-icon-button color="warn" (click)="deleteMovimiento(row)"><mat-icon>delete</mat-icon></button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    <mat-paginator [pageSizeOptions]="[5,10,25]" showFirstLastButtons></mat-paginator>
+  </div>
+</div>

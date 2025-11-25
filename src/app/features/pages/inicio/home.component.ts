@@ -48,20 +48,55 @@ export class HomeComponent implements OnInit {
                 ];
                 break;
               case 4: // Almacenero
-                this.modulosPermitidos = [
-                  'inventario', 'productos', 'inventario_movimiento', 'inventario_reportes'
+                  this.modulosPermitidos = [
+                  'inventario', 'productos', 'inventario_movimiento', 'inventario_reportes',
+                  'lotes', 'proveedores', 'pedido_proveedor', 'categorias', 'marcas'
                 ];
                 break;
               default:
                 this.modulosPermitidos = [];
             }
           }
+        // Redirigir si es necesario (opcional)
+      this.redirectToDefaultIfNeeded();
         }
         console.log('HomeComponent: user', user);
         console.log('HomeComponent: modulosPermitidos', this.modulosPermitidos);
       });
   }
 
+private redirectToDefaultIfNeeded(): void {
+  const currentRoute = this.router.url;
+  
+  // Si estamos en /inicio, redirigir según rol
+  if (currentRoute === '/inicio') {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      const role = (user as any).id_rol ?? (user as any).role ?? 0;
+      let targetRoute = '/inicio';
+      
+      switch (Number(role)) {
+        case 1: // Administrador
+          targetRoute = '/ventas/nueva';
+          break;
+        case 2: // Vendedor
+          targetRoute = '/ventas/nueva';
+          break;
+        case 3: // Repartidor
+          targetRoute = '/repartidor/rutas-asignadas';
+          break;
+        case 4: // Almacenero
+          targetRoute = '/inventario';
+          break;
+        // Admin y Vendedor pueden quedarse en inicio
+      }
+      
+      if (targetRoute !== '/inicio') {
+        this.router.navigate([targetRoute]);
+      }
+    }
+  }
+}
    // Nuevo método para verificar acceso
   tieneAcceso(modulo: string): boolean {
     return this.modulosPermitidos.includes(modulo);
@@ -137,19 +172,19 @@ goToRutas() {
   // Módulos específicos del Repartidor
    goToRutasAsignadas() {
     if (this.tieneAcceso('rutas_asignadas')) {
-      this.router.navigate(['/rutas/asignadas']);
+      this.router.navigate(['/repartidor/rutas-asignadas']);
     }
   }
 
   goToEntregas() {
-    if (this.tieneAcceso('entregas')) {
-      this.router.navigate(['/entregas']);
+    if (this.tieneAcceso('entregas_pendientes')) {
+      this.router.navigate(['/repartidor/entregas-pendientes']);
     }
   }
 
    verHistorialEntregas() {
     if (this.tieneAcceso('historial_entregas')) {
-      this.router.navigate(['/entregas/historial']);
+      this.router.navigate(['/repartidor/historial-entregas']);
     }
   }
 
@@ -168,6 +203,37 @@ goToRutas() {
       verReportes() {
     if (this.tieneAcceso('inventario_reportes')) {
       this.router.navigate(['/inventario/reportes']);
+    }
+  }
+
+  // Nuevos métodos para módulos de almacenero
+  goToLotes() {
+    if (this.tieneAcceso('lotes')) {
+      this.router.navigate(['/lotes']);
+    }
+  }
+
+  goToProveedores() {
+    if (this.tieneAcceso('proveedores')) {
+      this.router.navigate(['/proveedores']);
+    }
+  }
+
+  goPedidosProveedor() {
+    if (this.tieneAcceso('pedido_proveedor')) {
+      this.router.navigate(['/pedidos-proveedor']);
+    }
+  }
+
+  goCategorias() {
+    if (this.tieneAcceso('categorias')) {
+      this.router.navigate(['/categorias']);
+    }
+  }
+
+  goMarcas() {
+    if (this.tieneAcceso('marcas')) {
+      this.router.navigate(['/marcas']);
     }
   }
  

@@ -1,6 +1,6 @@
 <header class="header">
   <!-- Logo clickeable -->
-  <div class="logo" (click)="nuevaVenta()">
+  <div class="logo" (click)="irAlInicio()">
     <img src="../../../assets/company-logo.png" alt="Logo Viña" class="logo-img">
     <span class="logo-text">Viña</span>
   </div>
@@ -68,18 +68,81 @@
         Mis Rutas
       </button>
     </mat-menu>
+
+    <!-- Entregas (Repartidor) -->
+    <button mat-button [matMenuTriggerFor]="entregasMenu" *ngIf="tieneAccesoAEntregas()">
+      <mat-icon>local_shipping</mat-icon>
+      Entregas
+    </button>
+    <mat-menu #entregasMenu="matMenu">
+      <button mat-menu-item *ngIf="tieneAcceso('entregas_pendientes')" (click)="goToEntregas()">
+        <mat-icon>pending_actions</mat-icon>
+        Entregas Pendientes
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('historial_entregas')" (click)="verHistorialEntregas()">
+        <mat-icon>history</mat-icon>
+        Historial de Entregas
+      </button>
+    </mat-menu>
+
+    <!-- Inventario (Almacenero) -->
+    <button mat-button [matMenuTriggerFor]="inventarioMenu" *ngIf="tieneAccesoAInventario()">
+      <mat-icon>warehouse</mat-icon>
+      Inventario
+    </button>
+    <mat-menu #inventarioMenu="matMenu">
+      <button mat-menu-item *ngIf="tieneAcceso('inventario')" (click)="goToInventario()">
+        <mat-icon>dashboard</mat-icon>
+        Gestion de Inventario
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('inventario_movimiento')" (click)="registrarMovimiento()">
+        <mat-icon>move_to_inbox</mat-icon>
+        Registrar Movimiento
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('inventario_reportes')" (click)="verReportes()">
+        <mat-icon>assessment</mat-icon>
+        Reportes de Stock
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('lotes')" (click)="goToLotes()">
+        <mat-icon>inventory</mat-icon>
+        Gestión de Lotes
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('proveedores')" (click)="goToProveedores()">
+        <mat-icon>local_shipping</mat-icon>
+        Proveedores
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('pedido_proveedor')" (click)="goPedidosProveedor()">
+        <mat-icon>list_alt</mat-icon>
+        Pedidos a Proveedor
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('categorias')" (click)="goCategorias()">
+        <mat-icon>category</mat-icon>
+        Categorías
+      </button>
+      <button mat-menu-item *ngIf="tieneAcceso('marcas')" (click)="goMarcas()">
+        <mat-icon>branding_watermark</mat-icon>
+        Marcas
+      </button>
+    </mat-menu>
   </nav>
 
   <!-- Lado derecho -->
   <div class="user-actions" *ngIf="isLoggedIn">
-    <button mat-button class="user-btn">
+    <button mat-button class="user-btn" [matMenuTriggerFor]="userMenu">
       <mat-icon>account_circle</mat-icon>
       {{ nombreUsuario }}
     </button>
 
-    <button mat-flat-button color="warn" class="logout-btn" (click)="logout()">
-      <mat-icon>logout</mat-icon>
-      Cerrar sesión
-    </button>
+    <mat-menu #userMenu="matMenu">
+      <button mat-menu-item (click)="irAlInicio()">
+        <mat-icon>home</mat-icon>
+        Inicio
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Cerrar sesión
+      </button>
+    </mat-menu>
   </div>
 </header>

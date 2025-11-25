@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -14,92 +15,67 @@ import { AuthService } from '../../core/services/auth.service';
     RouterModule,
     MatButtonModule,
     MatMenuModule,
-    MatIconModule
+    MatIconModule,
+    MatDividerModule
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
+  userRole: number = 0;
+  modulosPermitidos: string[] = [];
+
   constructor(
     private router: Router,
     private authService: AuthService
   ) {}
 
-  // Navegación
-  irAlInicio(): void {
-    this.router.navigate(['/inicio']);
-  }
+  ngOnInit() {
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        // Normalizar la propiedad de rol
+        const role = (user as any).id_rol ?? (user as any).role ?? 0;
+        this.userRole = Number(role);
 
-  goToUsuarios(): void {
-    this.router.navigate(['/usuarios']);
-  }
-
-  goToPersonas(): void {
-    this.router.navigate(['/personas']);
-  }
-
-  goToClientes(): void {
-    this.router.navigate(['/clientes']);
-  }
-
-  goToProductos(): void {
-    this.router.navigate(['/productos']);
-  }
-
-  nuevaVenta(): void {
-    this.router.navigate(['/ventas/nueva']);
-  }
-
-  goToVentas(): void {
-    this.router.navigate(['/ventas']);
-  }
-
-  goToRutas(): void {
-    this.router.navigate(['/ventas/asignacion-rutas']);
-  }
-
-  goToRepartidores(): void {
-    this.router.navigate(['/repartidores']);
-  }
-
-  goToRutasAsignadas(): void {
-    this.router.navigate(['/rutas-asignadas']);
-  }
-
-  goToEntregas(): void {
-    this.router.navigate(['/entregas']);
-  }
-
-  verHistorialEntregas(): void {
-    this.router.navigate(['/historial-entregas']);
+        // Si el backend no envía 'modulos', asignar por rol
+        if ((user as any).modulos && Array.isArray((user as any).modulos)) {
+          this.modulosPermitidos = (user as any).modulos || [];
+        } else {
+          // Asignar módulos por rol (igual que en HomeComponent)
+          switch (Number(role)) {
+            case 1: // Administrador
+              this.modulosPermitidos = [
+                'usuarios', 'personas', 'clientes', 'productos',
+                'ventas_nueva', 'ventas', 'ventas_asignacion_rutas', 'repartidores'
+              ];
+              break;
+            case 2: // Vendedor
+              this.modulosPermitidos = [
+                'clientes', 'productos', 'ventas_nueva', 'ventas', 'ventas_asignacion_rutas'
+              ];
+              break;
+            case 3: // Repartidor
+              this.modulosPermitidos = [
+                'rutas_asignadas', 'entregas_pendientes', 'historial_entregas'
+              ];
+              break;
+            case 4: // Almacenero
+              this.modulosPermitidos = [
+                'inventario', 'productos', 'inventario_movimiento', 'inventario_reportes',
+                'lotes', 'proveedores', 'pedido_proveedor', 'categorias', 'marcas'
+              ];
+              break;
+            default:
+              this.modulosPermitidos = [];
+          }
+        }
+      }
+    });
   }
 
   // Control de acceso
   tieneAcceso(modulo: string): boolean {
-    const user = this.authService.getCurrentUser();
-    if (!user) return false;
-    
-    // Aquí puedes implementar la lógica de permisos según el rol del usuario
-    switch (modulo) {
-      case 'usuarios':
-        return user.roleName === 'Administrador';
-      case 'personas':
-      case 'clientes':
-        return ['Administrador', 'Vendedor'].includes(user.roleName);
-      case 'productos':
-        return true; // Accesible para todos los usuarios autenticados
-      case 'ventas':
-      case 'ventas_nueva':
-        return ['Administrador', 'Vendedor'].includes(user.roleName);
-      case 'ventas_asignacion_rutas':
-        return user.roleName === 'Administrador';
-      case 'rutas_asignadas':
-        return user.roleName === 'Repartidor';
-      case 'repartidores':
-        return user.roleName === 'Administrador';
-      default:
-        return false;
-    }
+    return this.modulosPermitidos.includes(modulo);
   }
 
   tieneAccesoAGestion(): boolean {
@@ -119,8 +95,139 @@ export class HeaderComponent {
   }
 
   tieneAccesoAEntregas(): boolean {
-    return this.tieneAcceso('entregas') || 
+    return this.tieneAcceso('entregas_pendientes') || 
            this.tieneAcceso('historial_entregas');
+  }
+
+  tieneAccesoAInventario(): boolean {
+    return this.tieneAcceso('inventario') || 
+           this.tieneAcceso('inventario_movimiento') || 
+           this.tieneAcceso('inventario_reportes') ||
+           this.tieneAcceso('lotes') ||
+           this.tieneAcceso('proveedores') ||
+           this.tieneAcceso('pedido_proveedor') ||
+           this.tieneAcceso('categorias') ||
+           this.tieneAcceso('marcas');
+  }
+
+  // Navegación
+  irAlInicio(): void {
+    this.router.navigate(['/inicio']);
+  }
+
+  goToUsuarios(): void {
+    if (this.tieneAcceso('usuarios')) {
+      this.router.navigate(['/usuarios']);
+    }
+  }
+
+  goToPersonas(): void {
+    if (this.tieneAcceso('personas')) {
+      this.router.navigate(['/personas']);
+    }
+  }
+
+  goToClientes(): void {
+    if (this.tieneAcceso('clientes')) {
+      this.router.navigate(['/clientes']);
+    }
+  }
+
+  goToProductos(): void {
+    if (this.tieneAcceso('productos')) {
+      this.router.navigate(['/productos']);
+    }
+  }
+
+  nuevaVenta(): void {
+    if (this.tieneAcceso('ventas_nueva')) {
+      this.router.navigate(['/ventas/nueva']);
+    }
+  }
+
+  goToVentas(): void {
+    if (this.tieneAcceso('ventas')) {
+      this.router.navigate(['/ventas']);
+    }
+  }
+
+  goToRutas(): void {
+    if (this.tieneAcceso('ventas_asignacion_rutas')) {
+      this.router.navigate(['/ventas/asignacion-rutas']);
+    }
+  }
+
+  goToRepartidores(): void {
+    if (this.tieneAcceso('repartidores')) {
+      this.router.navigate(['/repartidores']);
+    }
+  }
+
+  goToRutasAsignadas(): void {
+    if (this.tieneAcceso('rutas_asignadas')) {
+      this.router.navigate(['/repartidor/rutas-asignadas']);
+    }
+  }
+
+  goToEntregas(): void {
+    if (this.tieneAcceso('entregas_pendientes')) {
+      this.router.navigate(['/repartidor/entregas-pendientes']);
+    }
+  }
+
+  verHistorialEntregas(): void {
+    if (this.tieneAcceso('historial_entregas')) {
+      this.router.navigate(['/repartidor/historial-entregas']);
+    }
+  }
+
+  // Módulos de Almacén
+  goToInventario(): void {
+    if (this.tieneAcceso('inventario')) {
+      this.router.navigate(['/inventario']);
+    }
+  }
+
+  registrarMovimiento(): void {
+    if (this.tieneAcceso('inventario_movimiento')) {
+      this.router.navigate(['/inventario/movimiento']);
+    }
+  }
+
+  verReportes(): void {
+    if (this.tieneAcceso('inventario_reportes')) {
+      this.router.navigate(['/inventario/reportes']);
+    }
+  }
+
+  goToLotes(): void {
+    if (this.tieneAcceso('lotes')) {
+      this.router.navigate(['/lotes']);
+    }
+  }
+
+  goToProveedores(): void {
+    if (this.tieneAcceso('proveedores')) {
+      this.router.navigate(['/proveedores']);
+    }
+  }
+
+  goPedidosProveedor(): void {
+    if (this.tieneAcceso('pedido_proveedor')) {
+      this.router.navigate(['/pedidos-proveedor']);
+    }
+  }
+
+  goCategorias(): void {
+    if (this.tieneAcceso('categorias')) {
+      this.router.navigate(['/categorias']);
+    }
+  }
+
+  goMarcas(): void {
+    if (this.tieneAcceso('marcas')) {
+      this.router.navigate(['/marcas']);
+    }
   }
 
   // Autenticación

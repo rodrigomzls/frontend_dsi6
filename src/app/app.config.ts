@@ -18,22 +18,48 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
 
+// ✅ AGREGAR ESTAS IMPORTACIONES PARA EL DATEPICKER
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
+import { MomentDateAdapter } from '@angular/material-moment-adapter';
+
 registerLocaleData(localeEsPe, 'es-PE');
+
+// ✅ FORMATO DE FECHA PERSONALIZADO PARA PERÚ
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY'
+  },
+};
 
 export const appConfig: ApplicationConfig = {
   providers: [
     { provide: LOCALE_ID, useValue: 'es-PE' },
+    // ✅ AGREGAR ESTOS PROVEEDORES PARA EL DATEPICKER
+    { provide: MAT_DATE_LOCALE, useValue: 'es-PE' },
+    { provide: DateAdapter, useClass: MomentDateAdapter, deps: [MAT_DATE_LOCALE] },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
+    
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(
       withInterceptors([authInterceptor])
     ),
     provideAnimations(),
+    
     // Proveedores de Material
     MatToolbarModule,
     MatButtonModule,
     MatMenuModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatDatepickerModule, // ✅ AGREGAR ESTE MÓDULO
+    MatNativeDateModule // ✅ AGREGAR ESTE MÓDULO
   ]
 };

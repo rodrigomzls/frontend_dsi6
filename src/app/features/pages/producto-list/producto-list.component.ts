@@ -1,4 +1,5 @@
-import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+// En producto-list.component.ts - MODIFICAR completamente
+import { Component, OnInit, ViewChild, inject, ElementRef } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -17,6 +18,7 @@ import { Product } from '../../../core/models/producto.model';
 import { ProductService } from '../../../core/services/producto.service';
 import { ProductoFormComponent } from '../../../components/producto-form/producto-form.component';
 import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confirm-dialog.component';
+import { AuthService } from '../../../core/services/auth.service'; // ✅ AGREGAR
 
 @Component({
   selector: 'app-producto-list',
@@ -38,10 +40,9 @@ import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confi
   ],
   templateUrl: './producto-list.component.html',
   styleUrls: ['./producto-list.component.css'],
-
 })
 export class ProductoListComponent implements OnInit {
-  pageSize = 5; // Default page size (ajustado a 5 por petición)
+  pageSize = 10;
   displayedColumns: string[] = [
     'numero',
     'nombre',
@@ -57,9 +58,13 @@ export class ProductoListComponent implements OnInit {
 
   dataSource: MatTableDataSource<any>;
   isLoading = true;
+  isVendedor = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+ @ViewChild('tableWrapper') tableWrapper!: ElementRef;
+  // ✅ INYECTAR AuthService
+  private authService = inject(AuthService);
 
   constructor(
     private productService: ProductService,
@@ -71,59 +76,84 @@ export class ProductoListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // ✅ DETERMINAR SI ES VENDEDOR
+    const currentUser = this.authService.getCurrentUser();
+    this.isVendedor = currentUser?.id_rol === 2;
+    
+    // ✅ OCULTAR COLUMNAS DE ACCIONES SI ES VENDEDOR
+    if (this.isVendedor) {
+      this.displayedColumns = this.displayedColumns.filter(col => col !== 'acciones');
+    }
+
     this.loadProductsWithDetails();
   }
 
   ngAfterViewInit(): void {
-  this.dataSource.paginator = this.paginator;
-  this.dataSource.sort = this.sort;
-  // Asegurar que el paginador inicial tenga el pageSize definido
-  try {
-    if (this.paginator) this.paginator.pageSize = this.pageSize;
-  } catch (e) { /* noop */ }
-
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
   }
 
   loadProductsWithDetails(): void {
-  this.isLoading = true;
-  this.productService.getProductsWithDetails().subscribe({
-    next: (productsWithDetails) => {
-      console.log('Productos con detalles:', productsWithDetails); 
-      this.dataSource = new MatTableDataSource(productsWithDetails);
+    this.isLoading = true;
 
-      // 🔧 Aseguramos que el paginador y el sort se asignen correctamente
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-      // Asegurar pageSize actual en el paginador
-      try { if (this.paginator) this.paginator.pageSize = this.pageSize; } catch (e) { /* noop */ }
-
-      this.isLoading = false;
-    },
-    error: (error) => {
-      console.error('Error loading products with details:', error);
-      this.isLoading = false;
-      this.loadProducts();
+    
+    if (this.isVendedor) {
+      // ✅ USAR MÉTODO SIMPLIFICADO PARA VENDEDORES
+      this.productService.getProductsForSales().subscribe({
+        next: (products) => {
+          console.log('📦 Productos para vendedor:', products);
+          this.dataSource = new MatTableDataSource(products);
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error cargando productos para ventas:', error);
+          this.isLoading = false;
+          this.loadBasicProducts();
+        }
+      });
+    } else {
+      // ✅ USAR MÉTODO COMPLETO PARA ADMIN/ALMACENERO
+      this.productService.getProductsWithDetails().subscribe({
+        next: (productsWithDetails) => {
+          console.log('📦 Productos con detalles:', productsWithDetails);
+          this.dataSource = new MatTableDataSource(productsWithDetails);
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error cargando productos con detalles:', error);
+          this.isLoading = false;
+          this.loadBasicProducts();
+        }
+      });
     }
-  });
-}
+  }
 
-
-  loadProducts(): void {
-  this.productService.getProducts().subscribe({
-    next: (products) => {
-      this.dataSource = new MatTableDataSource(products);
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-      try { if (this.paginator) this.paginator.pageSize = this.pageSize; } catch (e) { /* noop */ }
-      this.isLoading = false;
-    },
-    error: (error) => {
-      console.error('Error loading products:', error);
-      this.isLoading = false;
-    }
-  });
-}
-
+  loadBasicProducts(): void {
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        const productsWithPlaceholders = products.map(p => ({
+          ...p,
+          categoriaNombre: 'No disponible',
+          marcaNombre: 'No disponible',
+          proveedorNombre: 'No disponible',
+          paisOrigenNombre: 'No disponible'
+        }));
+        
+        this.dataSource = new MatTableDataSource(productsWithPlaceholders);
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error cargando productos básicos:', error);
+        this.isLoading = false;
+      }
+    });
+  }
 
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
@@ -134,59 +164,60 @@ export class ProductoListComponent implements OnInit {
     }
   }
 
-  changePageSize(size: number): void {
-    this.pageSize = size;
-    if (this.paginator) {
-      this.paginator.pageSize = size;
-      this.dataSource.paginator = this.paginator;
-      // Forzar evento de cambio de tamaño si el paginator expone el método interno
-      try {
-        // _changePageSize es una implementación interna en MatPaginator que dispara el evento correctamente
-        if ((this.paginator as any)._changePageSize) {
-          (this.paginator as any)._changePageSize(size);
-        } else {
-          this.paginator.firstPage();
-        }
-      } catch (e) { /* noop */ }
+  openAddDialog(): void {
+    // ✅ SOLO PERMITIR SI NO ES VENDEDOR
+    if (this.isVendedor) {
+      this.showErrorMessage('No tienes permisos para agregar productos');
+      return;
     }
-    this.cdr.detectChanges();
+
+    const dialogRef = this.dialog.open(ProductoFormComponent, {
+      width: '600px',
+      maxWidth: '95vw',
+      height: 'auto',
+      maxHeight: '85vh',
+      panelClass: 'product-form-dialog',
+      autoFocus: false
+    });
+    
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadProductsWithDetails();
+      }
+    });
   }
 
-openAddDialog(): void {
-   const dialogRef = this.dialog.open(ProductoFormComponent, {
-    width: '600px', // Reducido de 800px
-    maxWidth: '95vw',
-    height: 'auto',
-    maxHeight: '85vh',
-    panelClass: 'product-form-dialog',
-    autoFocus: false
-  });
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.loadProductsWithDetails();
+  openEditDialog(product: Product): void {
+    // ✅ SOLO PERMITIR SI NO ES VENDEDOR
+    if (this.isVendedor) {
+      this.showErrorMessage('No tienes permisos para editar productos');
+      return;
     }
-  });
-}
 
-openEditDialog(product: Product): void {
-  const dialogRef = this.dialog.open(ProductoFormComponent, {
-    width: '600px', // Reducido de 800px
-    maxWidth: '95vw',
-    height: 'auto',
-    maxHeight: '85vh',
-    panelClass: 'product-form-dialog',
-    autoFocus: false,
-    data: { product }
-  });
+    const dialogRef = this.dialog.open(ProductoFormComponent, {
+      width: '600px',
+      maxWidth: '95vw',
+      height: 'auto',
+      maxHeight: '85vh',
+      panelClass: 'product-form-dialog',
+      autoFocus: false,
+      data: { product }
+    });
 
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadProductsWithDetails();
+      }
+    });
+  }
 
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.loadProductsWithDetails();
-    }
-  });
-}
   deleteProduct(product: Product): void {
+    // ✅ SOLO PERMITIR SI NO ES VENDEDOR
+    if (this.isVendedor) {
+      this.showErrorMessage('No tienes permisos para eliminar productos');
+      return;
+    }
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '450px',
       data: {
@@ -196,13 +227,13 @@ openEditDialog(product: Product): void {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.productService.deleteProduct(product.id!).subscribe({
+        this.productService.deleteProduct(product.id_producto!).subscribe({
           next: () => {
             this.loadProductsWithDetails();
             this.showSuccessMessage('Producto eliminado correctamente');
           },
           error: (error) => {
-            console.error('Error deleting product:', error);
+            console.error('Error eliminando producto:', error);
             this.showErrorMessage('Error al eliminar el producto');
           }
         });
@@ -226,5 +257,10 @@ openEditDialog(product: Product): void {
       horizontalPosition: 'right',
       verticalPosition: 'top'
     });
+  }
+
+  // ✅ NUEVO MÉTODO PARA VERIFICAR PERMISOS
+  canEdit(): boolean {
+    return !this.isVendedor;
   }
 }

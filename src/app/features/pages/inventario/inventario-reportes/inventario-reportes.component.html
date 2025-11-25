@@ -1,0 +1,290 @@
+<!-- inventario-reportes.component.html -->
+<div class="reportes-container">
+  <div class="header">
+    <h1>📊 Reportes de Stock e Inventario</h1>
+    <p>Análisis detallado del estado actual del almacén y valoración del inventario</p>
+  </div>
+
+  <!-- Filtros -->
+  <mat-card class="filtros-card">
+    <mat-card-header>
+      <mat-card-title>🔍 Filtros del Reporte</mat-card-title>
+      <mat-card-subtitle>Selecciona los criterios para generar el reporte</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="filtrosForm" class="filtros-form">
+        <div class="filtros-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tipo de Reporte</mat-label>
+            <mat-select formControlName="tipoReporte">
+              <mat-option value="stock-general">
+                <div class="option-content">
+                  <mat-icon>inventory</mat-icon>
+                  <span>Stock General - Todos los productos</span>
+                </div>
+              </mat-option>
+              <mat-option value="stock-bajo">
+                <div class="option-content">
+                  <mat-icon>warning</mat-icon>
+                  <span>Stock Bajo - Productos bajo mínimo</span>
+                </div>
+              </mat-option>
+              <mat-option value="agotado">
+                <div class="option-content">
+                  <mat-icon>cancel</mat-icon>
+                  <span>Productos Agotados</span>
+                </div>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha Desde</mat-label>
+            <input matInput [matDatepicker]="pickerInicio" formControlName="fechaInicio">
+            <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+            <mat-datepicker #pickerInicio></mat-datepicker>
+            <mat-hint>Filtrar por movimientos desde</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha Hasta</mat-label>
+            <input matInput [matDatepicker]="pickerFin" formControlName="fechaFin">
+            <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
+            <mat-datepicker #pickerFin></mat-datepicker>
+            <mat-hint>Filtrar por movimientos hasta</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="acciones-filtros">
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="generarReporte()" 
+            [disabled]="cargando"
+            class="generate-btn">
+            <mat-icon *ngIf="!cargando">analytics</mat-icon>
+            <mat-spinner *ngIf="cargando" diameter="20"></mat-spinner>
+            {{ cargando ? 'Generando Reporte...' : 'Generar Reporte' }}
+          </button>
+          
+                  <div class="export-buttons">
+            <button mat-stroked-button color="accent" (click)="exportarPDF()" 
+                    [disabled]="!datosCargados || exportando">
+              <mat-icon *ngIf="!exportando">picture_as_pdf</mat-icon>
+              <mat-spinner *ngIf="exportando" diameter="20"></mat-spinner>
+              {{ exportando ? 'Exportando...' : 'Exportar PDF' }}
+            </button>
+            
+            <button mat-stroked-button color="accent" (click)="exportarExcel()" 
+                    [disabled]="!datosCargados || exportando">
+              <mat-icon *ngIf="!exportando">table_chart</mat-icon>
+              <mat-spinner *ngIf="exportando" diameter="20"></mat-spinner>
+              {{ exportando ? 'Exportando...' : 'Exportar Excel' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Resumen Ejecutivo -->
+  <div *ngIf="datosCargados" class="resumen-ejecutivo">
+    <h2>📈 Resumen Ejecutivo del Inventario</h2>
+    
+    <div class="metricas-grid">
+      <mat-card class="metrica-card primary">
+        <mat-card-content>
+          <div class="metrica">
+            <div class="metrica-icon">
+              <mat-icon>inventory_2</mat-icon>
+            </div>
+            <div class="metrica-info">
+              <h3>Productos en Inventario</h3>
+              <p class="metrica-valor">{{ metricas.totalProductos }}</p>
+              <span class="metrica-desc">Productos activos analizados</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="metrica-card success">
+        <mat-card-content>
+          <div class="metrica">
+            <div class="metrica-icon">
+              <mat-icon>attach_money</mat-icon>
+            </div>
+            <div class="metrica-info">
+              <h3>Valor Total del Stock</h3>
+              <p class="metrica-valor">{{ metricas.valorTotal | currency:'PEN':'S/ ' }}</p>
+              <span class="metrica-desc">Valor comercial del inventario</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- En inventario-reportes.component.html - mejorar el tooltip de movimientos -->
+<mat-card class="metrica-card info">
+  <mat-card-content>
+    <div class="metrica">
+      <div class="metrica-icon">
+        <mat-icon>swap_vert</mat-icon>
+      </div>
+      <div class="metrica-info">
+        <h3>Movimientos Registrados</h3>
+        <p class="metrica-valor">{{ metricas.totalMovimientos }}</p>
+        <span class="metrica-desc" *ngIf="filtrosForm.value.fechaInicio && filtrosForm.value.fechaFin">
+          Del {{ filtrosForm.value.fechaInicio | date:'dd/MM/yyyy' }} al {{ filtrosForm.value.fechaFin | date:'dd/MM/yyyy' }}
+        </span>
+        <span class="metrica-desc" *ngIf="!filtrosForm.value.fechaInicio || !filtrosForm.value.fechaFin">
+          Total en el sistema
+        </span>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>
+
+      <mat-card class="metrica-card warning" *ngIf="productosConProblemas > 0">
+        <mat-card-content>
+          <div class="metrica">
+            <div class="metrica-icon">
+              <mat-icon>warning</mat-icon>
+            </div>
+            <div class="metrica-info">
+              <h3>Productos con Stock Bajo</h3>
+              <p class="metrica-valor">{{ productosConProblemas }}</p>
+              <span class="metrica-desc">Requieren atención inmediata</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Detalle del Reporte -->
+  <mat-card *ngIf="datosCargados" class="resultados-card">
+    <mat-card-header>
+      <div class="card-header-content">
+        <mat-card-title>
+          <mat-icon>table_view</mat-icon>
+          Detalle del Inventario
+        </mat-card-title>
+        <div class="header-stats">
+          <span class="total-registros">{{ datosReporte.length }} productos listados</span>
+          <span class="valor-total-header">
+            Valor total: {{ metricas.valorTotal | currency:'PEN':'S/ ' }}
+          </span>
+        </div>
+      </div>
+      <mat-card-subtitle>
+        Análisis detallado de cada producto en inventario. El <strong>Valor Total</strong> se calcula como: 
+        <em>Stock Actual × Precio Unitario</em>
+      </mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <div class="tabla-container">
+        <table class="reporte-table mat-elevation-z2" id="tabla-reporte">
+          <thead>
+            <tr>
+              <th class="producto-col">Producto</th>
+              <th class="categoria-col">Categoría</th>
+              <th class="marca-col">Marca</th>
+              <th class="precio-col">Precio Unit.</th>
+              <th class="stock-col">Stock Actual</th>
+              <th class="stock-min-col">Stock Mínimo</th>
+              <th class="diferencia-col">Diferencia</th>
+              <th class="valor-col">Valor Total</th>
+              <th class="estado-col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of datosReporte" [class]="getRowClass(item)">
+              <td class="producto-nombre">
+                <div class="producto-info">
+                  <strong>{{ item.producto }}</strong>
+                  <small *ngIf="item.descripcion" class="producto-desc">{{ item.descripcion }}</small>
+                </div>
+              </td>
+              <td class="categoria">
+                <span class="categoria-badge">{{ item.categoria }}</span>
+              </td>
+              <td class="marca">
+                <span class="marca-badge">{{ item.marca }}</span>
+              </td>
+              <td class="precio-unitario">
+                {{ item.precio | currency:'PEN':'S/ ' }}
+              </td>
+              <td class="stock-actual">
+                <span [class]="getStockClass(item)">{{ item.stockActual }}</span>
+              </td>
+              <td class="stock-minimo">
+                {{ item.stockMinimo }}
+              </td>
+              <td class="diferencia">
+                <span [class]="getDiferenciaClass(item)">
+                  {{ item.stockActual - item.stockMinimo }}
+                </span>
+              </td>
+              <td class="valor-total">
+                <div class="valor-content">
+                  <strong>{{ item.valorTotal | currency:'PEN':'S/ ' }}</strong>
+                  <small class="valor-calculo">
+                    ({{ item.stockActual }} × {{ item.precio | currency:'PEN':'S/ ' }})
+                  </small>
+                </div>
+              </td>
+              <td class="estado">
+                <span [class]="item.estado + '-badge'" class="estado-badge" [matTooltip]="getEstadoTooltip(item)">
+                  <mat-icon class="estado-icon">{{ getEstadoIcon(item.estado) }}</mat-icon>
+                  {{ getEstadoText(item.estado) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Resumen de Estados -->
+      <div *ngIf="datosReporte.length > 0" class="resumen-estados">
+        <h4>📋 Resumen por Estados</h4>
+        <div class="estados-grid">
+          <div class="estado-item normal">
+            <span class="estado-count">{{ contarPorEstado('normal') }}</span>
+            <span class="estado-label">Normal</span>
+          </div>
+          <div class="estado-item bajo">
+            <span class="estado-count">{{ contarPorEstado('bajo') }}</span>
+            <span class="estado-label">Bajo Stock</span>
+          </div>
+          <div class="estado-item agotado">
+            <span class="estado-count">{{ contarPorEstado('agotado') }}</span>
+            <span class="estado-label">Agotado</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="datosReporte.length === 0" class="sin-resultados">
+        <mat-icon>search_off</mat-icon>
+        <h3>No se encontraron productos</h3>
+        <p>No hay productos que coincidan con los filtros aplicados. Intenta con otros criterios de búsqueda.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Mensaje cuando no hay datos -->
+  <div *ngIf="!datosCargados && !cargando" class="sin-datos">
+    <div class="sin-datos-content">
+      <mat-icon>analytics</mat-icon>
+      <h3>Reporte de Inventario</h3>
+      <p>Selecciona los filtros y genera un reporte para visualizar el estado actual del almacén</p>
+      <div class="sugerencias">
+        <h4>💡 Tipos de reporte disponibles:</h4>
+        <ul>
+          <li><strong>Stock General:</strong> Todos los productos en inventario</li>
+          <li><strong>Stock Bajo:</strong> Productos que están por debajo del stock mínimo</li>
+          <li><strong>Productos Agotados:</strong> Productos con stock cero</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

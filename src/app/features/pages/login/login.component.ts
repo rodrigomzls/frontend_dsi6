@@ -18,10 +18,28 @@ export class LoginComponent {
 
   credentials = {
     nombre_usuario: '',
-   password: '' // CAMBIAR de "contrasena" a "contraseña"
+    password: ''
   };
   loading = false;
   error = '';
+
+  // Método para determinar la ruta inicial según el rol
+  private getDefaultRouteByRole(user: any): string {
+    const role = user?.id_rol ?? user?.role ?? 0;
+    
+    switch (Number(role)) {
+      case 1: // Administrador
+        return '/ventas/nueva'; // O '/inicio' si prefieres el dashboard
+      case 2: // Vendedor
+        return '/ventas/nueva';
+      case 3: // Repartidor
+        return '/repartidor/rutas-asignadas';
+      case 4: // Almacenero
+        return '/inventario';
+      default:
+        return '/inicio';
+    }
+  }
 
   onSubmit(): void {
     if (!this.credentials.nombre_usuario || !this.credentials.password) {
@@ -34,21 +52,16 @@ export class LoginComponent {
 
     this.authService.login(this.credentials.nombre_usuario, this.credentials.password)
       .subscribe({
-        next: () => {
-          // Si el usuario tiene acceso a crear nueva venta, redirigir directamente
-          try {
-            const canNewSale = this.authService.hasModuleAccess
-              ? this.authService.hasModuleAccess('ventas_nueva')
-              : false;
-
-            if (canNewSale) {
-              this.router.navigate(['/ventas/nueva']);
-            } else {
-              // fallback: ir al inicio
-              this.router.navigate(['/inicio']);
-            }
-          } catch (err) {
-            console.warn('No se pudo comprobar permisos, redirigiendo a inicio', err);
+        next: (response) => {
+          // Obtener el usuario del response o del servicio
+          const user = response.user || this.authService.getCurrentUser();
+          
+          if (user) {
+            const defaultRoute = this.getDefaultRouteByRole(user);
+            console.log(`🔀 Redirigiendo a ruta por defecto para rol ${user.role}: ${defaultRoute}`);
+            this.router.navigate([defaultRoute]);
+          } else {
+            // Fallback seguro
             this.router.navigate(['/inicio']);
           }
         },
