@@ -37,15 +37,21 @@ import { ClienteService } from '../../core/services/cliente.service';
             <mat-error *ngIf="clienteForm.get('nombre')?.hasError('required')">
               El nombre es requerido
             </mat-error>
+            <mat-error *ngIf="clienteForm.get('nombre')?.hasError('minlength')">
+              El nombre debe tener al menos 3 caracteres
+            </mat-error>
           </mat-form-field>
         </div>
 
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Teléfono *</mat-label>
-            <input matInput formControlName="telefono" required>
+            <input matInput formControlName="telefono" required placeholder="Ej: 912345678">
             <mat-error *ngIf="clienteForm.get('telefono')?.hasError('required')">
               El teléfono es requerido
+            </mat-error>
+            <mat-error *ngIf="clienteForm.get('telefono')?.hasError('minlength')">
+              El teléfono debe tener al menos 7 dígitos
             </mat-error>
           </mat-form-field>
 
@@ -123,8 +129,8 @@ export class ClienteRapidoFormComponent implements OnInit {
 
   private createForm(): FormGroup {
     return this.fb.group({
-      nombre: ['', Validators.required],
-      telefono: ['', Validators.required],
+      nombre: ['', [Validators.required, Validators.minLength(3)]],
+      telefono: ['', [Validators.required, Validators.minLength(7)]],
       direccion: [''],
       tipo_cliente: ['Final']
     });
@@ -134,11 +140,13 @@ export class ClienteRapidoFormComponent implements OnInit {
     if (this.clienteForm.valid) {
       this.isLoading = true;
       
-      // Usar DNI por defecto para clientes rápidos
+      // Generar un DNI único basado en timestamp + random
+      const uniqueDNI = this.generateUniqueDNI();
+      
       const formData = {
         ...this.clienteForm.value,
         tipo_documento: 'DNI',
-        dni: '00000000' // DNI temporal, se puede generar uno único
+        dni: uniqueDNI
       };
 
       this.clienteService.createCliente(formData).subscribe({
@@ -158,6 +166,13 @@ export class ClienteRapidoFormComponent implements OnInit {
         }
       });
     }
+  }
+
+  private generateUniqueDNI(): string {
+    // Generar DNI único basado en timestamp + número aleatorio
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return (timestamp + random).slice(-8);
   }
 
   onCancel(): void {

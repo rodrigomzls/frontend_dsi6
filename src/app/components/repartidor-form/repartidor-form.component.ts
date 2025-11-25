@@ -84,6 +84,15 @@ export class RepartidorFormComponent implements OnInit {
     });
   }
 
+  clearForm(): void {
+    this.repartidorForm.reset({
+      id_persona: null,
+      placa_furgon: '',
+      fecha_contratacion: '',
+      activo: true
+    });
+  }
+
   onSubmit(): void {
     if (this.repartidorForm.valid) {
       this.isLoading = true;

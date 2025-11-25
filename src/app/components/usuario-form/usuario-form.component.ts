@@ -93,6 +93,16 @@ export class UsuarioFormComponent implements OnInit {
     });
   }
 
+  clearForm(): void {
+    this.form.reset({
+      nombre_usuario: '',
+      email: '',
+      password: '',
+      id_rol: 2,
+      id_persona: null
+    });
+  }
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

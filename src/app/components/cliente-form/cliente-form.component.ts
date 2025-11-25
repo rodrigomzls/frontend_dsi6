@@ -271,6 +271,19 @@ onSubmit(): void {
     this.showMessage('Por favor complete todos los campos requeridos', 'warn');
   }
 }
+  clearForm(): void {
+    this.clienteForm.reset({
+      tipo_documento: 'DNI',
+      dni: '',
+      nombre: '',
+      telefono: '',
+      direccion: '',
+      tipo_cliente: 'Bodega',
+      razon_social: '',
+      coordenadas: ''
+    });
+  }
+
   onCancel(): void {
     this.dialogRef.close(false);
   }

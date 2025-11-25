@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -41,8 +41,9 @@ import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confi
 
 })
 export class ProductoListComponent implements OnInit {
-  pageSize = 10; // Default page size
+  pageSize = 5; // Default page size (ajustado a 5 por petición)
   displayedColumns: string[] = [
+    'numero',
     'nombre',
     'descripcion',
     'precio',
@@ -63,7 +64,8 @@ export class ProductoListComponent implements OnInit {
   constructor(
     private productService: ProductService,
     public dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {
     this.dataSource = new MatTableDataSource<any>();
   }
@@ -75,6 +77,10 @@ export class ProductoListComponent implements OnInit {
   ngAfterViewInit(): void {
   this.dataSource.paginator = this.paginator;
   this.dataSource.sort = this.sort;
+  // Asegurar que el paginador inicial tenga el pageSize definido
+  try {
+    if (this.paginator) this.paginator.pageSize = this.pageSize;
+  } catch (e) { /* noop */ }
 
   }
 
@@ -88,6 +94,8 @@ export class ProductoListComponent implements OnInit {
       // 🔧 Aseguramos que el paginador y el sort se asignen correctamente
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
+      // Asegurar pageSize actual en el paginador
+      try { if (this.paginator) this.paginator.pageSize = this.pageSize; } catch (e) { /* noop */ }
 
       this.isLoading = false;
     },
@@ -106,6 +114,7 @@ export class ProductoListComponent implements OnInit {
       this.dataSource = new MatTableDataSource(products);
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
+      try { if (this.paginator) this.paginator.pageSize = this.pageSize; } catch (e) { /* noop */ }
       this.isLoading = false;
     },
     error: (error) => {
@@ -123,6 +132,24 @@ export class ProductoListComponent implements OnInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    if (this.paginator) {
+      this.paginator.pageSize = size;
+      this.dataSource.paginator = this.paginator;
+      // Forzar evento de cambio de tamaño si el paginator expone el método interno
+      try {
+        // _changePageSize es una implementación interna en MatPaginator que dispara el evento correctamente
+        if ((this.paginator as any)._changePageSize) {
+          (this.paginator as any)._changePageSize(size);
+        } else {
+          this.paginator.firstPage();
+        }
+      } catch (e) { /* noop */ }
+    }
+    this.cdr.detectChanges();
   }
 
 openAddDialog(): void {

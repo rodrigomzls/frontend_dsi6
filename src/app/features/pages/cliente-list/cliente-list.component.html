@@ -1,134 +1,99 @@
-<div class="container">
+<div class="product-container">
+  <!-- Encabezado -->
   <div class="header">
     <h2>Gestión de Clientes</h2>
     <button mat-raised-button color="primary" (click)="openAddDialog()">
-      <mat-icon>add</mat-icon>
-      Agregar Cliente
-    </button> 
+      <mat-icon>add</mat-icon> Agregar Cliente
+    </button>
   </div>
 
-  <div class="filter-container">
-    <mat-form-field appearance="outline" class="filter-field">
-      <mat-label>Filtrar</mat-label>
-      <input
-        matInput
-        (keyup)="applyFilter($event)"
-        placeholder="Buscar por nombre, documento, teléfono..."
-      />
-      <mat-icon matSuffix>search</mat-icon>
-    </mat-form-field>
-  </div>
-
-  <div class="table-container">
-    <div class="loading-shade" *ngIf="isLoading">
-      <mat-spinner diameter="50"></mat-spinner>
-      <p>Cargando datos...</p>
+  <!-- Filtros -->
+  <div class="filter-bar">
+    <div class="filter-left">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Buscar usuario...</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Usuario, nombre, email..." />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
     </div>
 
-    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-      <!-- Nombre Column -->
+    <div class="filter-right">
+      <mat-form-field appearance="outline" class="page-size-field">
+        <mat-label>Mostrar</mat-label>
+        <mat-select [(value)]="pageSize" (selectionChange)="changePageSize($event.value)">
+          <mat-option [value]="5">5</mat-option>
+          <mat-option [value]="10">10</mat-option>
+          <mat-option [value]="20">20</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <span class="total-count">de {{ dataSource.data.length }} clientes</span>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="table-card">
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+
+      <ng-container matColumnDef="numero">
+        <th mat-header-cell *matHeaderCellDef>#</th>
+        <td mat-cell *matCellDef="let c; let i = index">
+          {{ paginator.pageIndex * paginator.pageSize + i + 1 }}
+        </td>
+      </ng-container>
+
       <ng-container matColumnDef="nombre">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre Completo</th>
-        <td mat-cell *matCellDef="let cliente">{{ cliente.nombre }}</td>
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let c">{{ c.nombre }}</td>
       </ng-container>
 
-      <!-- Tipo Documento Column -->
       <ng-container matColumnDef="tipo_documento">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo Doc.</th>
-        <td mat-cell *matCellDef="let cliente">
-          <mat-chip [color]="getTipoDocumentoColor(cliente.tipo_documento)" selected>
-            {{ cliente.tipo_documento }}
-          </mat-chip>
-        </td>
+        <th mat-header-cell *matHeaderCellDef>Tipo Doc.</th>
+        <td mat-cell *matCellDef="let c">{{ c.tipo_documento }}</td>
       </ng-container>
 
-      <!-- DNI Column -->
       <ng-container matColumnDef="dni">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>N° Documento</th>
-        <td mat-cell *matCellDef="let cliente">{{ cliente.dni }}</td>
+        <th mat-header-cell *matHeaderCellDef>DNI/RUC</th>
+        <td mat-cell *matCellDef="let c">{{ c.dni }}</td>
       </ng-container>
 
-      <!-- Teléfono Column -->
       <ng-container matColumnDef="telefono">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Teléfono</th>
-        <td mat-cell *matCellDef="let cliente">{{ cliente.telefono }}</td>
+        <th mat-header-cell *matHeaderCellDef>Teléfono</th>
+        <td mat-cell *matCellDef="let c">{{ c.telefono }}</td>
       </ng-container>
 
-      <!-- Dirección Column -->
       <ng-container matColumnDef="direccion">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Dirección</th>
-        <td mat-cell *matCellDef="let cliente">{{ cliente.direccion }}</td>
+        <th mat-header-cell *matHeaderCellDef>Dirección</th>
+        <td mat-cell *matCellDef="let c">{{ c.direccion }}</td>
       </ng-container>
 
-      <!-- Tipo Cliente Column -->
       <ng-container matColumnDef="tipo_cliente">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo Cliente</th>
-        <td mat-cell *matCellDef="let cliente">
-          <mat-chip [color]="getTipoClienteColor(cliente.tipo_cliente)" selected>
-            {{ cliente.tipo_cliente }}
-          </mat-chip>
-        </td>
+        <th mat-header-cell *matHeaderCellDef>Tipo Cliente</th>
+        <td mat-cell *matCellDef="let c">{{ c.tipo_cliente }}</td>
       </ng-container>
 
-<!-- Razón Social Column -->
-<ng-container matColumnDef="razon_social">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header>Razón Social</th>
-  <td mat-cell *matCellDef="let cliente">
-    <span *ngIf="cliente.razon_social && cliente.razon_social.trim() !== ''">
-      {{ cliente.razon_social }}
-    </span>
-    <span *ngIf="!cliente.razon_social || cliente.razon_social.trim() === ''" class="no-data">
-      N/A
-    </span>
-  </td>
-</ng-container>
+      <ng-container matColumnDef="razon_social">
+        <th mat-header-cell *matHeaderCellDef>Razón Social</th>
+        <td mat-cell *matCellDef="let c">{{ c.razon_social || '-' }}</td>
+      </ng-container>
 
-      <!-- Acciones Column -->
       <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef class="actions-header">Acciones</th>
-        <td mat-cell *matCellDef="let cliente">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let c">
           <div class="actions-container">
-            <!-- Botón de Mapa -->
-            <button
-              mat-icon-button
-              color="accent"
-              (click)="openMapDialog(cliente)"
-              matTooltip="Ver ubicación"
-              [disabled]="!cliente.direccion"
-              class="map-btn"
-            >
-              <mat-icon>map</mat-icon>
-            </button>
-
-            <!-- Botón de Editar -->
-            <button
-              mat-icon-button
-              color="primary"
-              (click)="openEditDialog(cliente)"
-              matTooltip="Editar"
-            >
+            <button mat-icon-button color="primary" (click)="openEditDialog(c)" matTooltip="Editar">
               <mat-icon>edit</mat-icon>
             </button>
-
-            <!-- Botón de Eliminar 
-                <button
-              mat-icon-button
-              color="warn"
-              (click)="deleteCliente(cliente)"
-              matTooltip="Eliminar"
-            >
+            <button mat-icon-button color="warn" (click)="deleteCliente(c)" matTooltip="Eliminar">
               <mat-icon>delete</mat-icon>
             </button>
-            -->
-         
+            
           </div>
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
 
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+        <mat-paginator [pageSizeOptions]="[5,10,20]" [pageSize]="pageSize" showFirstLastButtons class="paginator-solo-botones"></mat-paginator>
   </div>
-</div>

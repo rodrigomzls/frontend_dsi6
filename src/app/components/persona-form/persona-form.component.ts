@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PersonaService } from '../../core/services/persona.service';
@@ -21,6 +22,7 @@ import { PersonaService } from '../../core/services/persona.service';
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatIconModule,
     MatProgressSpinnerModule
   ],
   templateUrl: './persona-form.component.html',
@@ -108,5 +110,16 @@ export class PersonaFormComponent implements OnInit {
 
   onCancel() {
     this.dialogRef.close(null);
+  }
+
+  clearForm(): void {
+    this.form.reset({
+      tipo_documento: 'DNI',
+      numero_documento: '',
+      nombre_completo: '',
+      telefono: '',
+      direccion: '',
+      coordenadas: ''
+    });
   }
 }

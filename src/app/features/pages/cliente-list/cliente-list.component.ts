@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -44,7 +44,9 @@ import { MapModalComponent } from '../../../components/map-modal/map-modal.compo
   styleUrl: './cliente-list.component.css',
 })
 export class ClienteListComponent implements OnInit {
+  pageSize = 5; // default rows to show
   displayedColumns: string[] = [
+    'numero',
     'nombre',
     'tipo_documento',
     'dni',
@@ -76,6 +78,25 @@ export class ClienteListComponent implements OnInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    // Asegurar que el paginador inicial tenga el pageSize definido
+    try {
+      if (this.paginator) this.paginator.pageSize = this.pageSize;
+    } catch (e) { /* noop */ }
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    if (this.paginator) {
+      this.paginator.pageSize = size;
+      this.dataSource.paginator = this.paginator;
+      try {
+        if ((this.paginator as any)._changePageSize) {
+          (this.paginator as any)._changePageSize(size);
+        } else {
+          this.paginator.firstPage();
+        }
+      } catch (e) { /* noop */ }
+    }
   }
 
   loadClientes(): void {
@@ -83,6 +104,8 @@ export class ClienteListComponent implements OnInit {
     this.clienteService.getClientes().subscribe({
       next: (clientes) => {
         this.dataSource.data = clientes;
+        // Asegurar pageSize actual en el paginador
+        try { if (this.paginator) this.paginator.pageSize = this.pageSize; } catch (e) { /* noop */ }
         this.isLoading = false;
       },
       error: (error) => {

@@ -22,9 +22,19 @@
   </form>
 </div>
 <div mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button 
+    mat-raised-button 
+    class="limpiar-button" 
+    type="button" 
+    (click)="clearForm()">
+    <mat-icon>refresh</mat-icon>
+    Limpiar
+  </button>
+
   <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="isLoading">
     <mat-icon *ngIf="isLoading">hourglass_top</mat-icon>
     {{ isEditMode ? 'Guardar' : 'Crear' }}
   </button>
+
+  <button mat-button (click)="onCancel()">Cancelar</button>
 </div>

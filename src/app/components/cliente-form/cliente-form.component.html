@@ -140,7 +140,15 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()" class="cancel-button">Cancelar</button>
+  <button 
+    mat-raised-button 
+    class="limpiar-button" 
+    type="button" 
+    (click)="clearForm()">
+    <mat-icon>refresh</mat-icon>
+    Limpiar
+  </button>
+
   <button
     mat-raised-button
     color="primary"
@@ -153,4 +161,6 @@
     </mat-icon>
     {{ isEditMode ? 'Actualizar' : 'Guardar' }}
   </button>
+
+  <button mat-button (click)="onCancel()" class="cancel-button">Cancelar</button>
 </mat-dialog-actions>

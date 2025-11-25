@@ -1,10 +1,13 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -21,6 +24,9 @@ import { AuthService } from '../../../core/services/auth.service';
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,
@@ -31,7 +37,8 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrls: ['./usuario-list.component.css']
 })
 export class UsuarioListComponent implements OnInit {
-  displayedColumns: string[] = ['nombre_usuario', 'nombre_completo', 'email', 'roleName', 'activo', 'acciones'];
+  pageSize = 5; // default
+  displayedColumns: string[] = ['numero', 'nombre_usuario', 'nombre_completo', 'email', 'roleName', 'activo', 'acciones'];
   dataSource = new MatTableDataSource<any>([]);
   isLoading = true;
 
@@ -42,7 +49,8 @@ export class UsuarioListComponent implements OnInit {
     private usuarioService: UsuarioService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
-    public authService: AuthService
+    public authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -52,6 +60,26 @@ export class UsuarioListComponent implements OnInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    // Asegurar que el paginador inicial tenga el pageSize definido
+    try {
+      if (this.paginator) this.paginator.pageSize = this.pageSize;
+    } catch (e) { /* noop */ }
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    if (this.paginator) {
+      this.paginator.pageSize = size;
+      this.dataSource.paginator = this.paginator;
+      try {
+        if ((this.paginator as any)._changePageSize) {
+          (this.paginator as any)._changePageSize(size);
+        } else {
+          this.paginator.firstPage();
+        }
+      } catch (e) { /* noop */ }
+    }
+    this.cdr.detectChanges();
   }
 
   loadUsers(): void {
@@ -59,6 +87,8 @@ export class UsuarioListComponent implements OnInit {
     this.usuarioService.getUsers().subscribe({
       next: (users) => {
         this.dataSource.data = users;
+        // Asegurar pageSize actual en el paginador
+        try { if (this.paginator) this.paginator.pageSize = this.pageSize; } catch (e) { /* noop */ }
         this.isLoading = false;
       },
       error: (err) => {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -11,6 +11,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 
 import { Repartidor } from '../../../core/models/repartidor.model';
 import { RepartidorService } from '../../../core/services/repartidor.service';
@@ -32,15 +33,17 @@ import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confi
     MatDialogModule,
     MatSnackBarModule,
     MatTooltipModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSelectModule
   ],
   templateUrl: './repartidor-list.component.html',
   styleUrls: ['./repartidor-list.component.css']
 })
-export class RepartidorListComponent implements OnInit {
-  displayedColumns: string[] = ['nombre', 'telefono', 'numero_documento', 'placa_furgon', 'activo', 'fecha_contratacion', 'fecha_creacion', 'acciones'];
+export class RepartidorListComponent implements OnInit, AfterViewInit {
+  displayedColumns: string[] = ['numero', 'nombre', 'telefono', 'numero_documento', 'placa_furgon', 'activo', 'fecha_contratacion', 'fecha_creacion', 'acciones'];
   dataSource: MatTableDataSource<Repartidor> = new MatTableDataSource<Repartidor>([]);
   isLoading = true;
+  pageSize = 5;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -61,6 +64,10 @@ export class RepartidorListComponent implements OnInit {
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+    // Asegurar que el paginador inicial tenga el pageSize definido
+    try {
+      if (this.paginator) this.paginator.pageSize = this.pageSize;
+    } catch (e) { /* noop */ }
   }
 
   loadRepartidores(): void {
@@ -68,6 +75,8 @@ export class RepartidorListComponent implements OnInit {
     this.repartidorService.getRepartidores().subscribe({
       next: (repartidores) => {
         this.dataSource.data = repartidores;
+        // Asegurar pageSize actual en el paginador
+        try { if (this.paginator) this.paginator.pageSize = this.pageSize; } catch (e) { /* noop */ }
         this.isLoading = false;
       },
       error: (error) => {
@@ -83,6 +92,21 @@ export class RepartidorListComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
+    }
+  }
+
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    if (this.paginator) {
+      this.paginator.pageSize = size;
+      this.dataSource.paginator = this.paginator;
+      try {
+        if ((this.paginator as any)._changePageSize) {
+          (this.paginator as any)._changePageSize(size);
+        } else {
+          this.paginator.firstPage();
+        }
+      } catch (e) { /* noop */ }
     }
   }
 

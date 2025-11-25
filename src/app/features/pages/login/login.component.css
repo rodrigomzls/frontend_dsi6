@@ -5,49 +5,90 @@
   min-height: 100vh;
 }
 
+/* === 🍃💧 FONDO ANIMADO CON GOTAS Y HOJAS EN CSS PURO === */
 .login-page {
   position: relative;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #004d66 0%, #001a23 100%);
+  background: radial-gradient(circle at 20% 30%, #0d464d 0%, #1c5454 30%, #1ccbcb 100%);
   font-family: 'Montserrat', sans-serif;
   overflow: hidden;
 }
 
-/* Efecto de agua */
-.water-effect {
+/* --- Gotas translúcidas que se mueven suavemente --- */
+.login-page::before {
+  content: "";
   position: absolute;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(0deg, rgba(0, 77, 102, 0.2) 0%, transparent 100%);
-  animation: water 8s ease-in-out infinite;
-  opacity: 0.6;
+  inset: 0;
+  background:
+    radial-gradient(circle 60px at 15% 25%, rgba(255, 255, 255, 0.4) 10%, transparent 40%),
+    radial-gradient(circle 80px at 70% 60%, rgba(255,255,255,0.3) 10%, transparent 40%),
+    radial-gradient(circle 50px at 40% 80%, rgba(255,255,255,0.25) 10%, transparent 40%);
+  background-repeat: no-repeat;
+  filter: blur(6px);
+  animation: water-move 10s ease-in-out infinite;
+  z-index: 0;
 }
 
-@keyframes water {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(10px); }
+@keyframes water-move {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-15px) scale(1.02); }
 }
 
-/* Contenedor principal */
-.container {
+/* --- Hojas animadas flotando --- */
+.login-page .leaf {
+  position: absolute;
+  width: 50px;
+  height: 25px;
+  background: linear-gradient(135deg, #57a773 0%, #2e8b57 100%);
+  border-radius: 50% 0 50% 0;
+  opacity: 0.35;
+  filter: blur(0.5px);
+  animation: leaf-float 15s linear infinite;
+}
+
+/* Crea varias hojas en diferentes posiciones */
+.login-page .leaf:nth-child(1) { top: 10%; left: 15%; animation-delay: 0s; transform: rotate(45deg); }
+.login-page .leaf:nth-child(2) { top: 20%; left: 70%; animation-delay: 4s; transform: rotate(90deg); }
+.login-page .leaf:nth-child(3) { top: 60%; left: 30%; animation-delay: 8s; transform: rotate(135deg); }
+.login-page .leaf:nth-child(4) { top: 80%; left: 80%; animation-delay: 2s; transform: rotate(75deg); }
+.login-page .leaf:nth-child(5) { top: 50%; left: 50%; animation-delay: 6s; transform: rotate(120deg); }
+
+@keyframes leaf-float {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.4; }
+  50% { transform: translateY(-20px) rotate(180deg) scale(1.1); opacity: 0.6; }
+  100% { transform: translateY(0) rotate(360deg) scale(1); opacity: 0.4; }
+}
+
+/* --- Capa de brillo sutil sobre todo el fondo --- */
+.login-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent, rgba(255,255,255,0.1));
+  mix-blend-mode: overlay;
+  z-index: 0;
+}
+
+/* === Tarjeta principal de login === */
+.floating-container {
   position: relative;
+  z-index: 2;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
   animation: float 6s ease-in-out infinite;
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
+  50% { transform: translateY(-15px); }
 }
 
-/* Caja de login */
 .login-box {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.92);
   padding: 2.5rem 2rem;
   border-radius: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -62,7 +103,7 @@
 }
 
 .logo {
-  width: 120px;
+  width: 160px;
   height: auto;
   margin-bottom: 1rem;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
@@ -76,7 +117,7 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* === FORMULARIO CON EFECTO FLOTANTE CENTRADO === */
+/* === FORMULARIO === */
 .form-group {
   margin-bottom: 1.5rem;
   width: 85%;
@@ -91,7 +132,6 @@
   justify-content: center;
 }
 
-/* Input con mejor centrado y padding equilibrado */
 .input-floating input {
   width: 100%;
   padding: 1rem 1rem 1rem 2.5rem;
@@ -110,7 +150,6 @@
   outline: none;
 }
 
-/* Label ajustado centrado visualmente */
 .input-floating label {
   position: absolute;
   top: 50%;
@@ -125,7 +164,6 @@
   transition: 0.3s ease all;
 }
 
-/* EFECTO FLOTANTE */
 .input-floating input:focus ~ label,
 .input-floating input:not(:placeholder-shown) ~ label {
   top: -8px;
@@ -134,7 +172,6 @@
   color: #00a3cc;
 }
 
-/* Icono ajustado más cerca del borde */
 .input-floating i {
   position: absolute;
   left: 0.5rem;
@@ -144,36 +181,11 @@
   font-size: 1.1rem;
 }
 
-/* Centrado general del formulario */
-.login-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  background-color: #f7f9fa;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Fondo general */
-body {
-  background: linear-gradient(135deg, #004d66, #002f40);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-}
-
-
-/* Botón de submit */
+/* === BOTÓN === */
 .btn-submit {
-  width: 100%;
+  width: 90%;
+  margin: 0 auto;
+  display: block;
   padding: 1rem;
   border: none;
   border-radius: 10px;
@@ -199,7 +211,7 @@ body {
   cursor: not-allowed;
 }
 
-/* Mensajes de error */
+/* === ERROR === */
 .error-message {
   background: rgba(255, 0, 0, 0.1);
   color: #d32f2f;
@@ -209,21 +221,11 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  width: 90%;
+  margin: 0 auto 1rem auto;
 }
 
-/* Loading spinner */
-.loading-container {
-  text-align: center;
-  padding: 2rem;
-}
-
-.loading-spinner {
-  font-size: 2rem;
-  color: #004d66;
-  margin-bottom: 1rem;
-}
-
-/* Enlaces y soporte */
+/* === SOPORTE === */
 .footer-links {
   margin-top: 2rem;
   padding-top: 1rem;
@@ -231,21 +233,6 @@ body {
   width: 90%;
   margin-left: auto;
   margin-right: auto;
-}
-
-.register-link {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.register-link a {
-  color: #00a3cc;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.register-link a:hover {
-  text-decoration: underline;
 }
 
 .support-section {
@@ -291,181 +278,31 @@ body {
   color: #00a3cc;
 }
 
-/* Ajustes adicionales */
-.btn-submit {
-  width: 90%;
-  margin: 0 auto;
-  display: block;
-}
-
-.error-message {
-  width: 90%;
-  margin: 0 auto 1rem auto;
-}
-
-/* Responsive */
+/* === RESPONSIVE === */
 @media (max-width: 480px) {
   .login-box {
     margin: 1rem;
     padding: 1.5rem;
   }
 
-  .floating-logo {
-    width: 140px;
+  .logo {
+    width: 100px;
   }
 
   .login-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
 }
-
-/* Fondo en video */
-.background-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-  filter: brightness(0.6);
-}
-
-/* Tarjeta del login */
-.card {
+/* Asegura que el contenido esté por encima del fondo */
+.container, 
+.login-box {
   position: relative;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  border-radius: 20px;
-  padding: 45px 35px;
-  width: 100%;
-  max-width: 420px;
-  color: #fff;
-  text-align: center;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  animation: fadeIn 1s ease;
+  z-index: 5; /* encima de las hojas y del efecto de agua */
 }
 
-.card-header {
-  margin-bottom: 25px;
+/* Las hojas y el agua son solo decorativas: no deben interceptar clics */
+.leaf,
+.water-effect {
+  pointer-events: none; /* evita bloquear el formulario */
 }
 
-.logo {
-  width: 180px;
-  height: auto;
-  margin-top: -3rem;
-  margin-bottom: -2rem;
-  animation: floatLogo 3s ease-in-out infinite;
-}
-
-.card-header h2 {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 5px;
-  color: #ffffff;
-}
-
-.subtitle {
-  color: #d9f9ff;
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-/* Campos del formulario */
-.form-group {
-  text-align: left;
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  margin-bottom: 6px;
-  color: #e3f2fd;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-input {
-  width: 93%;
-  padding: 12px 15px;
-  border-radius: 10px;
-  border: none;
-  font-size: 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  color: #333;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-input:focus {
-  background: white;
-  box-shadow: 0 0 0 3px rgba(0, 170, 255, 0.3);
-}
-
-/* Botón principal */
-.btn-primary {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #00aaff, #009688);
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #0099cc, #00796b);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 150, 200, 0.4);
-}
-
-/* Mensajes */
-.error-message {
-  background: rgba(255, 60, 60, 0.8);
-  padding: 10px;
-  border-radius: 8px;
-  margin-top: 15px;
-  font-weight: 500;
-  color: white;
-}
-
-.loading {
-  margin-top: 20px;
-  color: #aeeaff;
-}
-
-/* Animaciones */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes floatLogo {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .card {
-    padding: 35px 25px;
-  }
-
-  .card-header h2 {
-    font-size: 1.6rem;
-  }
-}

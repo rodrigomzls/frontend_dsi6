@@ -33,6 +33,15 @@
   </mat-form-field>
 
   <div class="form-actions" style="display:flex; gap:8px; margin-top:12px;">
+    <button 
+      mat-raised-button 
+      class="limpiar-button" 
+      type="button" 
+      (click)="clearForm()">
+      <mat-icon>refresh</mat-icon>
+      Limpiar
+    </button>
+
     <button mat-flat-button color="primary" type="submit" [disabled]="isLoading">{{ isEditMode ? 'Actualizar' : 'Crear' }}</button>
     <button mat-button type="button" (click)="onCancel()">Cancelar</button>
   </div>
