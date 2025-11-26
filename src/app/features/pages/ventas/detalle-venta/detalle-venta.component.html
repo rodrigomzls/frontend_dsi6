@@ -9,7 +9,22 @@
     </button>
   </div>
 
-  <!-- Loading, Error y NotFound se mantienen igual -->
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <p>🔄 Cargando detalle de venta...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-message">
+    {{ error }}
+  </div>
+
+  <!-- Venta no encontrada -->
+  <div *ngIf="notFound" class="not-found">
+    <h2>😔 Venta no encontrada</h2>
+    <p>La venta que buscas no existe o fue eliminada.</p>
+    <button (click)="volverAPanel()" class="btn-primary">Volver al Panel</button>
+  </div>
 
   <!-- Detalle de la venta - DISEÑO COMPACTO -->
   <div *ngIf="venta && !loading" class="venta-detalle-compacto">
@@ -53,11 +68,11 @@
         <div class="info-grid-compacto">
           <div class="info-item-compacto">
             <label>Fecha:</label>
-            <span>{{ formatearFecha(venta.fecha) }}</span>
+            <span class="info-valor">{{ formatearFecha(venta.fecha) }}</span>
           </div>
           <div class="info-item-compacto">
             <label>Hora:</label>
-            <span>{{ formatearHora(venta.hora) }}</span>
+            <span class="info-valor">{{ formatearHora(venta.hora) }}</span>
           </div>
           <div class="info-item-compacto">
             <label>Estado:</label>
@@ -67,7 +82,7 @@
           </div>
           <div class="info-item-compacto">
             <label>Método Pago:</label>
-            <span class="metodo-pago">{{ venta.metodo_pago }}</span>
+            <span class="info-valor metodo-pago">{{ venta.metodo_pago }}</span>
           </div>
         </div>
       </div>
@@ -78,11 +93,11 @@
         <div class="adicional-grid-compacto">
           <div class="info-item-compacto">
             <label>Vendedor:</label>
-            <span>{{ venta.vendedor || 'Sistema' }}</span>
+            <span class="info-valor">{{ venta.vendedor || 'Sistema' }}</span>
           </div>
           <div class="info-item-compacto" *ngIf="venta.repartidor">
             <label>Repartidor:</label>
-            <span>{{ venta.repartidor }}</span>
+            <span class="info-valor">{{ venta.repartidor }}</span>
           </div>
           <div class="info-item-compacto full-width" *ngIf="venta.notas">
             <label>Notas:</label>

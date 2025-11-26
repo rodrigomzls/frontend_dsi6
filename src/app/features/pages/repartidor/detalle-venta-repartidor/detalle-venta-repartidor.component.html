@@ -1,13 +1,11 @@
 <!-- src/app/features/pages/repartidor/detalle-venta-repartidor/detalle-venta-repartidor.component.html -->
 <div class="repartidor-container">
-  <!-- Header con navegación -->
-  <div class="header">
-    <div class="header-nav">
-      <button class="btn btn-secondary" (click)="volverAtras()">
-        <i class="fas fa-arrow-left"></i> Volver
-      </button>
-      <h1><i class="fas fa-file-invoice"></i> Detalle de Entrega</h1>
-    </div>
+  <!-- Header compacto -->
+  <div class="header-compacto">
+    <button class="btn btn-secondary" (click)="volverAtras()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <h1><i class="fas fa-file-invoice"></i> Detalle de Entrega #{{venta?.id_venta}}</h1>
   </div>
 
   <!-- Loading -->
@@ -27,7 +25,7 @@
     </button>
   </div>
 
-   <!-- Detalles de la entrega - DISEÑO COMPACTO -->
+  <!-- Detalles de la entrega - DISEÑO COMPACTO -->
   <div class="detalle-entrega-compacto" *ngIf="venta && !loading">
 
     <!-- Fila 1: Información del cliente y productos -->
@@ -81,28 +79,24 @@
       <!-- Información General -->
       <div class="seccion info-general-compacto">
         <h2><i class="fas fa-info-circle"></i> Información General</h2>
-        <div class="info-grid-doble">
-          <div class="info-columna">
-            <div class="info-item">
-              <label>Estado:</label>
-              <span class="badge" [ngClass]="getEstadoBadgeClass(venta.estado)">
-                {{ venta.estado }}
-              </span>
-            </div>
-            <div class="info-item">
-              <label>Método de Pago:</label>
-              <span>{{ venta.metodo_pago }}</span>
-            </div>
+        <div class="info-grid-denso">
+          <div class="info-item-denso">
+            <label>Estado:</label>
+            <span class="badge" [ngClass]="getEstadoBadgeClass(venta.estado)">
+              {{ venta.estado }}
+            </span>
           </div>
-          <div class="info-columna">
-            <div class="info-item">
-              <label>Total a Cobrar:</label>
-              <span class="valor-destacado total-amount">S/ {{ venta.total }}</span>
-            </div>
-            <div class="info-item" *ngIf="isRutaIniciada()">
-              <label>Tiempo Transcurrido:</label>
-              <span class="tiempo-destacado">{{ calcularTiempoTranscurrido() }}</span>
-            </div>
+          <div class="info-item-denso">
+            <label>Total a Cobrar:</label>
+            <span class="valor-destacado total-amount">S/ {{ venta.total }}</span>
+          </div>
+          <div class="info-item-denso">
+            <label>Método de Pago:</label>
+            <span>{{ venta.metodo_pago }}</span>
+          </div>
+          <div class="info-item-denso" *ngIf="isRutaIniciada()">
+            <label>Tiempo Transcurrido:</label>
+            <span class="tiempo-destacado">{{ calcularTiempoTranscurrido() }}</span>
           </div>
         </div>
       </div>
@@ -110,22 +104,22 @@
       <!-- Cronología Compacta -->
       <div class="seccion cronologia-compacta">
         <h2><i class="fas fa-clock"></i> Estado de Entrega</h2>
-        <div class="timeline-compacto">
-          <div class="timeline-item-compacto completed">
-            <div class="timeline-marker-compacto">
+        <div class="timeline-denso">
+          <div class="timeline-item-denso completed">
+            <div class="timeline-marker-denso">
               <i class="fas fa-shopping-cart"></i>
             </div>
-            <div class="timeline-content-compacto">
+            <div class="timeline-content-denso">
               <span class="timeline-title">Pedido Realizado</span>
               <span class="timeline-date">{{ formatearFechaCompleta(venta.fecha + 'T' + venta.hora) }}</span>
             </div>
           </div>
 
-          <div class="timeline-item-compacto" [ngClass]="{'completed': isRutaIniciada(), 'current': !isRutaFinalizada() && isRutaIniciada()}">
-            <div class="timeline-marker-compacto">
+          <div class="timeline-item-denso" [ngClass]="{'completed': isRutaIniciada(), 'current': !isRutaFinalizada() && isRutaIniciada()}">
+            <div class="timeline-marker-denso">
               <i class="fas fa-play-circle"></i>
             </div>
-            <div class="timeline-content-compacto">
+            <div class="timeline-content-denso">
               <span class="timeline-title">En Ruta</span>
               <span class="timeline-date" *ngIf="isRutaIniciada()">
                 {{ formatearFechaHora(venta.fecha_inicio_ruta) }}
@@ -136,11 +130,11 @@
             </div>
           </div>
 
-          <div class="timeline-item-compacto" [ngClass]="{'completed': isRutaFinalizada(), 'current': isRutaFinalizada()}">
-            <div class="timeline-marker-compacto">
+          <div class="timeline-item-denso" [ngClass]="{'completed': isRutaFinalizada(), 'current': isRutaFinalizada()}">
+            <div class="timeline-marker-denso">
               <i class="fas fa-flag-checkered"></i>
             </div>
-            <div class="timeline-content-compacto">
+            <div class="timeline-content-denso">
               <span class="timeline-title">Entregado</span>
               <span class="timeline-date" *ngIf="isRutaFinalizada()">
                 {{ formatearFechaHora(venta.fecha_fin_ruta) }}
@@ -155,50 +149,51 @@
     </div>
 
     <!-- Acciones del Repartidor -->
-<div class="seccion" *ngIf="venta.id_estado_venta === 5">
-  <h2><i class="fas fa-tasks"></i> Gestión de Entrega</h2>
-  
-  <!-- Información del estado de la ruta -->
-  <div class="ruta-info" *ngIf="isRutaIniciada(); else rutaNoIniciadaDetalle">
-    <div class="alert alert-success">
-      <i class="fas fa-check-circle"></i>
-      <strong>Ruta en curso</strong>
-      <p>La ruta fue iniciada el {{ formatearFechaHora(venta.fecha_inicio_ruta) }}</p>
-      <p *ngIf="venta.ubicacion_inicio_ruta">
-        <i class="fas fa-map-marker-alt"></i> Ubicación de inicio: {{ venta.ubicacion_inicio_ruta }}
-      </p>
-      <p><strong>Tiempo transcurrido:</strong> {{ calcularTiempoTranscurrido() }}</p>
-    </div>
-    
-    <div class="info-note">
-      <i class="fas fa-info-circle"></i>
-      <span>Para gestionar esta entrega (marcar como pagado o cancelar), diríjase a <strong>Entregas Pendientes</strong>.</span>
-    </div>
-  </div>
+    <div class="seccion" *ngIf="venta.id_estado_venta === 5">
+      <h2><i class="fas fa-tasks"></i> Gestión de Entrega</h2>
+      
+      <!-- Información del estado de la ruta -->
+      <div class="ruta-info" *ngIf="isRutaIniciada(); else rutaNoIniciadaDetalle">
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i>
+          <strong>Ruta en curso</strong>
+          <p>La ruta fue iniciada el {{ formatearFechaHora(venta.fecha_inicio_ruta) }}</p>
+          <p *ngIf="venta.ubicacion_inicio_ruta">
+            <i class="fas fa-map-marker-alt"></i> Ubicación de inicio: {{ venta.ubicacion_inicio_ruta }}
+          </p>
+          <p><strong>Tiempo transcurrido:</strong> {{ calcularTiempoTranscurrido() }}</p>
+        </div>
+        
+        <div class="info-note">
+          <i class="fas fa-info-circle"></i>
+          <span>Para gestionar esta entrega (marcar como pagado o cancelar), diríjase a <strong>Entregas Pendientes</strong>.</span>
+        </div>
+      </div>
 
-  <ng-template #rutaNoIniciadaDetalle>
-    <div class="alert alert-warning">
-      <i class="fas fa-exclamation-triangle"></i>
-      <strong>Ruta no iniciada</strong>
-      <p>Para gestionar esta entrega, primero debe iniciar la ruta desde <strong>Mis Rutas Asignadas</strong>.</p>
-    </div>
-  </ng-template>
+      <ng-template #rutaNoIniciadaDetalle>
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Ruta no iniciada</strong>
+          <p>Para gestionar esta entrega, primero debe iniciar la ruta desde <strong>Mis Rutas Asignadas</strong>.</p>
+        </div>
+      </ng-template>
 
-  <!-- Botones de acción - SOLO navegación y mapa -->
-  <div class="acciones-grid">
-    <button class="btn btn-primary btn-lg" (click)="irAEntregasPendientes()">
-      <i class="fas fa-list"></i> Ir a Entregas Pendientes
-    </button>
-    
-    <button class="btn btn-info btn-lg" (click)="abrirMapa()">
-      <i class="fas fa-map"></i> Ver en Mapa
-    </button>
-    
-    <button class="btn btn-secondary btn-lg" (click)="volverAtras()">
-      <i class="fas fa-arrow-left"></i> Volver Atrás
-    </button>
-  </div>
-</div>
+      <!-- Botones de acción -->
+      <div class="acciones-grid">
+        <button class="btn btn-primary btn-lg" (click)="irAEntregasPendientes()">
+          <i class="fas fa-list"></i> Ir a Entregas Pendientes
+        </button>
+        
+        <button class="btn btn-info btn-lg" (click)="abrirMapa()">
+          <i class="fas fa-map"></i> Ver en Mapa
+        </button>
+        
+        <button class="btn btn-secondary btn-lg" (click)="volverAtras()">
+          <i class="fas fa-arrow-left"></i> Volver Atrás
+        </button>
+      </div>
+    </div>
+
     <!-- Información de entrega completada -->
     <div class="seccion" *ngIf="venta.id_estado_venta === 7">
       <div class="alert alert-success delivery-completed">
