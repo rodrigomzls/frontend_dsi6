@@ -6,7 +6,7 @@ import { RepartidorVentaService } from '../../../../core/services/repartidor-ven
 import { RepartidorVenta } from '../../../../core/models/repartidor-venta.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { interval, Subscription } from 'rxjs';
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-entregas-pendientes',
   standalone: true,
@@ -91,60 +91,242 @@ export class EntregasPendientesComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ✅ CORREGIDO: Un solo método marcarComoEntregado
-  async marcarComoEntregado(idVenta: number) {
-    const entrega = this.entregas.find(e => e.id_venta === idVenta);
-    if (!entrega) return;
+// Reemplaza el método marcarComoEntregado:
+async marcarComoEntregado(idVenta: number) {
+  const entrega = this.entregas.find(e => e.id_venta === idVenta);
+  if (!entrega) return;
 
-    // Verificación especial para Yape
-    if (entrega.id_metodo_pago === 2) {
-      const yapeConfirmado = await this.verificarPagoYape(idVenta);
-      if (!yapeConfirmado) return;
-    }
+  // Verificación especial para Yape
+  if (entrega.id_metodo_pago === 2) {
+    const yapeConfirmado = await this.verificarPagoYape(idVenta);
+    if (!yapeConfirmado) return;
+  }
 
-    // Resto del código del método...
-    this.repartidorVentaService.verificarPuedeMarcarPagado(idVenta).subscribe({
-      next: (verificacion) => {
-        if (!verificacion.puede) {
-          alert(`❌ No puede marcar como pagado:\n${verificacion.mensaje}`);
-          return;
-        }
+  this.repartidorVentaService.verificarPuedeMarcarPagado(idVenta).subscribe({
+    next: (verificacion) => {
+      if (!verificacion.puede) {
+        Swal.fire({
+          title: '❌ No se puede completar',
+          text: verificacion.mensaje,
+          icon: 'warning',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
 
-        if (confirm('¿Está seguro de que ha completado la entrega y recibido el pago del cliente?')) {
-          this.repartidorVentaService.marcarComoPagado(idVenta).subscribe({
-            next: () => {
-              alert('✅ Entrega marcada como pagada correctamente');
+      // ✅ ELIMINAR el confirm y proceder directamente
+      this.repartidorVentaService.marcarComoPagado(idVenta).subscribe({
+        next: () => {
+          // ✅ SweetAlert2 automático para éxito
+          Swal.fire({
+            title: '✅ ¡Pagado!',
+            text: 'Entrega marcada como pagada correctamente',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false,
+            timerProgressBar: true,
+            willClose: () => {
               this.cargarEntregasPendientes();
-            },
-            error: (error) => {
-              console.error('Error marcando como pagado:', error);
-              alert(`❌ Error: ${error.error?.error || 'No se pudo completar la operación'}`);
             }
           });
-        }
-      },
-      error: (error) => {
-        console.error('Error en verificación:', error);
-        alert('Error al verificar condiciones de pago');
-      }
-    });
-  }
-
-  marcarComoCancelado(idVenta: number) {
-    const motivo = prompt('Ingrese el motivo de la cancelación:');
-    if (motivo !== null) {
-      this.repartidorVentaService.marcarComoCancelado(idVenta, motivo).subscribe({
-        next: () => {
-          alert('Entrega cancelada correctamente');
-          this.cargarEntregasPendientes();
         },
         error: (error) => {
-          console.error('Error cancelando entrega:', error);
-          alert('Error al cancelar la entrega');
+          console.error('Error marcando como pagado:', error);
+          Swal.fire({
+            title: '❌ Error',
+            text: error.error?.error || 'No se pudo completar la operación',
+            icon: 'error',
+            confirmButtonText: 'Entendido'
+          });
         }
       });
+    },
+    error: (error) => {
+      console.error('Error en verificación:', error);
+      Swal.fire({
+        title: '❌ Error',
+        text: 'Error al verificar condiciones de pago',
+        icon: 'error',
+        confirmButtonText: 'Entendido'
+      });
     }
-  }
+  });
+}
+
+
+// Reemplaza el método marcarComoCancelado completo por este:
+marcarComoCancelado(idVenta: number) {
+  const entrega = this.entregas.find(e => e.id_venta === idVenta);
+  if (!entrega) return;
+
+  const motivosPredefinidos: { [key: string]: string } = {
+    'cliente_no_disponible': '👤 Cliente no disponible en la dirección',
+    'direccion_incorrecta': '📍 Dirección incorrecta o inexistente',
+    'producto_danado': '📦 Producto dañado durante el transporte',
+    'cliente_rechazo': '❌ Cliente rechazó el pedido',
+    'problema_vehiculo': '🚚 Problema con el vehículo de reparto',
+    'cliente_no_pago': '💳 Cliente no puede realizar el pago',
+    'zona_insegura': '⚠️ Zona insegura para la entrega',
+    'horario_inconveniente': '⏰ Horario de entrega inconveniente',
+    'otro': '📝 Otro motivo (especificar)'
+  };
+
+  Swal.fire({
+    title: '❌ Cancelar Entrega',
+    html: `
+      <div style="text-align: left; margin-bottom: 1rem;">
+        <p><strong>Entrega #${idVenta}</strong></p>
+        <p><strong>Cliente:</strong> ${entrega.nombre_completo}</p>
+        <p><strong>Total:</strong> S/ ${entrega.total}</p>
+        <p><strong>Dirección:</strong> ${entrega.direccion}</p>
+      </div>
+      <p>Seleccione el motivo de cancelación:</p>
+    `,
+    input: 'select',
+    inputOptions: motivosPredefinidos,
+    inputPlaceholder: 'Seleccione un motivo...',
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Debe seleccionar un motivo de cancelación';
+      }
+      return null;
+    },
+    showCancelButton: true,
+    confirmButtonText: 'Continuar',
+    cancelButtonText: 'Mantener entrega',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    width: '600px'
+  }).then((result) => {
+    if (result.isConfirmed && result.value) {
+      const motivoKey = result.value;
+      let motivo = motivosPredefinidos[motivoKey];
+      
+      // Si selecciona "otro", pedir texto personalizado
+      if (motivoKey === 'otro') {
+        this.solicitarMotivoPersonalizado(idVenta, entrega);
+      } else {
+        this.confirmarCancelacion(idVenta, entrega, motivo);
+      }
+    }
+  });
+}
+
+private solicitarMotivoPersonalizado(idVenta: number, entrega: any) {
+  Swal.fire({
+    title: '✏️ Motivo de cancelación',
+    html: `
+      <div style="text-align: left; margin-bottom: 1rem;">
+        <p><strong>Entrega #${idVenta}</strong> - ${entrega.nombre_completo}</p>
+        <p>Describa detalladamente el motivo de la cancelación:</p>
+      </div>
+    `,
+    input: 'textarea',
+    inputLabel: 'Motivo personalizado',
+    inputPlaceholder: 'Ingrese el motivo específico de la cancelación...',
+    inputAttributes: {
+      'maxlength': '500',
+      'minlength': '10'
+    },
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Debe ingresar un motivo para la cancelación';
+      }
+      if (value.length < 10) {
+        return 'El motivo debe tener al menos 10 caracteres';
+      }
+      if (value.length > 500) {
+        return 'El motivo no puede exceder los 500 caracteres';
+      }
+      return null;
+    },
+    showCancelButton: true,
+    confirmButtonText: 'Continuar',
+    cancelButtonText: 'Volver',
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#6c757d'
+  }).then((result) => {
+    if (result.isConfirmed && result.value) {
+      this.confirmarCancelacion(idVenta, entrega, result.value);
+    } else if (result.dismiss === Swal.DismissReason.cancel) {
+      // Si presiona "Volver", regresar a la selección de motivos
+      this.marcarComoCancelado(idVenta);
+    }
+  });
+}
+
+private confirmarCancelacion(idVenta: number, entrega: any, motivo: string) {
+  Swal.fire({
+    title: '⚠️ Confirmar Cancelación',
+    html: `
+      <div style="text-align: left;">
+        <p>¿Está seguro de cancelar la entrega?</p>
+        <div style="background: #fff3cd; padding: 1rem; border-radius: 0.375rem; margin: 1rem 0;">
+          <p><strong>Entrega #${idVenta}</strong></p>
+          <p><strong>Cliente:</strong> ${entrega.nombre_completo}</p>
+          <p><strong>Motivo:</strong> ${motivo}</p>
+        </div>
+        <p style="color: #dc3545; font-weight: bold;">
+          ⚠️ Esta acción no se puede deshacer
+        </p>
+      </div>
+    `,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, cancelar entrega',
+    cancelButtonText: 'No, mantener',
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    reverseButtons: true,
+    focusCancel: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      this.procesarCancelacion(idVenta, motivo);
+    }
+  });
+}
+
+private procesarCancelacion(idVenta: number, motivo: string) {
+  // Mostrar loading
+  Swal.fire({
+    title: 'Procesando cancelación...',
+    text: 'Por favor espere',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  this.repartidorVentaService.marcarComoCancelado(idVenta, motivo).subscribe({
+    next: () => {
+      Swal.fire({
+        title: '✅ Cancelada',
+        text: 'La entrega ha sido cancelada correctamente',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        willClose: () => {
+          this.cargarEntregasPendientes();
+        }
+      });
+    },
+    error: (error) => {
+      console.error('Error cancelando entrega:', error);
+      Swal.fire({
+        title: '❌ Error',
+        html: `
+          <div style="text-align: left;">
+            <p>No se pudo cancelar la entrega:</p>
+            <p><strong>${error.error?.error || 'Error del sistema'}</strong></p>
+          </div>
+        `,
+        icon: 'error',
+        confirmButtonText: 'Entendido'
+      });
+    }
+  });
+}
 
   verDetalleVenta(idVenta: number) {
     this.router.navigate(['/repartidor/venta', idVenta]);
@@ -213,78 +395,112 @@ export class EntregasPendientesComponent implements OnInit, OnDestroy {
     return estadoClass[estado] || 'badge-secondary';
   }
 
-  // ✅ AGREGAR este método para cambiar método de pago
-  cambiarMetodoPago(idVenta: number) {
-    // Buscar la entrega actual
-    const entrega = this.entregas.find(e => e.id_venta === idVenta);
-    if (!entrega) return;
+ // También actualiza cambiarMetodoPago para usar SweetAlert2:
+cambiarMetodoPago(idVenta: number) {
+  const entrega = this.entregas.find(e => e.id_venta === idVenta);
+  if (!entrega) return;
 
-    // Crear lista de métodos de pago disponibles (excluyendo el actual)
-    const metodosDisponibles = this.metodosPago.filter(
-      metodo => metodo.id_metodo_pago !== entrega.id_metodo_pago
-    );
+  const metodosDisponibles = this.metodosPago.filter(
+    metodo => metodo.id_metodo_pago !== entrega.id_metodo_pago
+  );
 
-    if (metodosDisponibles.length === 0) {
-      alert('No hay otros métodos de pago disponibles');
-      return;
-    }
-
-    // Crear mensaje con opciones
-    let mensaje = `Cambiar método de pago para Entrega #${idVenta}\n\n`;
-    mensaje += `Método actual: ${entrega.metodo_pago}\n\n`;
-    mensaje += 'Seleccione nuevo método:\n';
-    
-    metodosDisponibles.forEach((metodo, index) => {
-      mensaje += `${index + 1}. ${metodo.metodo_pago}\n`;
+  if (metodosDisponibles.length === 0) {
+    Swal.fire({
+      title: 'ℹ️ Información',
+      text: 'No hay otros métodos de pago disponibles',
+      icon: 'info',
+      confirmButtonText: 'Entendido'
     });
-
-    const seleccion = prompt(mensaje + '\nIngrese el número del método:');
-    
-    if (seleccion === null) return;
-
-    const numeroSeleccion = parseInt(seleccion);
-    if (isNaN(numeroSeleccion) || numeroSeleccion < 1 || numeroSeleccion > metodosDisponibles.length) {
-      alert('Selección inválida');
-      return;
-    }
-
-    const nuevoMetodo = metodosDisponibles[numeroSeleccion - 1];
-    
-    if (confirm(`¿Cambiar método de pago a: ${nuevoMetodo.metodo_pago}?`)) {
-      this.repartidorVentaService.cambiarMetodoPago(idVenta, nuevoMetodo.id_metodo_pago).subscribe({
-        next: (response) => {
-          alert(`✅ Método de pago cambiado a: ${nuevoMetodo.metodo_pago}`);
-          
-          // Actualizar la entrega localmente
-          const entregaIndex = this.entregas.findIndex(e => e.id_venta === idVenta);
-          if (entregaIndex !== -1) {
-            this.entregas[entregaIndex].id_metodo_pago = nuevoMetodo.id_metodo_pago;
-            this.entregas[entregaIndex].metodo_pago = nuevoMetodo.metodo_pago;
-          }
-        },
-        error: (error) => {
-          console.error('Error cambiando método de pago:', error);
-          alert(`❌ Error: ${error.error?.error || 'No se pudo cambiar el método de pago'}`);
-        }
-      });
-    }
+    return;
   }
 
-  // Método opcional para verificación avanzada de Yape
-  verificarPagoYape(idVenta: number): Promise<boolean> {
-    return new Promise((resolve) => {
-      const mensaje = `🔐 VERIFICACIÓN DE PAGO YAPE\n\n` +
-                     `Por seguridad, confirme:\n\n` +
-                     `1. ¿Escaneó el código QR del cliente?\n` +
-                     `2. ¿Verificó que el pago apareció en su aplicación Yape?\n` +
-                     `3. ¿Confirmó el monto correcto (S/ ${this.getTotalVenta(idVenta)})?\n\n` +
-                     `¿Todo es correcto?`;
+  // Crear opciones para SweetAlert2
+  const opciones = metodosDisponibles.map(metodo => ({
+    text: metodo.metodo_pago,
+    value: metodo.id_metodo_pago
+  }));
+
+  Swal.fire({
+    title: `Cambiar método de pago - Entrega #${idVenta}`,
+    text: `Método actual: ${entrega.metodo_pago}`,
+    input: 'select',
+    inputOptions: opciones.reduce((acc, opcion) => {
+      acc[opcion.value] = opcion.text;
+      return acc;
+    }, {} as {[key: number]: string}),
+    inputPlaceholder: 'Seleccione nuevo método',
+    showCancelButton: true,
+    confirmButtonText: 'Cambiar',
+    cancelButtonText: 'Cancelar',
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Debe seleccionar un método de pago';
+      }
+      return null;
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const nuevoMetodoId = parseInt(result.value);
+      const nuevoMetodo = this.metodosPago.find(m => m.id_metodo_pago === nuevoMetodoId);
       
-      const confirmado = confirm(mensaje);
-      resolve(confirmado);
-    });
-  }
+      if (nuevoMetodo) {
+        this.repartidorVentaService.cambiarMetodoPago(idVenta, nuevoMetodoId).subscribe({
+          next: (response) => {
+            Swal.fire({
+              title: '✅ Método cambiado',
+              text: `Método de pago cambiado a: ${nuevoMetodo.metodo_pago}`,
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false,
+              timerProgressBar: true
+            });
+            
+            // Actualizar la entrega localmente
+            const entregaIndex = this.entregas.findIndex(e => e.id_venta === idVenta);
+            if (entregaIndex !== -1) {
+              this.entregas[entregaIndex].id_metodo_pago = nuevoMetodoId;
+              this.entregas[entregaIndex].metodo_pago = nuevoMetodo.metodo_pago;
+            }
+          },
+          error: (error) => {
+            console.error('Error cambiando método de pago:', error);
+            Swal.fire({
+              title: '❌ Error',
+              text: error.error?.error || 'No se pudo cambiar el método de pago',
+              icon: 'error',
+              confirmButtonText: 'Entendido'
+            });
+          }
+        });
+      }
+    }
+  });
+}
 
+// Reemplaza el método verificarPagoYape:
+verificarPagoYape(idVenta: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    Swal.fire({
+      title: '🔐 Verificación de Pago Yape',
+      html: `
+        <div style="text-align: left;">
+          <p><strong>Por seguridad, confirme:</strong></p>
+          <p>✅ ¿Escaneó el código QR del cliente?</p>
+          <p>✅ ¿Verificó que el pago apareció en su aplicación Yape?</p>
+          <p>✅ ¿Confirmó el monto correcto (S/ ${this.getTotalVenta(idVenta)})?</p>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, todo correcto',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33'
+    }).then((result) => {
+      resolve(result.isConfirmed);
+    });
+  });
+}
   // Método auxiliar para obtener total
   private getTotalVenta(idVenta: number): number {
     const entrega = this.entregas.find(e => e.id_venta === idVenta);

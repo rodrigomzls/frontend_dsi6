@@ -13,7 +13,7 @@ import { ProductService} from '../../../../core/services/producto.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { RepartidorService } from '../../../../core/services/repartidor.service'; // ✅ Importar servicio
 import { Repartidor } from '../../../../core/models/repartidor.model'; // ✅ Importar modelo
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-nueva-venta',
   standalone: true,
@@ -435,20 +435,32 @@ finalizarVenta() {
       // ✅ NUEVO: Redirigir directamente a asignación de rutas
       console.log('✅ Venta registrada correctamente, ID:', ventaCreada.id_venta);
       
-      // Mostrar mensaje y redirigir
-      alert('✅ Venta registrada correctamente. Ahora asigna un repartidor.');
-      
-      // Redirigir a asignación de rutas
-      this.router.navigate(['/ventas/asignacion-rutas']);
+    // ✅ REEMPLAZAR alert con SweetAlert2 automático
+      Swal.fire({
+        title: '✅ Venta registrada',
+        text: 'Redirigiendo a asignación de rutas...',
+        icon: 'success',
+        timer: 1500, // 1.5 segundos
+        showConfirmButton: false,
+        timerProgressBar: true,
+        willClose: () => {
+          // Redirigir automáticamente después del timer
+          this.router.navigate(['/ventas/asignacion-rutas']);
+        }
+      });
     },
     error: (error) => {
       this.loading = false;
       this.error = error.error?.error || 'Error al registrar la venta';
       console.error('❌ Error detallado creando venta:', error);
       
-      if (error.error) {
-        console.error('📋 Error del servidor:', error.error);
-      }
+    // ✅ SweetAlert2 para errores también
+      Swal.fire({
+        title: '❌ Error',
+        text: this.error,
+        icon: 'error',
+        confirmButtonText: 'Entendido'
+      });
     }
   });
 }

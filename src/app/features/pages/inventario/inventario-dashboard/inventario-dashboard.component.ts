@@ -164,4 +164,31 @@ cargarEstadisticasReales() {
         break;
     }
   }
+// Agregar estos métodos a la clase existente
+
+tieneAlertasCriticas(): boolean {
+  return this.alertas.some(alerta => 
+    alerta.tipo === 'warning' || alerta.tipo === 'danger'
+  );
+}
+
+getAlertasCriticas(): any[] {
+  return this.alertas.filter(alerta => 
+    alerta.tipo === 'warning' || alerta.tipo === 'danger'
+  );
+}
+
+cerrarAlerta(alerta: any) {
+  this.alertas = this.alertas.filter(a => a !== alerta);
+}
+
+getAlertaIcon(alerta: any): string {
+  const iconMap: { [key: string]: string } = {
+    'warning': 'warning',
+    'danger': 'schedule',
+    'success': 'check_circle',
+    'info': 'info'
+  };
+  return iconMap[alerta.tipo] || 'notifications';
+}
 }

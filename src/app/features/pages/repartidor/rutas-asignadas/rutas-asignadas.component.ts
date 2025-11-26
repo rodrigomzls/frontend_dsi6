@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { RepartidorVentaService } from '../../../../core/services/repartidor-venta.service';
 import { RepartidorVenta } from '../../../../core/models/repartidor-venta.model';
 import { AuthService } from '../../../../core/services/auth.service';
-
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-rutas-asignadas',
   standalone: true,
@@ -123,52 +123,65 @@ export class RutasAsignadasComponent implements OnInit {
     }
   }
 
-  private confirmarInicioRuta(idVenta: number, coordenadas?: string, event?: Event) {
-    if (confirm('¿Está seguro de iniciar la ruta de entrega?\n\nSe activará el seguimiento y se registrará su ubicación de inicio.')) {
-      
-      // Mostrar loading en el botón
-      let button: HTMLButtonElement | null = null;
-      if (event) {
-        button = event.target as HTMLButtonElement;
-        const originalText = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
-        button.disabled = true;
-      }
+// Reemplaza el método confirmarInicioRuta:
+private confirmarInicioRuta(idVenta: number, coordenadas?: string, event?: Event) {
+  // ✅ ELIMINAR el confirm y proceder directamente
+  
+  // Mostrar loading en el botón
+  let button: HTMLButtonElement | null = null;
+  if (event) {
+    button = event.target as HTMLButtonElement;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+    button.disabled = true;
+  }
 
-      // ✅ CORRECCIÓN: No necesitas convertir a null, el servicio ahora maneja ambos tipos
-      this.repartidorVentaService.iniciarRutaEntrega(idVenta, coordenadas).subscribe({
-        next: (response) => {
-          alert('¡Ruta iniciada! El seguimiento está activo.');
+  this.repartidorVentaService.iniciarRutaEntrega(idVenta, coordenadas).subscribe({
+    next: (response) => {
+      // ✅ SweetAlert2 automático para éxito
+      Swal.fire({
+        title: '🚚 ¡Ruta Iniciada!',
+        text: 'El seguimiento está activo',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+        willClose: () => {
           this.cargarVentasAsignadas(); // Recargar la lista
-          
-          // Restaurar botón en caso de éxito
-          if (button) {
-            button.innerHTML = '<i class="fas fa-play"></i> Iniciar Entrega';
-            button.disabled = false;
-          }
-        },
-        error: (error) => {
-          console.error('Error iniciando ruta:', error);
-          
-          let mensajeError = 'Error al iniciar la ruta';
-          
-          if (error.status === 503) {
-            mensajeError = 'El sistema está ocupado. Por favor, intente nuevamente en unos segundos.';
-          } else if (error.error?.error) {
-            mensajeError = error.error.error;
-          }
-          
-          alert(mensajeError);
-          
-          // Restaurar botón en caso de error
-          if (button) {
-            button.innerHTML = '<i class="fas fa-play"></i> Iniciar Entrega';
-            button.disabled = false;
-          }
         }
       });
+
+      // También recargar después del timer por si acaso
+      setTimeout(() => {
+        this.cargarVentasAsignadas();
+      }, 2000);
+    },
+    error: (error) => {
+      console.error('Error iniciando ruta:', error);
+      
+      let mensajeError = 'Error al iniciar la ruta';
+      
+      if (error.status === 503) {
+        mensajeError = 'El sistema está ocupado. Por favor, intente nuevamente en unos segundos.';
+      } else if (error.error?.error) {
+        mensajeError = error.error.error;
+      }
+      
+      Swal.fire({
+        title: '❌ Error',
+        text: mensajeError,
+        icon: 'error',
+        confirmButtonText: 'Entendido'
+      });
+      
+      // Restaurar botón en caso de error
+      if (button) {
+        button.innerHTML = '<i class="fas fa-play"></i> Iniciar Entrega';
+        button.disabled = false;
+      }
     }
-  }
+  });
+}
 
   // Verificar si una ruta ya fue iniciada
   isRutaIniciada(venta: RepartidorVenta): boolean {

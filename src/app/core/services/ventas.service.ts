@@ -92,8 +92,8 @@ export class VentasService {
   // ✅ Estados que coinciden EXACTAMENTE con la base de datos
   getEstadosVenta(): EstadoVenta[] {
     return [
-      { id_estado_venta: 1, estado: 'Pendiente' },
-      { id_estado_venta: 4, estado: 'Listo para repartos' }, // ✅ Con "s"
+      //**{ id_estado_venta: 1, estado: 'Pendiente' },  { id_estado_venta: 4, estado: 'Listo para repartos' }, 
+    // ✅ Con "s" **//
       { id_estado_venta: 5, estado: 'En ruta' },
       { id_estado_venta: 7, estado: 'Pagado' },
       { id_estado_venta: 8, estado: 'Cancelado' }

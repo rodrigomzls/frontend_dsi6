@@ -25,15 +25,15 @@
     </button>
   </div>
 
-  <!-- Detalles de la entrega - DISEÑO COMPACTO -->
-  <div class="detalle-entrega-compacto" *ngIf="venta && !loading">
+  <!-- Detalles de la entrega - DISEÑO MEJORADO -->
+  <div class="detalle-entrega-mejorado" *ngIf="venta && !loading">
 
     <!-- Fila 1: Información del cliente y productos -->
     <div class="fila-principal">
       <!-- Información del Cliente -->
-      <div class="seccion info-cliente-compacto">
+      <div class="seccion info-cliente-mejorado">
         <h2><i class="fas fa-user"></i> Información del Cliente</h2>
-        <div class="cliente-grid-compacto">
+        <div class="cliente-grid-mejorado">
           <div class="info-item">
             <label>Nombre:</label>
             <span>{{ venta.nombre_completo }}</span>
@@ -57,19 +57,28 @@
         </div>
       </div>
 
-      <!-- Productos a Entregar -->
-      <div class="seccion productos-compacto">
+      <!-- Productos a Entregar - MEJORADO -->
+      <div class="seccion productos-mejorado">
         <h2><i class="fas fa-boxes"></i> Productos a Entregar</h2>
-        <div class="productos-lista">
-          <div *ngFor="let detalle of venta.detalles" class="producto-item">
-            <span class="producto-nombre">{{ detalle.producto_nombre || 'Producto' }}</span>
-            <span class="producto-cantidad">{{ detalle.cantidad }}</span>
-            <span class="producto-precio">S/ {{ detalle.precio_unitario }}</span>
-            <span class="producto-subtotal">S/ {{ detalle.subtotal || (detalle.cantidad * detalle.precio_unitario) }}</span>
+        <div class="productos-tabla-mejorada">
+          <div class="tabla-header">
+            <span class="col-producto">Producto</span>
+            <span class="col-cantidad">Cantidad</span>
+            <span class="col-precio">Precio Unit.</span>
+            <span class="col-subtotal">Subtotal</span>
           </div>
-        </div>
-        <div class="total-productos">
-          <strong>Total: S/ {{ venta.total }}</strong>
+          <div class="productos-lista">
+            <div *ngFor="let detalle of venta.detalles" class="producto-fila">
+              <span class="producto-nombre">{{ detalle.producto_nombre || 'Producto' }}</span>
+              <span class="producto-cantidad">{{ detalle.cantidad }}</span>
+              <span class="producto-precio">S/ {{ detalle.precio_unitario | number:'1.2-2' }}</span>
+              <span class="producto-subtotal">S/ {{ detalle.subtotal || (detalle.cantidad * detalle.precio_unitario) | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="total-fila">
+            <span class="total-label">Total:</span>
+            <span class="total-amount">S/ {{ venta.total | number:'1.2-2' }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -77,24 +86,24 @@
     <!-- Fila 2: Información general y cronología -->
     <div class="fila-secundaria">
       <!-- Información General -->
-      <div class="seccion info-general-compacto">
+      <div class="seccion info-general-mejorado">
         <h2><i class="fas fa-info-circle"></i> Información General</h2>
-        <div class="info-grid-denso">
-          <div class="info-item-denso">
+        <div class="info-grid-mejorado">
+          <div class="info-item-mejorado">
             <label>Estado:</label>
             <span class="badge" [ngClass]="getEstadoBadgeClass(venta.estado)">
               {{ venta.estado }}
             </span>
           </div>
-          <div class="info-item-denso">
+          <div class="info-item-mejorado">
             <label>Total a Cobrar:</label>
-            <span class="valor-destacado total-amount">S/ {{ venta.total }}</span>
+            <span class="valor-destacado total-amount">S/ {{ venta.total | number:'1.2-2' }}</span>
           </div>
-          <div class="info-item-denso">
+          <div class="info-item-mejorado">
             <label>Método de Pago:</label>
             <span>{{ venta.metodo_pago }}</span>
           </div>
-          <div class="info-item-denso" *ngIf="isRutaIniciada()">
+          <div class="info-item-mejorado" *ngIf="isRutaIniciada()">
             <label>Tiempo Transcurrido:</label>
             <span class="tiempo-destacado">{{ calcularTiempoTranscurrido() }}</span>
           </div>
@@ -102,44 +111,44 @@
       </div>
 
       <!-- Cronología Compacta -->
-      <div class="seccion cronologia-compacta">
+      <div class="seccion cronologia-mejorada">
         <h2><i class="fas fa-clock"></i> Estado de Entrega</h2>
-        <div class="timeline-denso">
-          <div class="timeline-item-denso completed">
-            <div class="timeline-marker-denso">
+        <div class="timeline-mejorado">
+          <div class="timeline-item-mejorado completed">
+            <div class="timeline-marker-mejorado">
               <i class="fas fa-shopping-cart"></i>
             </div>
-            <div class="timeline-content-denso">
+            <div class="timeline-content-mejorado">
               <span class="timeline-title">Pedido Realizado</span>
               <span class="timeline-date">{{ formatearFechaCompleta(venta.fecha + 'T' + venta.hora) }}</span>
             </div>
           </div>
 
-          <div class="timeline-item-denso" [ngClass]="{'completed': isRutaIniciada(), 'current': !isRutaFinalizada() && isRutaIniciada()}">
-            <div class="timeline-marker-denso">
+          <div class="timeline-item-mejorado" [ngClass]="{'completed': isRutaIniciada(), 'current': !isRutaFinalizada() && isRutaIniciada()}">
+            <div class="timeline-marker-mejorado">
               <i class="fas fa-play-circle"></i>
             </div>
-            <div class="timeline-content-denso">
+            <div class="timeline-content-mejorado">
               <span class="timeline-title">En Ruta</span>
               <span class="timeline-date" *ngIf="isRutaIniciada()">
                 {{ formatearFechaHora(venta.fecha_inicio_ruta) }}
               </span>
-              <span class="timeline-date" *ngIf="!isRutaIniciada()">
+              <span class="timeline-date pending" *ngIf="!isRutaIniciada()">
                 Pendiente
               </span>
             </div>
           </div>
 
-          <div class="timeline-item-denso" [ngClass]="{'completed': isRutaFinalizada(), 'current': isRutaFinalizada()}">
-            <div class="timeline-marker-denso">
+          <div class="timeline-item-mejorado" [ngClass]="{'completed': isRutaFinalizada(), 'current': isRutaFinalizada()}">
+            <div class="timeline-marker-mejorado">
               <i class="fas fa-flag-checkered"></i>
             </div>
-            <div class="timeline-content-denso">
+            <div class="timeline-content-mejorado">
               <span class="timeline-title">Entregado</span>
               <span class="timeline-date" *ngIf="isRutaFinalizada()">
                 {{ formatearFechaHora(venta.fecha_fin_ruta) }}
               </span>
-              <span class="timeline-date" *ngIf="!isRutaFinalizada()">
+              <span class="timeline-date pending" *ngIf="!isRutaFinalizada()">
                 En progreso
               </span>
             </div>
@@ -148,77 +157,64 @@
       </div>
     </div>
 
-    <!-- Acciones del Repartidor -->
-    <div class="seccion" *ngIf="venta.id_estado_venta === 5">
+    <!-- Acciones Simplificadas -->
+    <div class="seccion acciones-simplificadas" *ngIf="venta.id_estado_venta === 5">
       <h2><i class="fas fa-tasks"></i> Gestión de Entrega</h2>
       
-      <!-- Información del estado de la ruta -->
-      <div class="ruta-info" *ngIf="isRutaIniciada(); else rutaNoIniciadaDetalle">
-        <div class="alert alert-success">
-          <i class="fas fa-check-circle"></i>
-          <strong>Ruta en curso</strong>
-          <p>La ruta fue iniciada el {{ formatearFechaHora(venta.fecha_inicio_ruta) }}</p>
-          <p *ngIf="venta.ubicacion_inicio_ruta">
-            <i class="fas fa-map-marker-alt"></i> Ubicación de inicio: {{ venta.ubicacion_inicio_ruta }}
-          </p>
-          <p><strong>Tiempo transcurrido:</strong> {{ calcularTiempoTranscurrido() }}</p>
+      <div class="estado-ruta-simplificado" *ngIf="isRutaIniciada(); else rutaNoIniciada">
+        <div class="ruta-activa-info">
+          <i class="fas fa-check-circle text-success"></i>
+          <div class="ruta-details">
+            <p><strong>Ruta en curso</strong> - Iniciada: {{ formatearFechaHora(venta.fecha_inicio_ruta) }}</p>
+            <p class="tiempo-info"><i class="fas fa-clock"></i> Tiempo transcurrido: {{ calcularTiempoTranscurrido() }}</p>
+          </div>
         </div>
         
-        <div class="info-note">
-          <i class="fas fa-info-circle"></i>
-          <span>Para gestionar esta entrega (marcar como pagado o cancelar), diríjase a <strong>Entregas Pendientes</strong>.</span>
+        <div class="acciones-botones">
+          <button class="btn btn-primary" (click)="irAEntregasPendientes()">
+            <i class="fas fa-tasks"></i> Gestionar Entrega
+          </button>
+          <button class="btn btn-info" (click)="abrirMapa()">
+            <i class="fas fa-map"></i> Ver Mapa
+          </button>
         </div>
       </div>
 
-      <ng-template #rutaNoIniciadaDetalle>
-        <div class="alert alert-warning">
-          <i class="fas fa-exclamation-triangle"></i>
-          <strong>Ruta no iniciada</strong>
-          <p>Para gestionar esta entrega, primero debe iniciar la ruta desde <strong>Mis Rutas Asignadas</strong>.</p>
+      <ng-template #rutaNoIniciada>
+        <div class="ruta-pendiente-info">
+          <i class="fas fa-exclamation-triangle text-warning"></i>
+          <p>Para gestionar esta entrega, inicie la ruta desde <strong>Mis Rutas Asignadas</strong>.</p>
         </div>
       </ng-template>
-
-      <!-- Botones de acción -->
-      <div class="acciones-grid">
-        <button class="btn btn-primary btn-lg" (click)="irAEntregasPendientes()">
-          <i class="fas fa-list"></i> Ir a Entregas Pendientes
-        </button>
-        
-        <button class="btn btn-info btn-lg" (click)="abrirMapa()">
-          <i class="fas fa-map"></i> Ver en Mapa
-        </button>
-        
-        <button class="btn btn-secondary btn-lg" (click)="volverAtras()">
-          <i class="fas fa-arrow-left"></i> Volver Atrás
-        </button>
-      </div>
     </div>
 
     <!-- Información de entrega completada -->
-    <div class="seccion" *ngIf="venta.id_estado_venta === 7">
-      <div class="alert alert-success delivery-completed">
-        <div class="delivery-header">
-          <i class="fas fa-check-circle"></i>
+    <div class="seccion entrega-completada-simplificada" *ngIf="venta.id_estado_venta === 7">
+      <div class="completada-header">
+        <i class="fas fa-check-circle text-success"></i>
+        <div class="completada-content">
           <h3>Entrega Completada</h3>
-        </div>
-        <p>Esta entrega fue marcada como pagada y completada.</p>
-        <div class="delivery-details">
-          <p><strong>Fecha de finalización:</strong> {{ formatearFechaHora(venta.fecha_fin_ruta) }}</p>
-          <p><strong>Tiempo total de entrega:</strong> {{ calcularTiempoTotalEntrega() }}</p>
+          <p>Esta entrega fue marcada como pagada y completada.</p>
+          <div class="completada-details">
+            <span><strong>Finalización:</strong> {{ formatearFechaHora(venta.fecha_fin_ruta) }}</span>
+            <span><strong>Tiempo total:</strong> {{ calcularTiempoTotalEntrega() }}</span>
+          </div>
         </div>
       </div>
-      <button class="btn btn-info" (click)="abrirMapa()">
-        <i class="fas fa-map"></i> Ver Ubicación en Mapa
+      <button class="btn btn-outline" (click)="abrirMapa()">
+        <i class="fas fa-map"></i> Ver Ubicación
       </button>
     </div>
 
     <!-- Información de entrega cancelada -->
-    <div class="seccion" *ngIf="venta.id_estado_venta === 8">
-      <div class="alert alert-danger">
-        <i class="fas fa-times-circle"></i>
-        <strong>Entrega Cancelada</strong>
-        <p *ngIf="venta.notas"><strong>Motivo:</strong> {{ venta.notas }}</p>
-        <p *ngIf="venta.fecha_fin_ruta"><strong>Fecha de cancelación:</strong> {{ formatearFechaHora(venta.fecha_fin_ruta) }}</p>
+    <div class="seccion entrega-cancelada-simplificada" *ngIf="venta.id_estado_venta === 8">
+      <div class="cancelada-header">
+        <i class="fas fa-times-circle text-danger"></i>
+        <div class="cancelada-content">
+          <h3>Entrega Cancelada</h3>
+          <p *ngIf="venta.notas"><strong>Motivo:</strong> {{ venta.notas }}</p>
+          <p *ngIf="venta.fecha_fin_ruta"><strong>Cancelación:</strong> {{ formatearFechaHora(venta.fecha_fin_ruta) }}</p>
+        </div>
       </div>
     </div>
   </div>
