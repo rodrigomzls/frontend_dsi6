@@ -76,93 +76,8 @@ export class CustomValidators {
     MatIconModule,
     MatSelectModule
   ],
-  template: `
-    <h2 mat-dialog-title class="dialog-title">
-      ➕ Agregar Cliente Rápido
-    </h2>
-
-    <mat-dialog-content>
-      <form [formGroup]="clienteForm" class="cliente-form-rapido">
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="form-field-full">
-            <mat-label>Nombre Completo *</mat-label>
-            <input matInput formControlName="nombre" required>
-            <mat-error *ngIf="clienteForm.get('nombre')?.hasError('required')">
-              El nombre es requerido
-            </mat-error>
-            <mat-error *ngIf="clienteForm.get('nombre')?.hasError('minlength')">
-              El nombre debe tener al menos 3 caracteres
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Teléfono *</mat-label>
-            <input matInput formControlName="telefono" required placeholder="Ej: 912345678">
-            <mat-error *ngIf="clienteForm.get('telefono')?.hasError('required')">
-              El teléfono es requerido
-            </mat-error>
-            <mat-error *ngIf="clienteForm.get('telefono')?.hasError('minlength')">
-              El teléfono debe tener al menos 7 dígitos
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Tipo de Cliente</mat-label>
-            <mat-select formControlName="tipo_cliente">
-              <mat-option value="Final">Persona</mat-option>
-              <mat-option value="Bodega">Bodega</mat-option>
-              <mat-option value="Restaurante">Restaurante</mat-option>
-              <mat-option value="Gimnasio">Gimnasio</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="form-field-full">
-            <mat-label>Dirección</mat-label>
-            <textarea matInput formControlName="direccion" rows="2"></textarea>
-          </mat-form-field>
-        </div>
-      </form>
-    </mat-dialog-content>
-
-    <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Cancelar</button>
-      <button 
-        mat-raised-button 
-        color="primary" 
-        (click)="onSubmit()"
-        [disabled]="clienteForm.invalid || isLoading">
-        {{ isLoading ? 'Guardando...' : 'Guardar' }}
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    .cliente-form-rapido {
-      min-width: 400px;
-    }
-    .form-row {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    .form-field-full {
-      flex: 1;
-    }
-    .form-field {
-      flex: 1;
-    }
-    @media (max-width: 480px) {
-      .form-row {
-        flex-direction: column;
-      }
-      .cliente-form-rapido {
-        min-width: auto;
-      }
-    }
-  `]
+  templateUrl: './cliente-rapido-form.component.html',
+  styleUrls: ['./cliente-rapido-form.component.css']
 })
 export class ClienteRapidoFormComponent implements OnInit {
   clienteForm: FormGroup;
@@ -198,8 +113,10 @@ export class ClienteRapidoFormComponent implements OnInit {
 
   private createForm(): FormGroup {
     return this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(3)]],
-      telefono: ['', [Validators.required, Validators.minLength(7)]],
+      tipo_documento: ['NO_ESPECIFICADO'], // Ya no es requerido
+      dni: [''], // Ya no es requerido
+      nombre: ['', [Validators.required, CustomValidators.soloLetras]],
+      telefono: ['', [Validators.required, CustomValidators.soloNumeros, CustomValidators.telefonoPeruano]],
       direccion: [''],
       tipo_cliente: ['Persona', Validators.required],
       razon_social: ['']
@@ -342,15 +259,17 @@ export class ClienteRapidoFormComponent implements OnInit {
   onSubmit(): void {
     if (this.clienteForm.valid) {
       this.isLoading = true;
-      
-      // Generar un DNI único basado en timestamp + random
-      const uniqueDNI = this.generateUniqueDNI();
-      
-      const formData = {
-        ...this.clienteForm.value,
-        tipo_documento: 'DNI',
-        dni: uniqueDNI
-      };
+      const formData = this.clienteForm.value;
+
+      // Limpiar campos opcionales si están vacíos
+      if (formData.razon_social && formData.razon_social.trim() === '') {
+        formData.razon_social = null;
+      }
+
+      // Si no se proporcionó documento, limpiar el campo
+      if (!formData.dni || formData.dni.trim() === '') {
+        formData.dni = '';
+      }
 
       this.clienteService.createCliente(formData).subscribe({
         next: (nuevoCliente) => {
@@ -379,14 +298,14 @@ export class ClienteRapidoFormComponent implements OnInit {
           });
         }
       });
+    } else {
+      Object.keys(this.clienteForm.controls).forEach(key => {
+        this.clienteForm.get(key)?.markAsTouched();
+      });
+      this.snackBar.open('Por favor complete los campos requeridos correctamente', 'Cerrar', {
+        duration: 3000
+      });
     }
-  }
-
-  private generateUniqueDNI(): string {
-    // Generar DNI único basado en timestamp + número aleatorio
-    const timestamp = Date.now().toString().slice(-6);
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    return (timestamp + random).slice(-8);
   }
 
   onCancel(): void {
