@@ -965,3 +965,505 @@
   background: #d1ecf1;
   border-color: #bee5eb;
 }
+/* ===== ESTILOS COMPACTOS PARA DETALLE DE ENTREGA ===== */
+
+/* Header compacto */
+.header-compacto {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 14px 18px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+}
+
+.header-compacto h1 {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+/* Layout compacto principal */
+.detalle-entrega-compacto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fila-principal {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+}
+
+.fila-secundaria {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Secciones compactas */
+.seccion {
+  background: white;
+  padding: 16px 18px;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.seccion h2 {
+  color: #2c3e50;
+  margin-bottom: 12px;
+  font-size: 1rem;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 6px;
+}
+
+/* Información del cliente compacta */
+.cliente-grid-compacto {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: auto;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #7f8c8d;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0;
+}
+
+.info-item span:not(.notas) {
+  font-size: 0.85rem;
+  color: #2c3e50;
+  line-height: 1.2;
+  padding: 1px 0;
+}
+
+.notas {
+  background: #f8f9fa;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #3498db;
+  font-style: italic;
+  color: #666;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+/* Productos compactos */
+.productos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.producto-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid #ecf0f1;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.producto-nombre {
+  color: #2c3e50;
+}
+
+.producto-cantidad {
+  color: #7f8c8d;
+  text-align: center;
+}
+
+.producto-precio {
+  color: #7f8c8d;
+  text-align: right;
+}
+
+.producto-subtotal {
+  color: #27ae60;
+  font-weight: 600;
+  text-align: right;
+}
+
+.total-productos {
+  text-align: right;
+  padding-top: 8px;
+  border-top: 1px solid #bdc3c7;
+  color: #27ae60;
+  font-size: 1rem;
+  margin-top: 8px;
+}
+
+/* Información general ultra compacta */
+.info-grid-denso {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 0;
+}
+
+.info-item-denso {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: auto;
+}
+
+.info-item-denso label {
+  font-weight: 600;
+  color: #7f8c8d;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 0;
+}
+
+.info-item-denso span:not(.badge) {
+  font-size: 0.82rem;
+  color: #2c3e50;
+  line-height: 1.2;
+  padding: 1px 0;
+}
+
+.valor-destacado {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.tiempo-destacado {
+  color: #e67e22;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.total-amount {
+  color: #27ae60;
+  font-size: 0.95rem;
+}
+
+/* Badges más compactos */
+.badge {
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  width: fit-content;
+  line-height: 1.2;
+}
+
+.badge-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.badge-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+.badge-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.badge-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+.badge-secondary { background: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+
+/* Timeline ultra compacto */
+.timeline-denso {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timeline-item-denso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  background: #f8f9fa;
+  min-height: auto;
+}
+
+.timeline-item-denso.completed {
+  background: #d4edda;
+  border-left: 3px solid #28a745;
+}
+
+.timeline-item-denso.current {
+  background: #cce5ff;
+  border-left: 3px solid #007bff;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.timeline-marker-denso {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 2px solid #e9ecef;
+  color: #6c757d;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+.timeline-item-denso.completed .timeline-marker-denso {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+.timeline-item-denso.current .timeline-marker-denso {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.timeline-content-denso {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.timeline-title {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.82rem;
+}
+
+.timeline-date {
+  font-size: 0.75rem;
+  color: #6c757d;
+  line-height: 1.2;
+}
+
+.timeline-item-denso.completed .timeline-date {
+  color: #155724;
+}
+
+/* Acciones compactas */
+.acciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.btn-lg {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Alertas compactas */
+.alert {
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
+.alert-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.alert-danger {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.alert-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Información de ruta */
+.ruta-info {
+  margin-top: 12px;
+}
+
+.info-note {
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 12px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.info-note i {
+  color: #0066cc;
+  margin-top: 1px;
+}
+
+.info-note span {
+  color: #004d99;
+}
+
+/* Entrega completada compacta */
+.delivery-completed {
+  border-left: 4px solid #28a745;
+  padding: 14px;
+}
+
+.delivery-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.delivery-header h3 {
+  margin: 0;
+  color: #155724;
+  font-size: 1.1rem;
+}
+
+.delivery-details {
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 8px;
+  border: 1px solid #c3e6cb;
+  font-size: 0.85rem;
+}
+
+.delivery-details p {
+  margin: 6px 0;
+  color: #155724;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .fila-principal,
+  .fila-secundaria {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .repartidor-container {
+    padding: 12px;
+  }
+
+  .header-compacto {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+  }
+
+  .header-compacto h1 {
+    font-size: 1.3rem;
+  }
+
+  .info-grid-denso {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .cliente-grid-compacto {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .timeline-item-denso {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .timeline-content-denso {
+    text-align: center;
+  }
+
+  .producto-item {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    text-align: left;
+    font-size: 0.8rem;
+    padding: 4px 2px;
+  }
+
+  .acciones-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .seccion {
+    padding: 14px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .repartidor-container {
+    padding: 8px;
+  }
+
+  .seccion {
+    padding: 12px 14px;
+  }
+
+  .seccion h2 {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+
+  .info-item label,
+  .info-item-denso label {
+    font-size: 0.7rem;
+  }
+
+  .timeline-title {
+    font-size: 0.78rem;
+  }
+
+  .timeline-date {
+    font-size: 0.7rem;
+  }
+
+  .info-item span:not(.notas),
+  .info-item-denso span:not(.badge) {
+    font-size: 0.78rem;
+  }
+}
+
+/* Mantener los estilos existentes del repartidor-styles.css */
+/* Los estilos anteriores de repartidor-styles.css se mantienen */
