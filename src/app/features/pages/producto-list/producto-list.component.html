@@ -32,23 +32,15 @@
     </mat-form-field>
   </div>
 
-    <div class="filter-right">
-      <mat-form-field appearance="outline" class="page-size-field">
-        <mat-label>Mostrar</mat-label>
-        <mat-select
-          [(value)]="pageSize"
-          (selectionChange)="changePageSize($event.value)"
-        >
-          <mat-option [value]="5">5</mat-option>
-          <mat-option [value]="10">10</mat-option>
-          <mat-option [value]="20">20</mat-option>
-          <mat-option [value]="30">30</mat-option>
-          <mat-option [value]="50">50</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <span class="total-count">de {{ dataSource.data.length }} productos</span>
-    </div>
-  </div>
+  <!-- Contenedor de tabla responsive -->
+  <div class="table-section">
+    <div class="table-container">
+      
+      <!-- Loading spinner -->
+      <div *ngIf="isLoading" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Cargando productos...</p>
+      </div>
 
       <!-- Tabla -->
       <div *ngIf="!isLoading" class="table-content">
@@ -65,55 +57,81 @@
               </td>
             </ng-container>
 
-      <!-- Nombre -->
-      <ng-container matColumnDef="nombre">
-        <th mat-header-cell *matHeaderCellDef>Nombre</th>
-        <td mat-cell *matCellDef="let product">{{ product.nombre }}</td>
-      </ng-container>
+            <!-- Columna Descripción (oculta en móviles) -->
+            <ng-container matColumnDef="descripcion">
+              <th mat-header-cell *matHeaderCellDef class="column-descripcion"> 
+                <div class="column-header">Descripción</div>
+              </th>
+              <td mat-cell *matCellDef="let product" class="column-descripcion"> 
+                <div class="product-desc">{{product.descripcion || 'Sin descripción'}}</div>
+              </td>
+            </ng-container>
 
-      <!-- Descripción -->
-      <ng-container matColumnDef="descripcion">
-        <th mat-header-cell *matHeaderCellDef>Descripción</th>
-        <td mat-cell *matCellDef="let product">{{ product.descripcion }}</td>
-      </ng-container>
+            <!-- Columna Precio -->
+            <ng-container matColumnDef="precio">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-precio"> 
+                <div class="column-header">Precio</div>
+              </th>
+              <td mat-cell *matCellDef="let product" class="column-precio"> 
+                <div class="price">S/ {{product.precio | number:'1.2-2'}}</div>
+              </td>
+            </ng-container>
 
-      <!-- Precio -->
-      <ng-container matColumnDef="precio">
-        <th mat-header-cell *matHeaderCellDef>Precio</th>
-        <td mat-cell *matCellDef="let product">
-          {{ product.precio | currency:'PEN':'symbol':'1.2-2' }}
-        </td>
-      </ng-container>
+            <!-- Columna Stock -->
+            <ng-container matColumnDef="stock">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-stock"> 
+                <div class="column-header">Stock</div>
+              </th>
+              <td mat-cell *matCellDef="let product" class="column-stock"> 
+                <div class="stock-info" 
+                     [class.low-stock]="product.stock < 10"
+                     [class.no-stock]="product.stock === 0">
+                  {{product.stock}}
+                  <span *ngIf="product.stock === 0" class="stock-badge">Agotado</span>
+                  <span *ngIf="product.stock > 0 && product.stock < 10" class="stock-badge warning">Bajo</span>
+                </div>
+              </td>
+            </ng-container>
 
-      <!-- Stock -->
-      <ng-container matColumnDef="stock">
-        <th mat-header-cell *matHeaderCellDef>Stock</th>
-        <td mat-cell *matCellDef="let product">{{ product.stock }}</td>
-      </ng-container>
+            <!-- Columna Categoría (oculta en tablets) -->
+            <ng-container matColumnDef="categoria">
+              <th mat-header-cell *matHeaderCellDef class="column-categoria"> 
+                <div class="column-header">Categoría</div>
+              </th>
+              <td mat-cell *matCellDef="let product" class="column-categoria"> 
+                <div class="category">{{product.categoriaNombre}}</div>
+              </td>
+            </ng-container>
 
-      <!-- Categoría -->
-      <ng-container matColumnDef="categoria">
-        <th mat-header-cell *matHeaderCellDef>Categoría</th>
-        <td mat-cell *matCellDef="let product">{{ product.categoriaNombre }}</td>
-      </ng-container>
+            <!-- Columna Marca (oculta en tablets) -->
+            <ng-container matColumnDef="marca">
+              <th mat-header-cell *matHeaderCellDef class="column-marca"> 
+                <div class="column-header">Marca</div>
+              </th>
+              <td mat-cell *matCellDef="let product" class="column-marca"> 
+                <div class="brand">{{product.marcaNombre}}</div>
+              </td>
+            </ng-container>
 
-      <!-- Marca -->
-      <ng-container matColumnDef="marca">
-        <th mat-header-cell *matHeaderCellDef>Marca</th>
-        <td mat-cell *matCellDef="let product">{{ product.marcaNombre }}</td>
-      </ng-container>
+            <!-- Columna Proveedor (oculta en móviles) -->
+            <ng-container matColumnDef="proveedor">
+              <th mat-header-cell *matHeaderCellDef class="column-proveedor"> 
+                <div class="column-header">Proveedor</div>
+              </th>
+              <td mat-cell *matCellDef="let product" class="column-proveedor"> 
+                <div class="supplier">{{product.proveedorNombre}}</div>
+              </td>
+            </ng-container>
 
-      <!-- Proveedor -->
-      <ng-container matColumnDef="proveedor">
-        <th mat-header-cell *matHeaderCellDef>Proveedor</th>
-        <td mat-cell *matCellDef="let product">{{ product.proveedorNombre }}</td>
-      </ng-container>
-
-      <!-- País -->
-      <ng-container matColumnDef="paisOrigen">
-        <th mat-header-cell *matHeaderCellDef>País</th>
-        <td mat-cell *matCellDef="let product">{{ product.paisOrigenNombre }}</td>
-      </ng-container>
+            <!-- Columna País Origen (oculta en móviles) -->
+            <ng-container matColumnDef="paisOrigen">
+              <th mat-header-cell *matHeaderCellDef class="column-pais"> 
+                <div class="column-header">País</div>
+              </th>
+              <td mat-cell *matCellDef="let product" class="column-pais"> 
+                <div class="country">{{product.paisOrigenNombre}}</div>
+              </td>
+            </ng-container>
 
             <!-- ✅ COLUMNA ACCIONES - SOLO PARA NO VENDEDORES -->
             <ng-container matColumnDef="acciones" *ngIf="canEdit()">
@@ -138,19 +156,26 @@
               </td>
             </ng-container>
 
-      <!-- Filas -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns" class="header-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns" class="data-row"></tr>
+          </table>
+        </div>
 
-    <!-- PAGINADOR SOLO BOTONES -->
-    <mat-paginator
-      #paginator
-      [length]="dataSource.data.length"
-      [pageSize]="pageSize"
-      [pageSizeOptions]="[5, 10, 20, 30, 50]"
-      showFirstLastButtons
-      class="paginator-solo-botones"
-    ></mat-paginator>
+        <!-- Paginador -->
+        <mat-paginator [pageSizeOptions]="[5, 10, 20, 50]" 
+                       showFirstLastButtons
+                       aria-label="Seleccionar página de productos"
+                       class="custom-paginator">
+        </mat-paginator>
+
+        <!-- Mensaje cuando no hay datos -->
+        <div *ngIf="dataSource.data.length === 0 && !isLoading" class="no-data">
+          <mat-icon class="no-data-icon">inventory_2</mat-icon>
+          <h3>No se encontraron productos</h3>
+          <p *ngIf="canEdit()">Comienza agregando un nuevo producto</p>
+          <p *ngIf="!canEdit()">No hay productos disponibles para mostrar</p>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

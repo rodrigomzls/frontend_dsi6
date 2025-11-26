@@ -1,5 +1,5 @@
 // En producto-list.component.ts - MODIFICAR completamente
-import { Component, OnInit, ViewChild, inject, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, ElementRef } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -42,12 +42,8 @@ import { AuthService } from '../../../core/services/auth.service'; // ✅ AGREGA
   styleUrls: ['./producto-list.component.css'],
 })
 export class ProductoListComponent implements OnInit {
-changePageSize(arg0: any) {
-throw new Error('Method not implemented.');
-}
   pageSize = 10;
   displayedColumns: string[] = [
-    'numero',
     'nombre',
     'descripcion',
     'precio',
@@ -72,8 +68,7 @@ throw new Error('Method not implemented.');
   constructor(
     private productService: ProductService,
     public dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private snackBar: MatSnackBar
   ) {
     this.dataSource = new MatTableDataSource<any>();
   }
