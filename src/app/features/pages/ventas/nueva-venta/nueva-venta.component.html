@@ -5,19 +5,22 @@
   </div>
 
   <div class="venta-content">
-    <!-- Sección Cliente -->
-<!-- En nueva-venta.component.html -->
+<!-- Sección Cliente -->
 <div class="section cliente-section">
   <h2>Registar o Seleccionar Cliente 👤</h2>
-  <div class="search-box">
-    <input 
-      type="text" 
-      [(ngModel)]="searchCliente" 
-      (input)="filtrarClientes()"
-      placeholder="Buscar por nombre, teléfono o documento..."
-      class="search-input">
-    <button (click)="limpiarBusquedaCliente()" class="btn-clear">✕</button>
-    <!-- Botón para abrir modal de cliente rápido -->
+  <div class="search-container">
+    <div class="search-box">
+      <input 
+        type="text" 
+        [(ngModel)]="searchCliente" 
+        (input)="filtrarClientes()"
+        (focus)="mostrarTodosClientes()"
+        (blur)="onBlurCliente()"
+        [placeholder]="venta.id_cliente === 0 ? 'Haz clic para ver todos los clientes...' : 'Cliente seleccionado'"
+        class="search-input"
+        #clienteInput>
+      <button (click)="limpiarBusquedaCliente()" class="btn-clear">✕</button>
+    </div>
     <button (click)="abrirModalClienteRapido()" class="btn-agregar-cliente">
       <span class="btn-icon">➕</span>
       Nuevo Cliente
@@ -25,71 +28,82 @@
   </div>
 
   <!-- Lista de clientes filtrados -->
-  <div class="results-list" *ngIf="searchCliente && filteredClientes.length > 0">
+  <div class="results-list" *ngIf="mostrarListaClientes && filteredClientes.length > 0">
     <div 
       *ngFor="let cliente of filteredClientes" 
       class="result-item"
-      (click)="seleccionarCliente(cliente)">
-      <strong>{{ cliente.nombre_completo  || cliente.persona?.nombre_completo }} - </strong>
+      (mousedown)="seleccionarCliente(cliente)">
+      <strong>{{ cliente.nombre_completo || cliente.persona?.nombre_completo }} - </strong>
       <span>{{ cliente.persona?.telefono }} - </span>
       <small>{{ cliente.tipo_cliente }}</small>
     </div>
   </div>
 
+  <div *ngIf="mostrarListaClientes && filteredClientes.length === 0" class="no-results">
+    No se encontraron clientes
+  </div>
+
   <div *ngIf="venta.id_cliente !== 0" class="selected-cliente">
-    ✅ Cliente seleccionado: <strong>{{ searchCliente }}</strong>
+    ✅ Cliente seleccionado: <strong>{{ clienteSeleccionadoNombre }}</strong>
     (ID: {{ venta.id_cliente }})
   </div>
 </div>
 
-    <!-- Sección Productos -->
-    <div class="section productos-section">
-      <h2>Seleccionar Productos 📦</h2>
-      
-      <!-- Búsqueda de productos -->
-      <div class="search-box">
-        <input 
-          type="text" 
-          [(ngModel)]="searchProducto" 
-          (input)="filtrarProductos()"
-          placeholder="Buscar producto..."
-          class="search-input">
-        <button (click)="limpiarBusquedaProducto()" class="btn-clear">✕</button>
-      </div>
 
-      <!-- Lista de productos filtrados -->
-  <!-- En nueva-venta.component.html - en la sección de productos -->
-<div class="results-list" *ngIf="searchProducto && filteredProductos.length > 0">
-  <div 
-    *ngFor="let producto of filteredProductos" 
-    class="result-item"
-    (click)="seleccionarProducto(producto)">
-    <strong>{{ producto.nombre }} - </strong>
-    <span>S/ {{ producto.precio }} - </span>
-    <small>Stock: {{ producto.stock }} | ID: {{ producto.id }}</small> <!-- Mostrar ID -->
+<!-- Sección Productos -->
+<div class="section productos-section">
+  <h2>Seleccionar Productos 📦</h2>
+  
+  <!-- Búsqueda de productos -->
+  <div class="search-box">
+    <input 
+      type="text" 
+      [(ngModel)]="searchProducto" 
+      (input)="filtrarProductos()"
+      (focus)="mostrarTodosProductos()"
+      (blur)="onBlurProducto()"
+      [placeholder]="!productoSeleccionado ? 'Haz clic para ver todos los productos...' : 'Producto seleccionado'"
+      class="search-input"
+      #productoInput>
+    <button (click)="limpiarBusquedaProducto()" class="btn-clear">✕</button>
+  </div>
+
+  <!-- Lista de productos filtrados -->
+  <div class="results-list" *ngIf="mostrarListaProductos && filteredProductos.length > 0">
+    <div 
+      *ngFor="let producto of filteredProductos" 
+      class="result-item"
+      (mousedown)="seleccionarProducto(producto)">
+      <strong>{{ producto.nombre }} - </strong>
+      <span>S/ {{ producto.precio }} - </span>
+      <small>Stock: {{ producto.stock }} | ID: {{ producto.id_producto || producto.id }}</small>
+    </div>
+  </div>
+
+  <div *ngIf="mostrarListaProductos && filteredProductos.length === 0" class="no-results">
+    No se encontraron productos
+  </div>
+
+  <!-- Agregar producto seleccionado -->
+  <div *ngIf="productoSeleccionado" class="add-product-form">
+    <div class="product-info">
+      <strong>{{ productoSeleccionado.nombre }}</strong>
+      <span>S/ {{ productoSeleccionado.precio }}</span>
+      <small>Stock: {{ productoSeleccionado.stock }}</small>
+    </div>
+    <div class="quantity-controls">
+      <label>Cantidad:</label>
+      <input 
+        type="number" 
+        [(ngModel)]="cantidad" 
+        min="1" 
+        [max]="productoSeleccionado.stock"
+        class="quantity-input">
+      <button (click)="agregarProducto()" class="btn-add">Agregar</button>
+      <button (click)="limpiarSeleccionProducto()" class="btn-cancel">Cancelar</button>
+    </div>
   </div>
 </div>
-
-      <!-- Agregar producto seleccionado -->
-      <div *ngIf="productoSeleccionado" class="add-product-form">
-        <div class="product-info">
-          <strong>{{ productoSeleccionado.nombre }}</strong>
-          <span>S/ {{ productoSeleccionado.precio }}</span>
-          <small>Stock: {{ productoSeleccionado.stock }}</small>
-        </div>
-        <div class="quantity-controls">
-          <label>Cantidad:</label>
-          <input 
-            type="number" 
-            [(ngModel)]="cantidad" 
-            min="1" 
-            [max]="productoSeleccionado.stock"
-            class="quantity-input">
-          <button (click)="agregarProducto()" class="btn-add"> Agregar</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Detalle de Venta -->
     <div class="section carrito-section">
       <h2>Detalle de Venta 🛍️</h2>

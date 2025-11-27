@@ -32,6 +32,7 @@ export class NuevaVentaComponent implements OnInit {
    // ✅ Agrega el servicio de diálogo
   private dialog = inject(MatDialog);
 
+
   // Datos de la venta
 // En la definición de la venta
 // En la definición de la venta - VERSIÓN COMPLETA
@@ -67,6 +68,12 @@ venta: Venta = {
 
   filteredClientes: ClienteVenta[] = []; // ✅ Cambiar a ClienteVenta[]
   filteredProductos: any[] = [];
+
+
+  // Nuevas propiedades para controlar la visualización de listas
+  mostrarListaClientes: boolean = false;
+  mostrarListaProductos: boolean = false;
+  clienteSeleccionadoNombre: string = '';
 
   ngOnInit() {
     this.cargarDatosIniciales();
@@ -207,67 +214,80 @@ cargarRepartidores() {
   });
 }
 
-  // Búsqueda de clientes
-  filtrarClientes() {
-    if (!this.searchCliente) {
-      this.filteredClientes = this.clientes;
-      return;
-    }
-    
-    const searchLower = this.searchCliente.toLowerCase();
-    this.filteredClientes = this.clientes.filter(cliente =>
-      cliente.nombre_completo ?.toLowerCase().includes(searchLower) ||
-      cliente.persona?.nombre_completo?.toLowerCase().includes(searchLower) ||
-      cliente.persona?.telefono?.includes(this.searchCliente) ||
-      cliente.persona?.numero_documento?.includes(this.searchCliente)
-    );
+ // Mejorar la función de filtrar clientes
+filtrarClientes() {
+  if (!this.searchCliente) {
+    this.filteredClientes = this.clientes;
+    return;
   }
-
-  // Búsqueda de productos
-  filtrarProductos() {
-    if (!this.searchProducto) {
-      this.filteredProductos = this.productos;
-      return;
-    }
-    
-    const searchLower = this.searchProducto.toLowerCase();
-    this.filteredProductos = this.productos.filter(producto =>
-      producto.nombre.toLowerCase().includes(searchLower) ||
-      producto.marca?.nombre.toLowerCase().includes(searchLower)
-    );
+  
+  const searchLower = this.searchCliente.toLowerCase();
+  this.filteredClientes = this.clientes.filter(cliente =>
+    (cliente.nombre_completo?.toLowerCase().includes(searchLower) ||
+    cliente.persona?.nombre_completo?.toLowerCase().includes(searchLower) ||
+    cliente.persona?.telefono?.includes(this.searchCliente) ||
+    cliente.persona?.numero_documento?.includes(this.searchCliente))
+  );
+  
+  // ✅ Mostrar lista automáticamente cuando se filtra
+  if (this.searchCliente && this.filteredClientes.length > 0) {
+    this.mostrarListaClientes = true;
   }
+}
 
-  // Seleccionar cliente
-  seleccionarCliente(cliente: ClienteVenta) { // ✅ Usar ClienteVenta
-    this.venta.id_cliente = cliente.id_cliente;
-    this.searchCliente = cliente.nombre_completo  || cliente.persona?.nombre_completo || '';
-    this.filteredClientes = [];
-    
-    console.log('✅ Cliente seleccionado:', {
-      id_cliente: this.venta.id_cliente,
-      nombre: this.searchCliente
-    });
+ // Mejorar la función de filtrar productos
+filtrarProductos() {
+  if (!this.searchProducto) {
+    this.filteredProductos = this.productos;
+    return;
   }
+  
+  const searchLower = this.searchProducto.toLowerCase();
+  this.filteredProductos = this.productos.filter(producto =>
+    producto.nombre.toLowerCase().includes(searchLower) ||
+    (producto.marca?.nombre.toLowerCase().includes(searchLower)) ||
+    (producto.id_producto?.toString().includes(this.searchProducto)) ||
+    (producto.id?.toString().includes(this.searchProducto))
+  );
+  
+  // ✅ Mostrar lista automáticamente cuando se filtra
+  if (this.searchProducto && this.filteredProductos.length > 0) {
+    this.mostrarListaProductos = true;
+  }
+}
+// Modificar la función de selección de cliente
+seleccionarCliente(cliente: ClienteVenta) {
+  this.venta.id_cliente = cliente.id_cliente;
+  this.clienteSeleccionadoNombre = cliente.nombre_completo || cliente.persona?.nombre_completo || '';
+  this.searchCliente = this.clienteSeleccionadoNombre;
+  
+  // ✅ OCULTAR LISTA INMEDIATAMENTE después de seleccionar
+  this.mostrarListaClientes = false;
+  this.filteredClientes = []; // Limpiar la lista filtrada
+  
+  console.log('✅ Cliente seleccionado:', {
+    id_cliente: this.venta.id_cliente,
+    nombre: this.clienteSeleccionadoNombre
+  });
+}
 
-// En nueva-venta.component.ts - corrige seleccionarProducto
-// En nueva-venta.component.ts - CORREGIDO
+// Modificar la función de selección de producto
 seleccionarProducto(producto: any) {
-  console.log('🎯 Producto seleccionado (estructura completa):', producto);
-  console.log('   - ID del producto (id_producto):', producto.id_producto);
-  console.log('   - ID del producto (id):', producto.id);
-  console.log('   - nombre:', producto.nombre);
-  console.log('   - precio:', producto.precio);
-  console.log('   - stock:', producto.stock);
+  console.log('🎯 Producto seleccionado:', producto);
   
   this.productoSeleccionado = producto;
   this.cantidad = 1;
   this.searchProducto = producto.nombre;
-  this.filteredProductos = [];
+  
+  // ✅ OCULTAR LISTA INMEDIATAMENTE después de seleccionar
+  this.mostrarListaProductos = false;
+  this.filteredProductos = []; // Limpiar la lista filtrada
 }
   // Agregar producto al carrito
 // En nueva-venta.component.ts - corrige la función agregarProducto()
 // En nueva-venta.component.ts - corrige completamente agregarProducto()
 // En nueva-venta.component.ts - CORREGIDO
+// Mejorar la función agregarProducto para limpiar completamente
 agregarProducto() {
   if (!this.productoSeleccionado || this.cantidad <= 0) {
     this.error = 'Selecciona un producto y cantidad válida';
@@ -308,10 +328,17 @@ agregarProducto() {
   this.venta.detalles.push(detalle);
   this.calcularTotal();
   
-  // Limpiar selección
+  // ✅ LIMPIAR COMPLETAMENTE después de agregar
+  this.limpiarSeleccionProducto();
+}
+
+// ✅ NUEVO MÉTODO: Limpiar selección de producto completamente
+limpiarSeleccionProducto() {
   this.productoSeleccionado = null;
   this.cantidad = 1;
   this.searchProducto = '';
+  this.filteredProductos = [];
+  this.mostrarListaProductos = false;
   this.error = '';
 }
 
@@ -328,11 +355,7 @@ agregarProducto() {
     }, 0);
   }
 
-  // Finalizar venta
-// Finalizar venta - VERSIÓN CORREGIDA COMPLETA
-// Finalizar venta - VERSIÓN CON DEBUGGING MEJORADO
-// En nueva-venta.component.ts - VERSIÓN MEJORADA
-// En nueva-venta.component.ts - VERSIÓN MEJORADA CON DEBUGGING
+
 // En nueva-venta.component.ts - modificar el método finalizarVenta
 finalizarVenta() {
   if (this.venta.id_cliente === 0) {
@@ -465,19 +488,60 @@ finalizarVenta() {
   });
 }
   // Limpiar búsquedas
-// En nueva-venta.component.ts - actualiza el método limpiarBusquedaCliente
+// Mejorar la función de limpiar búsqueda de cliente
 limpiarBusquedaCliente() {
   this.searchCliente = '';
-  this.filteredClientes = this.clientes;
-  
-  // ✅ AGREGAR ESTAS LÍNEAS PARA LIMPIAR LA SELECCIÓN DEL CLIENTE
   this.venta.id_cliente = 0;
+  this.clienteSeleccionadoNombre = '';
+  this.filteredClientes = this.clientes; // Mantener lista disponible para nueva búsqueda
+  this.mostrarListaClientes = false;
   
   console.log('🧹 Búsqueda de cliente limpiada, selección resetada');
 }
-  limpiarBusquedaProducto() {
-    this.searchProducto = '';
-    this.filteredProductos = this.productos;
-    this.productoSeleccionado = null;
+// Mejorar la función de limpiar búsqueda de producto
+limpiarBusquedaProducto() {
+  this.searchProducto = '';
+  this.filteredProductos = this.productos; // Mantener lista disponible para nueva búsqueda
+  this.productoSeleccionado = null;
+  this.mostrarListaProductos = false;
+  this.cantidad = 1;
+}
+  // Mejorar los métodos de mostrar listas
+mostrarTodosClientes() {
+  // ✅ Solo mostrar lista si no hay cliente seleccionado
+  if (this.venta.id_cliente === 0) {
+    this.mostrarListaClientes = true;
+    if (!this.searchCliente) {
+      this.filteredClientes = this.clientes;
+    }
   }
+}
+
+mostrarTodosProductos() {
+  // ✅ Solo mostrar lista si no hay producto seleccionado para agregar
+  if (!this.productoSeleccionado) {
+    this.mostrarListaProductos = true;
+    if (!this.searchProducto) {
+      this.filteredProductos = this.productos;
+    }
+  }
+}
+ // Mejorar los métodos de blur con lógica condicional
+onBlurCliente() {
+  setTimeout(() => {
+    // ✅ Solo ocultar si no se ha seleccionado un cliente
+    if (this.venta.id_cliente === 0) {
+      this.mostrarListaClientes = false;
+    }
+  }, 200);
+}
+
+onBlurProducto() {
+  setTimeout(() => {
+    // ✅ Solo ocultar si no hay producto seleccionado para agregar
+    if (!this.productoSeleccionado) {
+      this.mostrarListaProductos = false;
+    }
+  }, 200);
+}
 }
