@@ -1,3 +1,4 @@
+<!-- header.component.html -->
 <header class="header">
   <!-- Logo clickeable -->
   <div class="logo" (click)="irAlInicio()">
@@ -85,28 +86,29 @@
       </button>
     </mat-menu>
 
-    <!-- Inventario (Almacenero) -->
+    <!-- ✅ ACTUALIZADO: Inventario Unificado (Almacenero) -->
     <button mat-button [matMenuTriggerFor]="inventarioMenu" *ngIf="tieneAccesoAInventario()">
       <mat-icon>warehouse</mat-icon>
       Inventario
     </button>
     <mat-menu #inventarioMenu="matMenu">
-      <button mat-menu-item *ngIf="tieneAcceso('inventario')" (click)="goToInventario()">
+      <!-- ✅ NUEVO: Dashboard Unificado -->
+      <button mat-menu-item *ngIf="tieneAcceso('inventario')" (click)="goToInventarioUnificado()">
         <mat-icon>dashboard</mat-icon>
-        Gestion de Inventario
+        Dashboard de Inventario
       </button>
-      <button mat-menu-item *ngIf="tieneAcceso('inventario_movimiento')" (click)="registrarMovimiento()">
-        <mat-icon>move_to_inbox</mat-icon>
-        Registrar Movimiento
-      </button>
+
+     
+
+      <mat-divider></mat-divider>
+
+      <!-- ✅ MANTENER: Reportes -->
       <button mat-menu-item *ngIf="tieneAcceso('inventario_reportes')" (click)="verReportes()">
         <mat-icon>assessment</mat-icon>
         Reportes de Stock
       </button>
-      <button mat-menu-item *ngIf="tieneAcceso('lotes')" (click)="goToLotes()">
-        <mat-icon>inventory</mat-icon>
-        Gestión de Lotes
-      </button>
+
+      <!-- ✅ MANTENER: Proveedores y Categorías -->
       <button mat-menu-item *ngIf="tieneAcceso('proveedores')" (click)="goToProveedores()">
         <mat-icon>local_shipping</mat-icon>
         Proveedores

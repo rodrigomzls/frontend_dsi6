@@ -1,108 +1,216 @@
-<div class="container">
-  <div class="header">
-    <h2>Lotes</h2>
-    <button mat-raised-button color="primary" (click)="addLote()">
-      <mat-icon>add</mat-icon> Agregar
-    </button>
+<!-- lote-list.component.html - VERSIÓN PROFESIONAL -->
+<div class="professional-container">
+  <!-- Header Mejorado -->
+  <div class="professional-header">
+    <div class="header-content">
+      <div class="title-section">
+        <mat-icon class="header-icon">inventory</mat-icon>
+        <div class="title-text">
+          <h1>Gestión de Lotes</h1>
+          <p class="subtitle">Control y seguimiento de lotes de productos en inventario</p>
+        </div>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ dataSource.data.length }}</span>
+          <span class="stat-label">Lotes Totales</span>
+        </div>
+        <div class="stat-item warning" *ngIf="getLotesProximosCaducar().length > 0">
+          <span class="stat-number">{{ getLotesProximosCaducar().length }}</span>
+          <span class="stat-label">Por Caducar</span>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <mat-form-field appearance="outline" class="filter-field">
-    <mat-label>Buscar lotes</mat-label>
-    <input matInput (keyup)="applyFilter($event)" 
-           placeholder="Buscar por nombre"/>
-    <mat-icon matSuffix>search</mat-icon>
-  </mat-form-field>
+  <!-- Panel de Control -->
+  <div class="control-panel">
+    <div class="search-section">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar lotes...</mat-label>
+        <input matInput (keyup)="applyFilter($event)" 
+               placeholder="Buscar por producto, número de lote...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+    
+    <div class="filters-section">
+      <button mat-stroked-button (click)="toggleFiltrosAvanzados()" class="filter-btn">
+        <mat-icon>filter_list</mat-icon>
+        Filtros Avanzados
+      </button>
+      
+      <!-- Filtros Avanzados -->
+      <div class="filtros-avanzados" *ngIf="mostrarFiltrosAvanzados">
+        <mat-form-field appearance="outline" class="filter-select">
+          <mat-label>Estado de Stock</mat-label>
+          <mat-select (selectionChange)="aplicarFiltroStock($event.value)" multiple>
+            <mat-option value="normal">Stock Normal</mat-option>
+            <mat-option value="bajo">Stock Bajo</mat-option>
+            <mat-option value="agotado">Agotado</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-  <div class="table-container">
-    <div class="loading-shade" *ngIf="isLoading">
-      <mat-spinner diameter="50"></mat-spinner>
-      <p>Cargando datos...</p>
+        <mat-form-field appearance="outline" class="filter-select">
+          <mat-label>Estado de Caducidad</mat-label>
+          <mat-select (selectionChange)="aplicarFiltroCaducidad($event.value)" multiple>
+            <mat-option value="normal">Caducidad Normal</mat-option>
+            <mat-option value="proxima">Próximo a Caducar</mat-option>
+            <mat-option value="critica">Caducidad Crítica</mat-option>
+            <mat-option value="caducado">Caducado</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla Mejorada -->
+  <div class="table-wrapper">
+    <div class="table-header">
+      <div class="results-info">
+        <span class="results-count">
+          Mostrando {{ dataSource.filteredData.length }} de {{ dataSource.data.length }} lotes
+        </span>
+      </div>
+      <div class="table-actions">
+        <button mat-icon-button (click)="exportarExcel()" matTooltip="Exportar a Excel">
+          <mat-icon>download</mat-icon>
+        </button>
+        <button mat-icon-button (click)="recargarDatos()" matTooltip="Recargar datos">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
     </div>
 
-    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-        <td mat-cell *matCellDef="let row">{{ row.id_lote }}</td>
-      </ng-container>
+    <div class="table-container">
+      <div class="loading-shade" *ngIf="isLoading">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Cargando datos de lotes...</p>
+      </div>
 
-      <ng-container matColumnDef="producto">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Producto</th>
-        <td mat-cell *matCellDef="let row">{{ row.producto?.nombre }}</td>
-      </ng-container>
+      <table mat-table [dataSource]="dataSource" matSort class="professional-table">
+        
+        <!-- Columna ID -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-id">ID</th>
+          <td mat-cell *matCellDef="let row" class="column-id">
+            <span class="id-badge">#{{ row.id_lote }}</span>
+          </td>
+        </ng-container>
 
-      <!-- ✅ NUEVA: Número de Lote -->
-      <ng-container matColumnDef="numero_lote">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>N° Lote</th>
-        <td mat-cell *matCellDef="let row">
-          <span class="numero-lote">{{ row.numero_lote }}</span>
-        </td>
-      </ng-container>
+        <!-- Columna Producto -->
+        <ng-container matColumnDef="producto">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-producto">Producto</th>
+          <td mat-cell *matCellDef="let row" class="column-producto">
+            <div class="producto-info">
+              <span class="producto-nombre">{{ row.producto?.nombre }}</span>
+              <span class="producto-detalle" *ngIf="row.producto">
+                {{ row.producto.marca }} • {{ row.producto.categoria }}
+              </span>
+            </div>
+          </td>
+        </ng-container>
 
-      <!-- ✅ NUEVA: Cantidad Inicial -->
-      <ng-container matColumnDef="cantidad_inicial">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Inicial</th>
-        <td mat-cell *matCellDef="let row">
-          {{ row.cantidad_inicial }}
-        </td>
-      </ng-container>
+        <!-- Columna Número de Lote -->
+        <ng-container matColumnDef="numero_lote">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-lote">N° Lote</th>
+          <td mat-cell *matCellDef="let row" class="column-lote">
+            <div class="lote-info">
+              <span class="numero-lote">{{ row.numero_lote }}</span>
+              <span class="lote-estado" [class]="getStockClass(row)">
+                {{ getStockText(row) }}
+              </span>
+            </div>
+          </td>
+        </ng-container>
 
-      <!-- ✅ NUEVA: Cantidad Actual -->
-      <ng-container matColumnDef="cantidad_actual">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Actual</th>
-        <td mat-cell *matCellDef="let row">
-          <span [class]="getStockClass(row)">
-            {{ row.cantidad_actual }}
-          </span>
-        </td>
-      </ng-container>
+        <!-- Columna Stock -->
+        <ng-container matColumnDef="stock">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-stock">Stock</th>
+          <td mat-cell *matCellDef="let row" class="column-stock">
+            <div class="stock-info">
+              <div class="stock-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="getPorcentajeStock(row)"></div>
+                </div>
+                <span class="stock-numbers">
+                  {{ row.cantidad_actual }}/{{ row.cantidad_inicial }}
+                </span>
+              </div>
+              <span class="stock-porcentaje">{{ getPorcentajeStock(row) }}%</span>
+            </div>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="fecha_caducidad">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Caducidad</th>
-        <td mat-cell *matCellDef="let row">
-          <span [class]="getDiasClass(row.fecha_caducidad)">
-            {{ row.fecha_caducidad | date:'dd/MM/yyyy' }}
-          </span>
-        </td>
-      </ng-container>
+        <!-- Columna Caducidad -->
+        <ng-container matColumnDef="caducidad">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="column-caducidad">Caducidad</th>
+          <td mat-cell *matCellDef="let row" class="column-caducidad">
+            <div class="caducidad-info">
+              <span class="fecha-caducidad">{{ row.fecha_caducidad | date:'dd/MM/yyyy' }}</span>
+              <span class="dias-restantes" [class]="getDiasClass(row.fecha_caducidad)">
+                {{ calcularDiasParaCaducar(row.fecha_caducidad) }} días
+              </span>
+            </div>
+          </td>
+        </ng-container>
 
-      <!-- ✅ SOLO UNA VEZ: Días para Caducar -->
-      <ng-container matColumnDef="dias_caducar">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Días</th>
-        <td mat-cell *matCellDef="let row">
-          <span [class]="getDiasClass(row.fecha_caducidad)">
-            {{ calcularDiasParaCaducar(row.fecha_caducidad) }}
-          </span>
-        </td>
-      </ng-container>
+        <!-- Columna Estado -->
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef class="column-estado">Estado</th>
+          <td mat-cell *matCellDef="let row" class="column-estado">
+            <div class="estado-completo">
+              <span class="estado-badge stock" [class]="getStockClass(row)">
+                {{ getStockText(row) }}
+              </span>
+              <span class="estado-badge caducidad" [class]="getDiasClass(row.fecha_caducidad)">
+                {{ getCaducidadText(row.fecha_caducidad) }}
+              </span>
+            </div>
+          </td>
+        </ng-container>
 
-      <!-- ✅ NUEVA: Fecha de Creación -->
-      <ng-container matColumnDef="fecha_creacion">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Creado</th>
-        <td mat-cell *matCellDef="let row">
-          {{ row.fecha_creacion | date:'dd/MM/yyyy' }}
-        </td>
-      </ng-container>
+        <!-- Columna Acciones -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef class="column-acciones">Acciones</th>
+          <td mat-cell *matCellDef="let row" class="column-acciones">
+            <div class="action-buttons">
+              <button mat-icon-button color="primary" (click)="editLote(row)" 
+                      matTooltip="Editar lote" class="btn-edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteLote(row)" 
+                      matTooltip="Eliminar lote" class="btn-delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button mat-icon-button color="accent" (click)="verDetallesLote(row)" 
+                      matTooltip="Ver detalles" class="btn-details">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef>Acciones</th>
-        <td mat-cell *matCellDef="let row">
-          <button mat-icon-button color="primary" (click)="editLote(row)" matTooltip="Editar">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" (click)="deleteLote(row)" matTooltip="Eliminar">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsProfessional" class="header-row"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumnsProfessional" 
+            [class.row-warning]="getDiasClass(row.fecha_caducidad) === 'caducidad-critica'"
+            [class.row-danger]="getDiasClass(row.fecha_caducidad) === 'caducado'"
+            [class.row-low-stock]="getStockClass(row) === 'stock-bajo'"
+            class="data-row"></tr>
+      </table>
 
-      <!-- ❌ ELIMINAR: Estas columnas duplicadas -->
-      <!-- <ng-container matColumnDef="stock"> ... </ng-container> -->
-      <!-- <ng-container matColumnDef="dias_caducar"> ... </ng-container> -->
+      <!-- Mensaje sin resultados -->
+      <div class="no-results" *ngIf="dataSource.filteredData.length === 0 && !isLoading">
+        <mat-icon>inventory_2</mat-icon>
+        <h3>No se encontraron lotes</h3>
+        <p>No hay lotes que coincidan con los criterios de búsqueda actuales.</p>
+      </div>
+    </div>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-
-    <mat-paginator [pageSizeOptions]="[5,10,25]" showFirstLastButtons></mat-paginator>
+    <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons 
+                   [length]="dataSource.filteredData.length"
+                   [pageSize]="10"
+                   class="professional-paginator">
+    </mat-paginator>
   </div>
 </div>

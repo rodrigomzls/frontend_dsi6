@@ -21,9 +21,13 @@ import { PedidoProveedorListComponent } from './features/pages/pedido-proveedor-
 import { CategoriaListComponent } from './features/pages/categoria-list/categoria-list.component';
 import { MarcaListComponent } from './features/pages/marca-list/marca-list.component';
 import { LoteListComponent } from './features/pages/lote-list/lote-list.component';
-import {MovimientoStockListComponent} from './features/pages/movimiento-stock-list/movimiento-stock-list.component';
+import { MovimientoStockListComponent } from './features/pages/movimiento-stock-list/movimiento-stock-list.component';
 import { InventarioDashboardComponent } from './features/pages/inventario/inventario-dashboard/inventario-dashboard.component';
 import { InventarioReportesComponent } from './features/pages/inventario/inventario-reportes/inventario-reportes.component';
+
+// ✅ NUEVO: Importar el componente unificado
+import { InventarioUnificadoComponent } from './features/pages/inventario/inventario-unificado/inventario-unificado.component';
+
 // Guards para standalone
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
@@ -43,8 +47,7 @@ export const routes: Routes = [
     path: 'clientes', 
     component: ClienteListComponent,
     canActivate: [authGuard, roleGuard],
-     // preferible: usar módulo en vez de expectedRoles
-    data: { requiredModule: 'clientes', expectedRoles: [1, 2] } // Admin(1) y Vendedor(2)
+    data: { requiredModule: 'clientes', expectedRoles: [1, 2] }
   },
   { 
     path: 'productos',
@@ -53,91 +56,121 @@ export const routes: Routes = [
     data: { requiredModule: 'productos', expectedRoles: [1, 2, 4] }
   },
   
-  // Módulo de Ventas - ORDEN CORREGIDO
+  // Módulo de Ventas
   {
     path: 'ventas/nueva',
     component: NuevaVentaComponent,
     canActivate: [authGuard, roleGuard],
-    data: { requiredModule: 'ventas_nueva', expectedRoles: [1, 2] }// Admin y Vendedor
+    data: { requiredModule: 'ventas_nueva', expectedRoles: [1, 2] }
   },
-  // ✅ MOVER ASIGNACION-RUTAS ANTES DE :id
   {
-    path: 'ventas/asignacion-rutas',//ruta en frontend
+    path: 'ventas/asignacion-rutas',
     component: AsignacionRutasComponent,
     canActivate: [authGuard, roleGuard],
-    data: { requiredModule: 'ventas_asignacion_rutas', expectedRoles: [1, 2] }// Solo administradores y vendedores
-  },//ruta backend: ventas_asignacion_rutas
+    data: { requiredModule: 'ventas_asignacion_rutas', expectedRoles: [1, 2] }
+  },
   { 
     path: 'ventas/:id', 
     component: DetalleVentaComponent,
     canActivate: [authGuard, roleGuard],
     data: { expectedRoles: [1, 2] }
   },
-    {
+  {
     path: 'ventas',
     component: PanelVentasComponent,
     canActivate: [authGuard, roleGuard],
-    data: { requiredModule: 'ventas', expectedRoles: [1, 2] }// Admin y Vendedor
+    data: { requiredModule: 'ventas', expectedRoles: [1, 2] }
   },
    
-   {
+  {
     path: 'usuarios',
     component: UsuarioListComponent,
     canActivate: [authGuard, roleGuard],
-    data: { requiredModule: 'usuarios', expectedRoles: [1] }// Solo administradores
+    data: { requiredModule: 'usuarios', expectedRoles: [1] }
   },
   {
     path: 'repartidores',
     component: RepartidorListComponent,
     canActivate: [authGuard, roleGuard],
-    data: { requiredModule: 'repartidores', expectedRoles: [1] } // Solo administradores
+    data: { requiredModule: 'repartidores', expectedRoles: [1] }
   },
   {
     path: 'personas',
     component: PersonaListComponent,
     canActivate: [authGuard, roleGuard],
-    data: { requiredModule: 'personas' ,expectedRoles: [1, 2] } // Admin y Vendedor
+    data: { requiredModule: 'personas', expectedRoles: [1, 2] }
   },
-  // Agregar en el array de rutas
-{
-  path: 'repartidor/rutas-asignadas',
-  component: RutasAsignadasComponent,
-  canActivate: [authGuard, roleGuard],
-  data: { requiredModule: 'rutas_asignadas', expectedRoles: [3] }
-},
-{
-  path: 'repartidor/entregas-pendientes',
-  component: EntregasPendientesComponent,
-  canActivate: [authGuard, roleGuard],
-  data: { requiredModule: 'entregas_pendientes', expectedRoles: [3] }
-},
-{
-  path: 'repartidor/historial-entregas',
-  component: HistorialEntregasComponent,
-  canActivate: [authGuard, roleGuard],
-  data: { requiredModule: 'historial_entregas', expectedRoles: [3] }
-},
-{
-  path: 'repartidor/venta/:id',
-  component: DetalleVentaRepartidorComponent,
-  canActivate: [authGuard, roleGuard],
-  data: { expectedRoles: [3] } // Solo repartidores
-},
-// Rutas de inventario
 
+  // Rutas de Repartidor
   {
-    path: 'inventario/movimiento',
+    path: 'repartidor/rutas-asignadas',
+    component: RutasAsignadasComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'rutas_asignadas', expectedRoles: [3] }
+  },
+  {
+    path: 'repartidor/entregas-pendientes',
+    component: EntregasPendientesComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'entregas_pendientes', expectedRoles: [3] }
+  },
+  {
+    path: 'repartidor/historial-entregas',
+    component: HistorialEntregasComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'historial_entregas', expectedRoles: [3] }
+  },
+  {
+    path: 'repartidor/venta/:id',
+    component: DetalleVentaRepartidorComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { expectedRoles: [3] }
+  },
+
+  // =============================================
+  // ✅ SECCIÓN ACTUALIZADA: RUTAS DE INVENTARIO
+  // =============================================
+
+  // ✅ NUEVA RUTA PRINCIPAL: Dashboard Unificado
+  {
+    path: 'inventario',
+    component: InventarioUnificadoComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'inventario', expectedRoles: [4] }
+  },
+
+  // ✅ RUTAS DE COMPATIBILIDAD: Acceso directo a componentes individuales
+  {
+    path: 'inventario/movimientos',
     component: MovimientoStockListComponent,
     canActivate: [authGuard, roleGuard],
     data: { requiredModule: 'inventario_movimiento', expectedRoles: [4] }
   },
   
   {
-    path: 'lotes',
+    path: 'inventario/lotes',
     component: LoteListComponent,
     canActivate: [authGuard, roleGuard],
     data: { requiredModule: 'lotes', expectedRoles: [4] }
   },
+
+  // ✅ MANTENER: Dashboard individual (para compatibilidad)
+  {
+    path: 'inventario/dashboard',
+    component: InventarioDashboardComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'inventario', expectedRoles: [4] }
+  },
+
+  // ✅ MANTENER: Rutas existentes sin cambios
+  {
+    path: 'inventario/reportes',
+    component: InventarioReportesComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'inventario_reportes', expectedRoles: [4] }
+  },
+
+  // ✅ MANTENER: Rutas administrativas (sin cambios)
   {
     path: 'proveedores',
     component: ProveedorListComponent,
@@ -162,17 +195,20 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { requiredModule: 'marcas', expectedRoles: [4] }
   },
-  {
-  path: 'inventario',
-  component: InventarioDashboardComponent,
-  canActivate: [authGuard, roleGuard],
-  data: { requiredModule: 'inventario', expectedRoles: [4] }
-},
-{
-  path: 'inventario/reportes',
-  component: InventarioReportesComponent,
-  canActivate: [authGuard, roleGuard],
-  data: { requiredModule: 'inventario_reportes', expectedRoles: [4] }
-},
+
+  // ✅ ELIMINAR: Estas rutas viejas (reemplazadas por las de arriba)
+  // {
+  //   path: 'inventario/movimiento',  // ❌ OBSOLETA
+  //   component: MovimientoStockListComponent,
+  //   canActivate: [authGuard, roleGuard],
+  //   data: { requiredModule: 'inventario_movimiento', expectedRoles: [4] }
+  // },
+  // {
+  //   path: 'lotes',  // ❌ OBSOLETA
+  //   component: LoteListComponent,
+  //   canActivate: [authGuard, roleGuard],
+  //   data: { requiredModule: 'lotes', expectedRoles: [4] }
+  // },
+
   { path: '**', redirectTo: '/login' }
 ];

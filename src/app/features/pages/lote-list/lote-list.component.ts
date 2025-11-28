@@ -14,6 +14,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-lote-list',
@@ -29,7 +30,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+     MatSelectModule
   ]
 })
 export class LoteListComponent implements OnInit, AfterViewInit {
@@ -59,9 +61,15 @@ export class LoteListComponent implements OnInit, AfterViewInit {
     private snackBar: MatSnackBar
   ) {}
 
-  ngOnInit(): void {
+ // En el método ngOnInit de lote-list.component.ts agregar:
+ngOnInit(): void {
+  this.loadLotes();
+  
+  // Escuchar evento de actualización
+  window.addEventListener('inventario-actualizado', () => {
     this.loadLotes();
-  }
+  });
+}
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
@@ -214,4 +222,63 @@ private createFilterPredicate() {
       panelClass: ['error-snackbar'] 
     }); 
   }
+  // En lote-list.component.ts - agregar estos métodos
+displayedColumnsProfessional: string[] = [
+  'id', 'producto', 'numero_lote', 'stock', 'caducidad', 'estado', 'acciones'
+];
+
+mostrarFiltrosAvanzados = false;
+
+// Métodos adicionales
+toggleFiltrosAvanzados(): void {
+  this.mostrarFiltrosAvanzados = !this.mostrarFiltrosAvanzados;
+}
+
+getLotesProximosCaducar(): any[] {
+  return this.dataSource.data.filter(lote => 
+    this.getDiasClass(lote.fecha_caducidad) === 'caducidad-critica' || 
+    this.getDiasClass(lote.fecha_caducidad) === 'caducidad-proxima'
+  );
+}
+
+getPorcentajeStock(lote: Lote): number {
+  return Math.round((lote.cantidad_actual / lote.cantidad_inicial) * 100);
+}
+
+getStockText(lote: Lote): string {
+  const porcentaje = this.getPorcentajeStock(lote);
+  if (lote.cantidad_actual === 0) return 'Agotado';
+  if (porcentaje <= 20) return 'Bajo';
+  if (porcentaje <= 50) return 'Medio';
+  return 'Normal';
+}
+
+getCaducidadText(fechaCaducidad: string): string {
+  const dias = this.calcularDiasParaCaducar(fechaCaducidad);
+  if (dias < 0) return 'Caducado';
+  if (dias <= 7) return 'Crítica';
+  if (dias <= 30) return 'Próxima';
+  if (dias <= 90) return 'Advertencia';
+  return 'Normal';
+}
+
+aplicarFiltroStock(estados: string[]): void {
+  // Implementar filtro por estado de stock
+}
+
+aplicarFiltroCaducidad(estados: string[]): void {
+  // Implementar filtro por estado de caducidad
+}
+
+exportarExcel(): void {
+  // Implementar exportación a Excel
+}
+
+recargarDatos(): void {
+  this.loadLotes();
+}
+
+verDetallesLote(lote: Lote): void {
+  // Implementar vista de detalles
+}
 }

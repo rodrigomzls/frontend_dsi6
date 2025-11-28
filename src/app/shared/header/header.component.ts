@@ -182,6 +182,20 @@ export class HeaderComponent implements OnInit {
   }
 
   // Módulos de Almacén
+// header.component.ts - Agregar estos métodos en la sección de navegación:
+
+// ✅ NUEVO: Navegación al Inventario Unificado
+goToInventarioUnificado(): void {
+  if (this.tieneAcceso('inventario')) {
+    this.router.navigate(['/inventario']);
+  }
+}
+
+
+// Los demás métodos se mantienen igual...
+
+
+
   goToInventario(): void {
     if (this.tieneAcceso('inventario')) {
       this.router.navigate(['/inventario']);
@@ -197,12 +211,6 @@ export class HeaderComponent implements OnInit {
   verReportes(): void {
     if (this.tieneAcceso('inventario_reportes')) {
       this.router.navigate(['/inventario/reportes']);
-    }
-  }
-
-  goToLotes(): void {
-    if (this.tieneAcceso('lotes')) {
-      this.router.navigate(['/lotes']);
     }
   }
 

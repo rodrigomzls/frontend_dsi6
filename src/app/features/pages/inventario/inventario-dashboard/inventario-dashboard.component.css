@@ -561,3 +561,195 @@ mat-icon {
     margin-top: 0.5rem;
   }
 }
+/* Nuevos estilos para el dashboard mejorado */
+.stat-trend {
+  font-size: 0.7em;
+  color: #666;
+  margin-top: 2px;
+  display: block;
+}
+
+.analytics-section {
+  margin-bottom: 24px;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.analytics-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.analytics-card h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1em;
+}
+
+.placeholder-chart {
+  height: 120px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.caducidad-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.caducidad-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.caducidad-item:last-child {
+  border-bottom: none;
+}
+
+.lote-numero {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.producto-nombre {
+  flex: 1;
+  margin: 0 12px;
+  font-size: 0.9em;
+  color: #2c3e50;
+}
+
+.dias-restantes {
+  font-size: 0.8em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.sin-caducidades {
+  text-align: center;
+  color: #27ae60;
+  padding: 20px;
+  font-style: italic;
+}
+
+.status-section {
+  margin-top: 24px;
+}
+
+.alertas-container {
+  background: #fffaf0;
+  border: 1px solid #f39c12;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.alertas-container h3 {
+  margin: 0 0 12px 0;
+  color: #e67e22;
+  font-size: 1.1em;
+}
+
+.alerta-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #fdebd0;
+}
+
+.alerta-item:last-child {
+  border-bottom: none;
+}
+
+.alerta-content {
+  flex: 1;
+}
+
+.alerta-content strong {
+  color: #e67e22;
+  font-size: 0.9em;
+}
+
+.alerta-content p {
+  margin: 2px 0 0 0;
+  color: #7f8c8d;
+  font-size: 0.8em;
+}
+
+.btn-alerta {
+  background: #e67e22;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.btn-alerta:hover {
+  background: #d35400;
+}
+
+/* Estados de caducidad */
+.caducado {
+  background: #e74c3c;
+  color: white;
+}
+
+.caducidad-critica {
+  background: #e74c3c;
+  color: white;
+}
+
+.caducidad-proxima {
+  background: #f39c12;
+  color: white;
+}
+
+.caducidad-normal {
+  background: #27ae60;
+  color: white;
+}
+/* Agrega al archivo inventario-dashboard.component.css */
+.chart-container {
+  height: 250px;
+  position: relative;
+}
+
+.analytics-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  height: 300px; /* Altura fija para consistencia */
+  display: flex;
+  flex-direction: column;
+}
+
+.analytics-card h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1em;
+  flex-shrink: 0;
+}
+
+.analytics-card .chart-container {
+  flex: 1;
+  min-height: 0; /* Permite que el chart se expanda */
+}

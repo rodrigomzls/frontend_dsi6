@@ -100,3 +100,28 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 10px rgba(255, 82, 82, 0.4);
 }
+/* header.component.css - Agregar al final */
+
+/* Estilos para el menú de inventario actualizado */
+::ng-deep .inventario-menu .mat-menu-content {
+  padding: 8px 0;
+}
+
+::ng-deep .inventario-menu .mat-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  font-weight: 500;
+}
+
+::ng-deep .inventario-menu .mat-divider {
+  margin: 8px 0;
+}
+
+/* Destacar la opción principal del dashboard */
+::ng-deep .inventario-menu .mat-menu-item:first-child {
+  background-color: #f0f7ff;
+  border-left: 3px solid #3f51b5;
+  font-weight: 600;
+}
