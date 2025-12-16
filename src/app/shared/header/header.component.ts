@@ -47,11 +47,13 @@ export class HeaderComponent implements OnInit {
               this.modulosPermitidos = [
                 'usuarios', 'personas', 'clientes', 'productos',
                 'ventas_nueva', 'ventas', 'ventas_asignacion_rutas', 'repartidores'
+                , 'sunat'
               ];
               break;
             case 2: // Vendedor
               this.modulosPermitidos = [
                 'clientes', 'productos', 'ventas_nueva', 'ventas', 'ventas_asignacion_rutas'
+                , 'sunat'
               ];
               break;
             case 3: // Repartidor
@@ -235,6 +237,13 @@ goToInventarioUnificado(): void {
   goMarcas(): void {
     if (this.tieneAcceso('marcas')) {
       this.router.navigate(['/marcas']);
+    }
+  }
+
+  // Navegación a módulo SUNAT
+  goToSunat(): void {
+    if (this.tieneAcceso('sunat')) {
+      this.router.navigate(['/sunat']);
     }
   }
 

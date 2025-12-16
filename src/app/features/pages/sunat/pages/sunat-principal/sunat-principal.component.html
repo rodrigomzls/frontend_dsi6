@@ -1,0 +1,319 @@
+<!-- frontend/src/app/features/pages/sunat/pages/sunat-principal/sunat-principal.component.html -->
+<div class="sunat-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="title-section">
+      <h1>
+        <mat-icon class="header-icon">receipt_long</mat-icon>
+        Comprobantes Electrónicos SUNAT
+      </h1>
+      <p class="subtitle">Gestiona y consulta todos los comprobantes electrónicos emitidos</p>
+    </div>
+    <div class="stats">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-number">{{ totalItems }}</div>
+          <div class="stat-label">Total Comprobantes</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters-grid">
+        <!-- Búsqueda -->
+        <div class="filter-item">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Buscar</mat-label>
+            <input matInput 
+                   [(ngModel)]="searchTerm" 
+                   (keyup.enter)="aplicarFiltros()"
+                   placeholder="Buscar por cliente o serie...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <!-- Tipo -->
+        <div class="filter-item">
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo</mat-label>
+            <mat-select [(ngModel)]="filtroTipo" (selectionChange)="aplicarFiltros()">
+              <mat-option *ngFor="let tipo of tiposComprobante" [value]="tipo.value">
+                {{ tipo.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Estado -->
+        <div class="filter-item">
+          <mat-form-field appearance="outline">
+            <mat-label>Estado</mat-label>
+            <mat-select [(ngModel)]="filtroEstado" (selectionChange)="aplicarFiltros()">
+              <mat-option *ngFor="let estado of estadosComprobante" [value]="estado.value">
+                {{ estado.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Fechas -->
+        <div class="filter-item">
+          <mat-form-field appearance="outline">
+            <mat-label>Desde</mat-label>
+            <input matInput 
+                   [(ngModel)]="filtroFechaDesde" 
+                   (dateChange)="aplicarFiltros()"
+                   [matDatepicker]="pickerDesde"
+                   type="date">
+            <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+            <mat-datepicker #pickerDesde></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-item">
+          <mat-form-field appearance="outline">
+            <mat-label>Hasta</mat-label>
+            <input matInput 
+                   [(ngModel)]="filtroFechaHasta" 
+                   (dateChange)="aplicarFiltros()"
+                   [matDatepicker]="pickerHasta"
+                   type="date">
+            <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+            <mat-datepicker #pickerHasta></mat-datepicker>
+          </mat-form-field>
+        </div>
+
+        <!-- Botones -->
+        <div class="filter-actions">
+          <button mat-raised-button color="primary" (click)="aplicarFiltros()">
+            <mat-icon>filter_list</mat-icon>
+            Aplicar
+          </button>
+          <button mat-button (click)="limpiarFiltros()">
+            <mat-icon>clear_all</mat-icon>
+            Limpiar
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Cargando comprobantes...</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error && !loading" class="error-container">
+    <mat-card class="error-card">
+      <mat-card-content>
+        <mat-icon color="warn">error</mat-icon>
+        <p>{{ error }}</p>
+        <button mat-button color="primary" (click)="cargarComprobantes()">
+          Reintentar
+        </button>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Tabla de comprobantes -->
+  <div *ngIf="!loading && !error" class="table-container">
+    <mat-card>
+      <mat-card-content>
+        <div class="table-responsive">
+          <table mat-table [dataSource]="comprobantes" class="mat-elevation-z0">
+            
+            <!-- ID Comprobante -->
+            <ng-container matColumnDef="id_comprobante">
+              <th mat-header-cell *matHeaderCellDef>ID</th>
+              <td mat-cell *matCellDef="let comp">#{{ comp.id_comprobante }}</td>
+            </ng-container>
+
+            <!-- Venta -->
+            <ng-container matColumnDef="venta">
+              <th mat-header-cell *matHeaderCellDef>Venta</th>
+              <td mat-cell *matCellDef="let comp">
+                <a [routerLink]="['/ventas', comp.id_venta]" class="venta-link">
+                  #{{ comp.id_venta }}
+                </a>
+              </td>
+            </ng-container>
+
+            <!-- Tipo -->
+            <ng-container matColumnDef="tipo">
+              <th mat-header-cell *matHeaderCellDef>Tipo</th>
+              <td mat-cell *matCellDef="let comp">
+                <span class="tipo-badge" [ngClass]="getTipoClass(comp.tipo)">
+                  {{ comp.tipo }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Serie/Número -->
+            <ng-container matColumnDef="serie_numero">
+              <th mat-header-cell *matHeaderCellDef>Serie/Número</th>
+              <td mat-cell *matCellDef="let comp">
+                <strong>{{ comp.serie }}-{{ (comp.numero_secuencial || 0).toString().padStart(8, '0') }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Cliente -->
+            <ng-container matColumnDef="cliente">
+              <th mat-header-cell *matHeaderCellDef>Cliente</th>
+              <td mat-cell *matCellDef="let comp">{{ comp.cliente_nombre | truncate:20 }}</td>
+            </ng-container>
+
+            <!-- Total -->
+            <ng-container matColumnDef="total">
+              <th mat-header-cell *matHeaderCellDef>Total</th>
+              <td mat-cell *matCellDef="let comp" class="text-right">
+                S/ {{ comp.total | number:'1.2-2' }}
+              </td>
+            </ng-container>
+
+            <!-- Estado -->
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let comp">
+                <span class="estado-badge" [ngClass]="getEstadoClass(comp.estado)">
+                  {{ comp.estado }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Fecha Envío -->
+            <ng-container matColumnDef="fecha_envio">
+              <th mat-header-cell *matHeaderCellDef>Fecha Emisión</th>
+              <td mat-cell *matCellDef="let comp">{{ formatearFecha(comp.fecha_envio) }}</td>
+            </ng-container>
+
+            <!-- Acciones -->
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef>Acciones</th>
+              <td mat-cell *matCellDef="let comp">
+                <div class="action-buttons">
+                  <button mat-icon-button color="primary" 
+                          matTooltip="Ver detalles"
+                          (click)="verDetalle(comp)">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button mat-icon-button color="accent"
+                          matTooltip="Descargar XML"
+                          (click)="descargarXml(comp)">
+                    <mat-icon>download</mat-icon>
+                  </button>
+                  <button *ngIf="comp.estado === 'RECHAZADO'" 
+                          mat-icon-button color="warn"
+                          matTooltip="Reenviar a SUNAT"
+                          (click)="reenviarComprobante(comp)">
+                    <mat-icon>refresh</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+
+        <!-- Sin resultados -->
+        <div *ngIf="comprobantes.length === 0" class="no-results">
+          <mat-icon>receipt</mat-icon>
+          <h3>No hay comprobantes</h3>
+          <p>No se encontraron comprobantes con los filtros aplicados.</p>
+        </div>
+
+        <!-- Paginación -->
+        <mat-paginator *ngIf="comprobantes.length > 0"
+                       [length]="totalItems"
+                       [pageSize]="itemsPorPagina"
+                       [pageSizeOptions]="[5, 10, 25, 50]"
+                       (page)="cambiarPagina($event)"
+                       showFirstLastButtons
+                       class="paginator">
+        </mat-paginator>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Modal de detalles -->
+  <div *ngIf="comprobanteSeleccionado" class="modal-overlay" (click)="cerrarDetalle()">
+    <mat-card class="modal-card" (click)="$event.stopPropagation()">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>receipt_long</mat-icon>
+          Detalles del Comprobante
+        </mat-card-title>
+        <button mat-icon-button class="close-btn" (click)="cerrarDetalle()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="detalle-grid">
+          <div class="detalle-item">
+            <strong>ID Comprobante:</strong>
+            <span>#{{ comprobanteSeleccionado.id_comprobante }}</span>
+          </div>
+          <div class="detalle-item">
+            <strong>Venta:</strong>
+            <a [routerLink]="['/ventas', comprobanteSeleccionado.id_venta]" class="venta-link">
+              #{{ comprobanteSeleccionado.id_venta }}
+            </a>
+          </div>
+          <div class="detalle-item">
+            <strong>Tipo:</strong>
+            <span class="tipo-badge" [ngClass]="getTipoClass(comprobanteSeleccionado.tipo)">
+              {{ comprobanteSeleccionado.tipo }}
+            </span>
+          </div>
+          <div class="detalle-item">
+            <strong>Serie/Número:</strong>
+            <span>{{ comprobanteSeleccionado.serie }}-{{ comprobanteSeleccionado.numero_secuencial | number:'8.0' }}</span>
+          </div>
+          <div class="detalle-item">
+            <strong>Cliente:</strong>
+            <span>{{ comprobanteSeleccionado.cliente_nombre }}</span>
+          </div>
+          <div class="detalle-item">
+            <strong>Total:</strong>
+            <span>S/ {{ comprobanteSeleccionado.total | number:'1.2-2' }}</span>
+          </div>
+          <div class="detalle-item">
+            <strong>Estado:</strong>
+            <span class="estado-badge" [ngClass]="getEstadoClass(comprobanteSeleccionado.estado)">
+              {{ comprobanteSeleccionado.estado }}
+            </span>
+          </div>
+          <div class="detalle-item">
+            <strong>Fecha Emisión:</strong>
+            <span>{{ formatearFecha(comprobanteSeleccionado.fecha_envio) }}</span>
+          </div>
+          <div class="detalle-item">
+            <strong>Fecha Generación:</strong>
+            <span>{{ formatearFecha(comprobanteSeleccionado.fecha_generacion) }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="comprobanteSeleccionado.respuesta_sunat" class="respuesta-sunat">
+          <h4>Respuesta SUNAT</h4>
+          <pre>{{ comprobanteSeleccionado.respuesta_sunat | json }}</pre>
+        </div>
+
+        <div class="modal-actions">
+          <button mat-raised-button color="primary" (click)="descargarXml(comprobanteSeleccionado!)">
+            <mat-icon>download</mat-icon>
+            Descargar XML
+          </button>
+          <button mat-button (click)="cerrarDetalle()">
+            Cerrar
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

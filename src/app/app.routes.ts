@@ -28,6 +28,9 @@ import { InventarioReportesComponent } from './features/pages/inventario/inventa
 // ✅ NUEVO: Importar el componente unificado
 import { InventarioUnificadoComponent } from './features/pages/inventario/inventario-unificado/inventario-unificado.component';
 
+// ✅ NUEVO: Importar componente principal SUNAT
+import { SunatPrincipalComponent } from './features/pages/sunat/pages/sunat-principal/sunat-principal.component';
+
 // Guards para standalone
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
@@ -196,7 +199,18 @@ export const routes: Routes = [
     data: { requiredModule: 'marcas', expectedRoles: [4] }
   },
 
-  // ✅ ELIMINAR: Estas rutas viejas (reemplazadas por las de arriba)
+  // =============================================
+  // ✅ NUEVA SECCIÓN: RUTAS SUNAT
+  // =============================================
+  
+  {
+    path: 'sunat',
+    component: SunatPrincipalComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { requiredModule: 'sunat', expectedRoles: [1, 2] }
+  },
+
+  // =============================================
   // {
   //   path: 'inventario/movimiento',  // ❌ OBSOLETA
   //   component: MovimientoStockListComponent,

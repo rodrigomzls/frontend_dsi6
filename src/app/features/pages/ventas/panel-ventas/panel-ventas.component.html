@@ -89,7 +89,7 @@
           <th>Estado</th>
           <th>Método Pago</th>
             <!-- Tabla de ventas <th *ngIf="authService.isAdmin() || authService.isVendedor()">Cambiar Estado</th>-->
-         
+         <th>SUNAT</th>  <!-- ✅ NUEVA COLUMNA -->
           <th>Detalles</th>
         </tr>
       </thead>
@@ -119,21 +119,23 @@
           <td class="venta-metodo">
             {{ venta.metodo_pago }}
           </td>
-          <!-- En panel-ventas.component.html -
-           
-          <td *ngIf="authService.isAdmin() || authService.isVendedor()" class="venta-acciones">
-          <select 
-              [value]="venta.id_estado_venta" 
-              (change)="cambiarEstadoVenta(venta, $any($event.target).value)"
-              class="estado-select">
-              <option *ngFor="let estado of estadosVenta" [value]="estado.id_estado_venta">
-                  {{ estado.estado }}
-              </option>
-          </select>
-      </td>
-          
-          
-          verifica el select -->
+                <!-- Columna SUNAT -->
+          <td class="venta-sunat">
+            <app-emitir-comprobante
+              [idVenta]="venta.id_venta!"
+              [estadoVenta]="venta.id_estado_venta"
+              [comprobanteEmitido]="venta.comprobante_emitido || 0"
+              (comprobanteEmitidoEvent)="onComprobanteEmitido($event)"
+              size="small">
+            </app-emitir-comprobante>
+            
+            <!-- Mostrar si ya tiene comprobante -->
+            <div *ngIf="venta.comprobante_emitido === 1" class="comprobante-info">
+              <small class="text-success">
+                <i class="fas fa-check-circle"></i> Emitido
+              </small>
+            </div>
+          </td>
           
           <td class="venta-detalle">
             <button 

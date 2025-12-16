@@ -32,6 +32,7 @@ export interface Venta {
   razon_social?: string;
   coordenadas?: string;
   placa_furgon?: string;
+  comprobante_emitido?: number; // ✅ AGREGAR ESTE CAMPO
 }
 
 export interface VentaDetalle {

@@ -5,11 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { VentasService, Venta, EstadoVenta } from '../../../../core/services/ventas.service';
 import { AuthService } from '../../../../core/services/auth.service';
-
+import { EmitirComprobanteComponent } from '../../../../components/sunat/emitir-comprobante/emitir-comprobante.component';
 @Component({
   selector: 'app-panel-ventas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EmitirComprobanteComponent],
   templateUrl: './panel-ventas.component.html',
   styleUrls: ['./panel-ventas.component.css']
 })
@@ -365,4 +365,14 @@ goToAsignacionRutas() {
     this.searchTerm = '';
     this.aplicarFiltros();
   }
+  // AGREGAR este método en la clase PanelVentasComponent:
+onComprobanteEmitido(event: any) {
+  console.log('Comprobante emitido para venta:', event);
+  // Actualizar la venta localmente
+  const ventaIndex = this.ventas.findIndex(v => v.id_venta === event.idVenta);
+  if (ventaIndex !== -1) {
+    this.ventas[ventaIndex].comprobante_emitido = 1;
+    this.aplicarFiltros();
+  }
+}
 }

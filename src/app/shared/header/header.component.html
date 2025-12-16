@@ -30,6 +30,12 @@
       Productos
     </button>
 
+    <!-- SUNAT -->
+    <button mat-button *ngIf="tieneAcceso('sunat')" (click)="goToSunat()">
+      <mat-icon>receipt_long</mat-icon>
+      SUNAT
+    </button>
+
     <!-- Gestión -->
     <button mat-button [matMenuTriggerFor]="gestionMenu" *ngIf="tieneAccesoAGestion()">
       <mat-icon>manage_accounts</mat-icon>
