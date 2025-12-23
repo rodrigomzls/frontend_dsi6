@@ -22,7 +22,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_LOCALE, DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MomentDateAdapter } from '@angular/material-moment-adapter';
-
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 registerLocaleData(localeEsPe, 'es-PE');
 
 // ✅ FORMATO DE FECHA PERSONALIZADO PARA PERÚ
@@ -60,6 +60,18 @@ export const appConfig: ApplicationConfig = {
     MatIconModule,
     MatDialogModule,
     MatDatepickerModule, // ✅ AGREGAR ESTE MÓDULO
-    MatNativeDateModule // ✅ AGREGAR ESTE MÓDULO
+    MatNativeDateModule,
+    BreakpointObserver, // ✅ AGREGAR ESTE MÓDULO
+   {
+      provide: 'BREAKPOINTS',
+      useValue: {
+        handset: Breakpoints.Handset,
+        tablet: Breakpoints.Tablet,
+        web: Breakpoints.Web,
+        handsetPortrait: Breakpoints.HandsetPortrait,
+        tabletPortrait: Breakpoints.TabletPortrait,
+        webPortrait: Breakpoints.WebPortrait,
+      }
+    }
   ]
 };

@@ -1,107 +1,152 @@
 <!-- src/app/features/pages/ventas/detalle-venta/detalle-venta.component.html -->
 <div class="detalle-venta-container">
-  <!-- Header -->
-  <div class="header">
-    <button (click)="volverAPanel()" class="btn-back">← Volver al Panel</button>
-    <h1>📄 Detalle de Venta #{{venta?.id_venta}}</h1>
-    <button (click)="imprimirComprobante()" class="btn-print">
-      🖨️ Imprimir
-    </button>
-  </div>
-
-  <!-- Loading -->
-  <div *ngIf="loading" class="loading">
-    <p>🔄 Cargando detalle de venta...</p>
-  </div>
-
-  <!-- Error -->
-  <div *ngIf="error && !loading" class="error-message">
-    {{ error }}
-  </div>
-
-  <!-- Venta no encontrada -->
-  <div *ngIf="notFound" class="not-found">
-    <h2>😔 Venta no encontrada</h2>
-    <p>La venta que buscas no existe o fue eliminada.</p>
-    <button (click)="volverAPanel()" class="btn-primary">Volver al Panel</button>
-  </div>
-
-  <!-- Detalle de la venta - DISEÑO COMPACTO -->
-  <div *ngIf="venta && !loading" class="venta-detalle-compacto">
+  <!-- Contenedor principal con márgenes -->
+  <div class="contenedor-principal">
     
-    <!-- Fila 1: Información del cliente y productos -->
-    <div class="fila-principal">
-      <!-- Información del cliente -->
-      <div class="seccion info-cliente-compacto">
-        <h2>👤 Información del Cliente</h2>
-        <div class="cliente-datos-compacto">
-          <div class="cliente-nombre">{{ venta.nombre_completo || 'Cliente' }}</div>
-          <div class="cliente-contacto-compacto">
-            <span *ngIf="venta.telefono" class="contacto-item">📞 {{ venta.telefono }}</span>
-            <span *ngIf="venta.direccion" class="contacto-item">📍 {{ venta.direccion }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Detalles de productos -->
-      <div class="seccion productos-compacto">
-        <h2>📦 Productos Vendidos</h2>
-        <div class="productos-lista">
-          <div *ngFor="let detalle of venta.detalles" class="producto-item">
-            <span class="producto-nombre">{{ detalle.producto_nombre }}</span>
-            <span class="producto-cantidad">{{ detalle.cantidad }} und</span>
-            <span class="producto-precio">S/{{ detalle.precio_unitario }}</span>
-            <span class="producto-subtotal">S/{{ detalle.cantidad * detalle.precio_unitario }}</span>
-          </div>
-        </div>
-        <div class="total-productos">
-          <strong>Total: S/ {{ venta.total }}</strong>
-        </div>
-      </div>
+    <!-- Header Mejorado -->
+    <div class="header">
+      <button (click)="volverAPanel()" class="btn-back">
+        <i class="fas fa-arrow-left"></i>
+        Volver al Panel
+      </button>
+      
+      <h1>
+        <i class="fas fa-file-invoice-dollar"></i>
+        Detalle de Venta #{{venta?.id_venta}}
+      </h1>
+      
+      <button (click)="imprimirComprobante()" class="btn-print">
+        <i class="fas fa-print"></i>
+        Imprimir Comprobante
+      </button>
     </div>
 
-    <!-- Fila 2: Información general y adicional -->
-    <div class="fila-secundaria">
-      <!-- Información general -->
-      <div class="seccion info-general-compacto">
-        <h2>📋 Información General</h2>
-        <div class="info-grid-compacto">
-          <div class="info-item-compacto">
-            <label>Fecha:</label>
-            <span class="info-valor">{{ formatearFecha(venta.fecha) }}</span>
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Cargando detalles de la venta...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error && !loading" class="error-message">
+      <i class="fas fa-exclamation-circle"></i>
+      {{ error }}
+    </div>
+
+    <!-- Venta no encontrada -->
+    <div *ngIf="notFound" class="not-found">
+      <h2>
+        <i class="fas fa-search"></i>
+        Venta no encontrada
+      </h2>
+      <p>La venta que buscas no existe o fue eliminada.</p>
+      <button (click)="volverAPanel()" class="btn-back">
+        <i class="fas fa-arrow-left"></i>
+        Volver al Panel
+      </button>
+    </div>
+
+    <!-- Detalle de la venta -->
+    <div *ngIf="venta && !loading" class="venta-detalle-compacto">
+      
+      <!-- Fila 1: Información del cliente y productos -->
+      <div class="fila-principal">
+        <!-- Información del cliente -->
+        <div class="seccion info-cliente-compacto">
+          <h2>
+            <i class="fas fa-user-tie"></i>
+            Información del Cliente
+          </h2>
+          <div class="cliente-datos-compacto">
+            <div class="cliente-nombre">{{ venta.nombre_completo || 'Cliente General' }}</div>
+            <div class="cliente-contacto-compacto">
+              <span *ngIf="venta.telefono" class="contacto-item">
+                <i class="fas fa-phone"></i>
+                {{ venta.telefono }}
+              </span>
+              <span *ngIf="venta.direccion" class="contacto-item">
+                <i class="fas fa-map-marker-alt"></i>
+                {{ venta.direccion }}
+              </span>
+            </div>
           </div>
-          <div class="info-item-compacto">
-            <label>Hora:</label>
-            <span class="info-valor">{{ formatearHora(venta.hora) }}</span>
+        </div>
+
+        <!-- Detalles de productos -->
+        <div class="seccion productos-compacto">
+          <h2>
+            <i class="fas fa-boxes"></i>
+            Productos Vendidos
+          </h2>
+          <div class="productos-lista">
+            <div *ngFor="let detalle of venta.detalles" class="producto-item">
+              <span class="producto-nombre">{{ detalle.producto_nombre }}</span>
+              <span class="producto-cantidad">{{ detalle.cantidad }} und</span>
+              <span class="producto-precio">S/ {{ detalle.precio_unitario | number:'1.2-2' }}</span>
+              <span class="producto-subtotal">S/ {{ (detalle.cantidad * detalle.precio_unitario) | number:'1.2-2' }}</span>
+            </div>
           </div>
-          <div class="info-item-compacto">
-            <label>Estado:</label>
-            <span [class]="'estado-badge ' + getEstadoClass(venta.estado || '')">
-              {{ venta.estado }}
-            </span>
-          </div>
-          <div class="info-item-compacto">
-            <label>Método Pago:</label>
-            <span class="info-valor metodo-pago">{{ venta.metodo_pago }}</span>
+          <div class="total-productos">
+            <strong>Total: S/ {{ venta.total | number:'1.2-2' }}</strong>
           </div>
         </div>
       </div>
 
-      <!-- Información adicional -->
-      <div class="seccion info-adicional-compacto">
-        <h2>📝 Información Adicional</h2>
-        <div class="adicional-grid-compacto">
-          <div class="info-item-compacto">
-            <label>Vendedor:</label>
-            <span class="info-valor">{{ venta.vendedor || 'Sistema' }}</span>
+      <!-- Fila 2: Información general y adicional -->
+      <div class="fila-secundaria">
+        <!-- Información general -->
+        <div class="seccion info-general-compacto">
+          <h2>
+            <i class="fas fa-info-circle"></i>
+            Información General
+          </h2>
+          <div class="info-grid-compacto">
+            <div class="info-item-compacto">
+              <label><i class="fas fa-calendar"></i> Fecha</label>
+              <span class="info-valor">{{ formatearFecha(venta.fecha) }}</span>
+            </div>
+            <div class="info-item-compacto">
+              <label><i class="fas fa-clock"></i> Hora</label>
+              <span class="info-valor">{{ formatearHora(venta.hora) }}</span>
+            </div>
+            <div class="info-item-compacto">
+              <label><i class="fas fa-tag"></i> Estado</label>
+              <span [class]="'estado-badge ' + getEstadoClass(venta.estado || '')">
+                {{ venta.estado }}
+              </span>
+            </div>
+            <div class="info-item-compacto">
+              <label><i class="fas fa-credit-card"></i> Método Pago</label>
+              <span class="info-valor metodo-pago">{{ venta.metodo_pago }}</span>
+            </div>
+            <div class="info-item-compacto">
+              <label><i class="fas fa-receipt"></i> Tipo Comprobante</label>
+              <span class="info-valor">
+                {{ getTipoComprobanteTexto(venta.tipo_comprobante_solicitado) }}
+              </span>
+            </div>
           </div>
-          <div class="info-item-compacto" *ngIf="venta.repartidor">
-            <label>Repartidor:</label>
-            <span class="info-valor">{{ venta.repartidor }}</span>
-          </div>
-          <div class="info-item-compacto full-width" *ngIf="venta.notas">
-            <label>Notas:</label>
-            <span class="notas-text">{{ venta.notas }}</span>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="seccion info-adicional-compacto">
+          <h2>
+            <i class="fas fa-clipboard-list"></i>
+            Información Adicional
+          </h2>
+          <div class="adicional-grid-compacto">
+            <div class="info-item-compacto">
+              <label><i class="fas fa-user-check"></i> Vendedor</label>
+              <span class="info-valor">{{ venta.vendedor || 'Sistema' }}</span>
+            </div>
+            <div class="info-item-compacto" *ngIf="venta.repartidor">
+              <label><i class="fas fa-truck"></i> Repartidor</label>
+              <span class="info-valor">{{ venta.repartidor }}</span>
+            </div>
+            <div class="info-item-compacto full-width" *ngIf="venta.notas">
+              <label><i class="fas fa-sticky-note"></i> Notas</label>
+              <span class="notas-text">{{ venta.notas }}</span>
+            </div>
           </div>
         </div>
       </div>

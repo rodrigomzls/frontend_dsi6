@@ -1,127 +1,428 @@
-/* === ESTRUCTURA GENERAL === */
+/* header.component.css - VERSIÓN CON USER-ACTIONS EN EL MENÚ */
+
+/* === VARIABLES CSS === */
+:root {
+  --header-height: 64px;
+  --header-height-mobile: 60px;
+  --mobile-menu-width: 300px;
+  --mobile-menu-width-small: 280px;
+  --transition-speed: 0.3s;
+  --primary-color: #0077b6;
+  --secondary-color: #009949;
+  --background-color: #b4eddd;
+  --text-color: #333;
+  --shadow-light: 0 2px 10px rgba(0,0,0,0.1);
+  --shadow-medium: 0 4px 20px rgba(0,0,0,0.15);
+  --overlay-color: rgba(0,0,0,0.5);
+}
+
+/* === HEADER PRINCIPAL === */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #b4eddd;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  padding: 0 2rem;
-  height: 70px;
-  position: relative;
-  z-index: 10;
+  padding: 0 1rem;
+  background-color: #b4eddd;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 64px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* === LOGO === */
 .logo {
   display: flex;
   align-items: center;
-  cursor: pointer;
   gap: 0.5rem;
+  cursor: pointer;
+  z-index: 1002;
+  flex-shrink: 0;
 }
 
 .logo-img {
-  height: 60px;
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo-text {
+  font-size: 1.5rem;
   font-weight: 700;
-  font-size: 1.75rem;
   color: #0077b6;
 }
 
-/* === NAV LINKS === */
+/* === BOTÓN MENÚ HAMBURGUESA === */
+.menu-toggle {
+  display: none;
+  z-index: 1002;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.menu-toggle .mat-icon {
+  color: #0077b6;
+  font-size: 28px;
+}
+
+/* === NAVEGACIÓN PARA ESCRITORIO === */
 .nav-links {
   display: flex;
+  gap: 0.5rem;
   align-items: center;
-  gap: 3rem;
-  flex-wrap: nowrap;
 }
 
 .nav-links button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: #333;
-  font-weight: 10000;
-  transition: all 0.3s ease;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  z-index: 1;
+  position: relative;
 }
 
 .nav-links button:hover {
-  color: #08a5f9;
-  transform: translateY(-1px);
+  background-color: rgba(0, 119, 182, 0.1);
 }
 
-/* === BOTONES USUARIO Y CERRAR SESIÓN === */
-.user-actions {
+.nav-links button .mat-icon {
+  font-size: 20px;
+}
+
+/* === ACCIONES DE USUARIO (SOLO ESCRITORIO) === */
+.user-actions.desktop-only {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: nowrap;
-  white-space: nowrap;
+  gap: 0.5rem;
+  z-index: 1001;
 }
 
-.user-btn,
-.logout-btn {
-  flex-shrink: 0;
-  border-radius: 30px;
-  padding: 0.5rem 1.2rem;
-  font-weight: 600;
-  text-transform: none;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
-
-.user-btn mat-icon,
-.logout-btn mat-icon {
-  min-width: 20px;
-  font-size: 1.3rem;
-}
-
-/* Botón usuario */
 .user-btn {
-  background: linear-gradient(135deg, #79b5c9);
-  color: rgb(255, 255, 255);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid rgba(0, 119, 182, 0.3);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0077b6;
+  cursor: pointer;
+  z-index: 1;
+  position: relative;
 }
 
-.user-btn:hover {
-  background: linear-gradient(135deg, #00cfff, #008f3e);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0, 163, 204, 0.4);
-}
-
-/* Botón cerrar sesión */
-.logout-btn {
-  background: linear-gradient(135deg, #ff5252, #c62828);
+/* === INFORMACIÓN DE USUARIO EN MÓVIL === */
+.mobile-user-info {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #0077b6 0%, #009949 100%);
+  border-radius: 12px;
+  margin-bottom: 1rem;
   color: white;
 }
 
-.logout-btn:hover {
-  background: linear-gradient(135deg, #ff1744, #b71c1c);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(255, 82, 82, 0.4);
-}
-/* header.component.css - Agregar al final */
-
-/* Estilos para el menú de inventario actualizado */
-::ng-deep .inventario-menu .mat-menu-content {
-  padding: 8px 0;
+.user-avatar .mat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: white;
 }
 
-::ng-deep .inventario-menu .mat-menu-item {
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name-mobile {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.user-role-mobile {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+/* === ACCIONES DE USUARIO EN MÓVIL === */
+.mobile-user-actions {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mobile-user-action-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 48px;
-  font-weight: 500;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
 }
 
-::ng-deep .inventario-menu .mat-divider {
-  margin: 8px 0;
+.mobile-user-action-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(5px);
 }
 
-/* Destacar la opción principal del dashboard */
-::ng-deep .inventario-menu .mat-menu-item:first-child {
-  background-color: #f0f7ff;
-  border-left: 3px solid #3f51b5;
-  font-weight: 600;
+.mobile-user-action-btn .mat-icon {
+  font-size: 22px;
+}
+
+/* === MÓVIL - MENÚ HAMBURGUESA === */
+@media (max-width: 1024px) {
+  .menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Ocultar user-actions en móvil */
+  .user-actions.desktop-only {
+    display: none !important;
+  }
+  
+  /* Mostrar elementos móviles */
+  .mobile-user-info,
+  .mobile-user-actions {
+    display: flex;
+  }
+  
+  /* NAV-LINKS EN MÓVIL */
+  .nav-links {
+    position: fixed;
+    top: 64px;
+    right: -100%;
+    width: 300px;
+    height: calc(100vh - 64px);
+    background: linear-gradient(180deg, #1a3c5c 0%, #2c5282 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 0.75rem;
+    transition: right 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1001;
+    overflow-y: auto;
+  }
+  
+  /* Cuando el menú está abierto */
+  .nav-links.mobile-open {
+    right: 0;
+  }
+  
+  /* Contenedor de los items del menú */
+  .nav-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+  }
+  
+  /* Botones del menú en móvil */
+  .nav-links.mobile-open button {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.75rem 1rem;
+    margin: 0.125rem 0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  .nav-links.mobile-open button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .nav-links.mobile-open button .mat-icon {
+    margin-right: 0.75rem;
+    font-size: 22px;
+    color: white;
+  }
+  
+  .nav-links.mobile-open .nav-text {
+    color: white;
+  }
+  
+  /* Estilos para los menús desplegables en móvil */
+  .nav-links.mobile-open .mat-menu-trigger::after {
+    content: '▼';
+    margin-left: auto;
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+  
+  /* Overlay */
+  .mobile-overlay {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    display: block;
+    opacity: 0;
+    animation: fadeIn 0.2s ease forwards;
+  }
+}
+
+/* === TABLETS PEQUEÑAS === */
+@media (max-width: 768px) { 
+  .header {
+    padding: 0 0.75rem;
+    height: 60px;
+  }
+  
+  .logo-img {
+    height: 36px;
+  }
+  
+  .logo-text {
+    font-size: 1.25rem;
+  }
+  
+  .nav-links {
+    top: 60px;
+    width: 280px;
+    height: calc(100vh - 60px);
+  }
+  
+  .mobile-overlay {
+    top: 60px;
+  }
+  
+  .mobile-user-info {
+    padding: 0.75rem;
+  }
+  
+  .user-avatar .mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .user-name-mobile {
+    font-size: 0.95rem;
+  }
+}
+
+/* === MÓVILES MUY PEQUEÑOS (iPhone SE, etc) === */
+@media (max-width: 480px) {
+  .nav-links {
+    width: 100%;
+  }
+  
+  .logo-text {
+    display: inline;
+  }
+  
+  .logo-img {
+    height: 32px;
+  }
+  
+  .header {
+    padding: 0 0.5rem;
+  }
+  
+  .menu-toggle {
+    padding: 0.25rem;
+  }
+  
+  .mobile-user-info {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem 0.75rem;
+  }
+  
+  .user-avatar .mat-icon {
+    font-size: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  .user-details {
+    align-items: center;
+  }
+  
+  .mobile-user-action-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .nav-links.mobile-open button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* === DISPOSITIVOS MUY PEQUEÑOS EN ORIENTACIÓN HORIZONTAL === */
+@media (max-width: 667px) and (orientation: landscape) {
+  .nav-links {
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  
+  .mobile-user-info {
+    flex-direction: row;
+    padding: 0.5rem;
+  }
+  
+  .nav-menu-items {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}
+
+/* === ANIMACIÓN === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mejorar el scroll en móvil */
+.nav-links {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Asegurar que los mat-menus no se muestren en móvil */
+@media (max-width: 1024px) {
+  .mat-menu-panel {
+    display: none !important;
+  }
 }

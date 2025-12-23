@@ -1,162 +1,485 @@
-<!-- src/app/features/pages/ventas/nueva-venta/nueva-venta.component.html -->
+<!-- Nueva versión con 3 columnas -->
 <div class="nueva-venta-container">
+  <!-- Header mejorado -->
   <div class="header">
-    <h1> Venta Rápida</h1>
-  </div>
-
-  <div class="venta-content">
-<!-- Sección Cliente -->
-<div class="section cliente-section">
-  <h2>Registar o Seleccionar Cliente 👤</h2>
-  <div class="search-container">
-    <div class="search-box">
-      <input 
-        type="text" 
-        [(ngModel)]="searchCliente" 
-        (input)="filtrarClientes()"
-        (focus)="mostrarTodosClientes()"
-        (blur)="onBlurCliente()"
-        [placeholder]="venta.id_cliente === 0 ? 'Haz clic para ver todos los clientes...' : 'Cliente seleccionado'"
-        class="search-input"
-        #clienteInput>
-      <button (click)="limpiarBusquedaCliente()" class="btn-clear">✕</button>
-    </div>
-    <button (click)="abrirModalClienteRapido()" class="btn-agregar-cliente">
-      <span class="btn-icon">➕</span>
-      Nuevo Cliente
-    </button>
-  </div>
-
-  <!-- Lista de clientes filtrados -->
-  <div class="results-list" *ngIf="mostrarListaClientes && filteredClientes.length > 0">
-    <div 
-      *ngFor="let cliente of filteredClientes" 
-      class="result-item"
-      (mousedown)="seleccionarCliente(cliente)">
-      <strong>{{ cliente.nombre_completo || cliente.persona?.nombre_completo }} - </strong>
-      <span>{{ cliente.persona?.telefono }} - </span>
-      <small>{{ cliente.tipo_cliente }}</small>
-    </div>
-  </div>
-
-  <div *ngIf="mostrarListaClientes && filteredClientes.length === 0" class="no-results">
-    No se encontraron clientes
-  </div>
-
-  <div *ngIf="venta.id_cliente !== 0" class="selected-cliente">
-    ✅ Cliente seleccionado: <strong>{{ clienteSeleccionadoNombre }}</strong>
-    (ID: {{ venta.id_cliente }})
-  </div>
-</div>
-
-
-<!-- Sección Productos -->
-<div class="section productos-section">
-  <h2>Seleccionar Productos 📦</h2>
-  
-  <!-- Búsqueda de productos -->
-  <div class="search-box">
-    <input 
-      type="text" 
-      [(ngModel)]="searchProducto" 
-      (input)="filtrarProductos()"
-      (focus)="mostrarTodosProductos()"
-      (blur)="onBlurProducto()"
-      [placeholder]="!productoSeleccionado ? 'Haz clic para ver todos los productos...' : 'Producto seleccionado'"
-      class="search-input"
-      #productoInput>
-    <button (click)="limpiarBusquedaProducto()" class="btn-clear">✕</button>
-  </div>
-
-  <!-- Lista de productos filtrados -->
-  <div class="results-list" *ngIf="mostrarListaProductos && filteredProductos.length > 0">
-    <div 
-      *ngFor="let producto of filteredProductos" 
-      class="result-item"
-      (mousedown)="seleccionarProducto(producto)">
-      <strong>{{ producto.nombre }} - </strong>
-      <span>S/ {{ producto.precio }} - </span>
-      <small>Stock: {{ producto.stock }} | ID: {{ producto.id_producto || producto.id }}</small>
-    </div>
-  </div>
-
-  <div *ngIf="mostrarListaProductos && filteredProductos.length === 0" class="no-results">
-    No se encontraron productos
-  </div>
-
-  <!-- Agregar producto seleccionado -->
-  <div *ngIf="productoSeleccionado" class="add-product-form">
-    <div class="product-info">
-      <strong>{{ productoSeleccionado.nombre }}</strong>
-      <span>S/ {{ productoSeleccionado.precio }}</span>
-      <small>Stock: {{ productoSeleccionado.stock }}</small>
-    </div>
-    <div class="quantity-controls">
-      <label>Cantidad:</label>
-      <input 
-        type="number" 
-        [(ngModel)]="cantidad" 
-        min="1" 
-        [max]="productoSeleccionado.stock"
-        class="quantity-input">
-      <button (click)="agregarProducto()" class="btn-add">Agregar</button>
-      <button (click)="limpiarSeleccionProducto()" class="btn-cancel">Cancelar</button>
-    </div>
-  </div>
-</div>
-    <!-- Detalle de Venta -->
-    <div class="section carrito-section">
-      <h2>Detalle de Venta 🛍️</h2>
-      
-      <div *ngIf="venta.detalles.length === 0" class="empty-cart">
-        <p>No hay productos en el carrito</p>
+    <div class="header-content">
+      <h1>Venta Rápida</h1>
+      <p class="header-subtitle">Registro rápido y eficiente de transacciones</p>
+      <div class="header-stats">
+        <span class="stat-item">🕒 {{ venta.hora }}</span>
+        <span class="stat-item">📅 {{ venta.fecha }}</span>
+        <span class="stat-item">💼 {{ getVendedorNombre() }}</span>
       </div>
+    </div>
+  </div>
 
-      <div *ngIf="venta.detalles.length > 0" class="cart-items">
-        <div *ngFor="let detalle of venta.detalles; let i = index" class="cart-item">
-          <div class="item-info">
-            <strong>{{ detalle.producto_nombre }}: </strong>
-            <span>{{ detalle.cantidad }} x S/ {{ detalle.precio_unitario }}</span>
+  <!-- Contenido principal con 3 columnas -->
+  <div class="venta-content">
+    
+    <!-- COLUMNA 1: Cliente y Carrito -->
+    <div class="columna-izquierda">
+      <!-- Sección Cliente -->
+      <div class="section cliente-section neumorphic-card">
+        <div class="section-header">
+          <h2>
+            <i class="material-icons">person</i>
+            Cliente
+          </h2>
+          <span class="section-badge" *ngIf="venta.id_cliente !== 0">✅ Seleccionado</span>
+        </div>
+        
+        <div class="search-container">
+          <div class="search-box">
+            <input 
+              type="text" 
+              [(ngModel)]="searchCliente" 
+              (input)="filtrarClientes()"
+              (focus)="mostrarTodosClientes()"
+              (blur)="onBlurCliente()"
+              [placeholder]="venta.id_cliente === 0 ? 'Buscar cliente por nombre, teléfono o DNI...' : 'Cliente seleccionado'"
+              class="search-input elegant-input"
+              #clienteInput>
+            <button (click)="limpiarBusquedaCliente()" class="btn-clear" title="Limpiar búsqueda">
+              <i class="material-icons">close</i>
+            </button>
           </div>
-          <div class="item-subtotal">
-            S/ {{ detalle.cantidad * detalle.precio_unitario }}
-            <button (click)="removerProducto(i)" class="btn-remove">🗑️</button>
+          
+          <button (click)="abrirModalClienteRapido()" class="btn-agregar-cliente btn-with-icon">
+            <i class="material-icons">person_add</i>
+            Nuevo Cliente
+          </button>
+        </div>
+
+        <!-- Cliente seleccionado -->
+        <div *ngIf="venta.id_cliente !== 0" class="selected-client-card">
+          <div class="client-info">
+            <i class="material-icons client-avatar">account_circle</i>
+            <div class="client-details">
+              <!-- Aplicar truncate aquí -->
+      <h3>{{ clienteSeleccionadoNombre | truncate:30 }}</h3>
+              <p>ID: {{ venta.id_cliente }}</p>
+              <div class="client-tags">
+                <span class="tag">Registrado</span>
+                <span class="tag tag-success">Válido</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de resultados -->
+        <div class="results-container" *ngIf="mostrarListaClientes">
+          <div class="results-header">
+            <span class="results-count">{{ filteredClientes.length }} clientes encontrados</span>
+            <button (click)="mostrarListaClientes = false" class="btn-close-results">
+              <i class="material-icons">expand_less</i>
+            </button>
+          </div>
+          <div class="results-list">
+            <div 
+              *ngFor="let cliente of filteredClientes" 
+              class="result-item hover-lift"
+              (mousedown)="seleccionarCliente(cliente)">
+              <div class="result-item-content">
+                <i class="material-icons result-icon">person_outline</i>
+                <div class="result-text">
+                  <!-- Aplicar truncate aquí -->
+        <strong>{{ (cliente.nombre_completo || cliente.persona?.nombre_completo) | truncate:25 }}</strong>
+                  <div class="result-meta">
+                    <span class="meta-item">
+                      <i class="material-icons">phone</i>
+                      {{ cliente.persona?.telefono || 'Sin teléfono' | truncate:15 }}
+                    </span>
+                    <span class="meta-item">
+                      <i class="material-icons">badge</i>
+                     {{ cliente.tipo_cliente | truncate:15 }}
+                    </span>
+                  </div>
+                </div>
+                <i class="material-icons result-action">chevron_right</i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+<!-- Sección Productos -Debajo de Cliente -->
+      <div class="section productos-section neumorphic-card">
+        <div class="section-header">
+          <h2>
+            <i class="material-icons">inventory_2</i>
+            Productos
+          </h2>
+          <span class="section-badge" *ngIf="venta.detalles.length > 0">
+            🛒 {{ venta.detalles.length }} items
+          </span>
+        </div>
+
+        <div class="search-box">
+          <input 
+            type="text" 
+            [(ngModel)]="searchProducto" 
+            (input)="filtrarProductos()"
+            (focus)="mostrarTodosProductos()"
+            (blur)="onBlurProducto()"
+            [placeholder]="!productoSeleccionado ? 'Buscar producto por nombre, marca o código...' : 'Producto seleccionado'"
+            class="search-input elegant-input"
+            #productoInput>
+          <button (click)="limpiarBusquedaProducto()" class="btn-clear" title="Limpiar búsqueda">
+            <i class="material-icons">close</i>
+          </button>
+        </div>
+
+        <!-- Producto seleccionado para agregar -->
+        <div *ngIf="productoSeleccionado" class="selected-product-card fade-in">
+          <div class="product-card-header">
+             <!-- Aplicar truncate aquí -->
+           <h3>{{ productoSeleccionado.nombre | truncate:30 }}</h3>
+            <span class="product-price">S/ {{ productoSeleccionado.precio | number:'1.2-2' }}</span>
+          </div>
+          
+          <div class="product-card-body">
+            <div class="product-stats">
+              <div class="stat">
+                <i class="material-icons">warehouse</i>
+                <span>Stock: <strong>{{ productoSeleccionado.stock }}</strong></span>
+              </div>
+              <div class="stat">
+                <i class="material-icons">category</i>
+                <span>{{ productoSeleccionado.categoria?.nombre || 'Sin categoría' | truncate:15 }}</span>
+              </div>
+              <div class="stat">
+                <i class="material-icons">local_offer</i>
+                <span>{{ productoSeleccionado.marca?.nombre || 'Sin marca' | truncate:15 }}</span>
+              </div>
+            </div>
+            
+            <div class="add-product-controls">
+              <div class="quantity-selector">
+                <label>Cantidad:</label>
+                <div class="quantity-buttons">
+                  <button (click)="decrementarCantidad()" class="qty-btn">
+                    <i class="material-icons">remove</i>
+                  </button>
+                  <input 
+                    type="number" 
+                    [(ngModel)]="cantidad" 
+                    min="1" 
+                    [max]="productoSeleccionado.stock"
+                    class="quantity-input">
+                  <button (click)="incrementarCantidad()" class="qty-btn">
+                    <i class="material-icons">add</i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="add-buttons">
+                <button (click)="agregarProducto()" class="btn-add btn-with-icon">
+                  <i class="material-icons">add_shopping_cart</i>
+                  Agregar al Carrito
+                </button>
+                <button (click)="limpiarSeleccionProducto()" class="btn-cancel btn-with-icon">
+                  <i class="material-icons">cancel</i>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de productos -->
+        <div class="results-container" *ngIf="mostrarListaProductos">
+          <div class="results-header">
+            <span class="results-count">{{ filteredProductos.length }} productos encontrados</span>
+            <button (click)="mostrarListaProductos = false" class="btn-close-results">
+              <i class="material-icons">expand_less</i>
+            </button>
+          </div>
+          <div class="results-list">
+            <div 
+              *ngFor="let producto of filteredProductos" 
+              class="result-item hover-lift"
+              (mousedown)="seleccionarProducto(producto)">
+              <div class="result-item-content">
+                <div class="product-image-placeholder">
+                  <i class="material-icons">shopping_bag</i>
+                </div>
+                <div class="result-text">
+                  <!-- Aplicar truncate aquí -->
+        <strong>{{ producto.nombre | truncate:25 }}</strong>
+                  <div class="result-meta">
+                    <span class="meta-item">
+                      <i class="material-icons">attach_money</i>
+                      S/ {{ producto.precio | number:'1.2-2' }}
+                    </span>
+                    <span class="meta-item">
+                      <i class="material-icons">layers</i>
+                      Stock: {{ producto.stock }}
+                    </span>
+                    <span class="meta-item">
+                      <i class="material-icons">category</i>
+                       {{ producto.categoria?.nombre || 'General' | truncate:15 }}
+                    </span>
+                  </div>
+                </div>
+                <i class="material-icons result-action">add_circle_outline</i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA 2: Productos y Métodos de Pago -->
+    <div class="columna-centro">
+      <!-- Carrito de Compras - -->
+      <div class="section carrito-section neumorphic-card">
+        <div class="section-header">
+          <h2>
+            <i class="material-icons">shopping_cart</i>
+            Carrito de Compras
+          </h2>
+          <span class="section-badge section-badge-primary">
+            Total: S/ {{ venta.total | number:'1.2-2' }}
+          </span>
+        </div>
+
+        <div *ngIf="venta.detalles.length === 0" class="empty-cart-state">
+          <div class="empty-cart-icon">
+            <i class="material-icons">remove_shopping_cart</i>
+          </div>
+          <h3>Carrito Vacío</h3>
+          <p>Agrega productos para comenzar una venta</p>
+          <button (click)="mostrarTodosProductos()" class="btn-explore-products">
+            <i class="material-icons">storefront</i>
+            Explorar Productos
+          </button>
+        </div>
+
+        <div *ngIf="venta.detalles.length > 0" class="cart-items-container">
+          <div class="cart-items">
+            <div *ngFor="let detalle of venta.detalles; let i = index" class="cart-item fade-in">
+              <div class="cart-item-content">
+                <div class="cart-item-info">
+                  <div class="cart-item-header">
+                    <!-- Aplicar truncate aquí -->
+                  <h4>{{ detalle.producto_nombre | truncate:20 }}</h4>
+                    <span class="cart-item-price">S/ {{ detalle.precio_unitario | number:'1.2-2' }}</span>
+                  </div>
+                  <div class="cart-item-meta">
+                    <span class="meta-item">
+                      <i class="material-icons">numbers</i>
+                      Cantidad: {{ detalle.cantidad }}
+                    </span>
+                    <span class="meta-item">
+                      <i class="material-icons">calculate</i>
+                      Subtotal: S/ {{ (detalle.cantidad * detalle.precio_unitario) | number:'1.2-2' }}
+                    </span>
+                  </div>
+                </div>
+                <div class="cart-item-actions">
+                  <button (click)="removerProducto(i)" class="btn-remove" title="Eliminar">
+                    <i class="material-icons">delete</i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="cart-summary">
+            <div class="summary-row">
+              <span>Subtotal:</span>
+              <span>S/ {{ venta.total | number:'1.2-2' }}</span>
+            </div>
+            <div class="summary-row">
+              <span>IGV (18%):</span>
+              <span>S/ {{ venta.total * 0.18 | number:'1.2-2' }}</span>
+            </div>
+            <div class="summary-row total-row">
+              <span>Total a Pagar:</span>
+              <span class="total-amount">S/ {{ venta.total | number:'1.2-2' }}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="cart-total" *ngIf="venta.detalles.length > 0">
-        <strong>Total: S/ {{ venta.total }}</strong>
+      <!-- Métodos de Pago -  Debajo de Cliente -->
+      <div class="section pago-section neumorphic-card">
+        <h2>
+          <i class="material-icons">payments</i>
+          Método de Pago
+        </h2>
+        
+        <div class="payment-methods">
+          <div class="form-group">
+            <label>Seleccione método de pago:</label>
+            <select [(ngModel)]="venta.id_metodo_pago" class="form-select elegant-input">
+              <option *ngFor="let metodo of metodosPago" [value]="metodo.id_metodo_pago">
+                {{ metodo.metodo_pago }}
+              </option>
+            </select>
+          </div>
+          
+          <!-- Agregar íconos a los métodos de pago -->
+          <div class="payment-icons">
+            <div class="payment-icon" 
+                 [class.active]="venta.id_metodo_pago === 1"
+                 (click)="venta.id_metodo_pago = 1">
+              <i class="material-icons">payments</i>
+              <span>Efectivo</span>
+            </div>
+            <div class="payment-icon" 
+                 [class.active]="venta.id_metodo_pago === 2"
+                 (click)="venta.id_metodo_pago = 2">
+              <i class="material-icons">qr_code_scanner</i>
+              <span>Yape</span>
+            </div>
+            <div class="payment-icon" 
+                 [class.active]="venta.id_metodo_pago === 3"
+                 (click)="venta.id_metodo_pago = 3">
+              <i class="material-icons">account_balance</i>
+              <span>Transferencia</span>
+            </div>
+            <div class="payment-icon" 
+                 [class.active]="venta.id_metodo_pago === 4"
+                 (click)="venta.id_metodo_pago = 4">
+              <i class="material-icons">credit_card</i>
+              <span>Tarjeta</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Método de Pago-->
-    <div class="section config-section">
-      <h2>Pago 💳</h2>
+    <!-- COLUMNA 3: Comprobante -->
+    <div class="columna-derecha">
+      <!-- Comprobante -->
+      <div class="section comprobante-section neumorphic-card">
+        <h2>
+          <i class="material-icons">receipt_long</i>
+          Comprobante
+        </h2>
+        
+        <div class="comprobante-types">
+          <div class="comprobante-option" 
+               [class.selected]="venta.tipo_comprobante === 'SIN_COMPROBANTE'"
+               (click)="venta.tipo_comprobante = 'SIN_COMPROBANTE'">
+            <i class="material-icons">note</i>
+            <div class="option-content">
+              <h4>Nota de Venta</h4>
+              <p>Sin comprobante oficial</p>
+            </div>
+            <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'SIN_COMPROBANTE'">check_circle</i>
+          </div>
+          
+          <div class="comprobante-option" 
+               [class.selected]="venta.tipo_comprobante === 'BOLETA'"
+               (click)="venta.tipo_comprobante = 'BOLETA'; onTipoComprobanteChange()">
+            <i class="material-icons">receipt</i>
+            <div class="option-content">
+              <h4>Boleta Electrónica</h4>
+              <p>Para clientes con DNI</p>
+            </div>
+            <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'BOLETA'">check_circle</i>
+          </div>
+          
+          <div class="comprobante-option" 
+               [class.selected]="venta.tipo_comprobante === 'FACTURA'"
+               (click)="venta.tipo_comprobante = 'FACTURA'; onTipoComprobanteChange()">
+            <i class="material-icons">description</i>
+            <div class="option-content">
+              <h4>Factura Electrónica</h4>
+              <p>Para clientes con RUC</p>
+            </div>
+            <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'FACTURA'">check_circle</i>
+          </div>
+        </div>
+        
+        <!-- Preview de comprobante -->
+        <div *ngIf="serieNumeroPreview" class="comprobante-preview slide-up">
+          <div class="preview-header">
+            <i class="material-icons">preview</i>
+            <h4>Vista Previa</h4>
+          </div>
+          <div class="preview-content">
+            <div class="preview-row">
+              <span>Serie/Número:</span>
+              <strong>{{ serieNumeroPreview }}</strong>
+            </div>
+            <div class="preview-row">
+              <span>Cliente:</span>
+              <span>{{ clienteSeleccionadoNombre }}</span>
+            </div>
+            <div class="preview-row">
+              <span>Fecha:</span>
+              <span>{{ venta.fecha | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="loadingSerie" class="loading-comprobante">
+          <div class="spinner"></div>
+          <span>Generando número de comprobante...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILA INFERIOR: Acciones -->
+    <div class="section acciones-section neumorphic-card full-width">
+      <div class="action-buttons">
+        <button 
+          (click)="finalizarVenta()" 
+          [disabled]="loading || venta.detalles.length === 0 || venta.id_cliente === 0"
+          class="btn-primary btn-with-icon">
+          <i class="material-icons" *ngIf="!loading">check_circle</i>
+          <div class="spinner" *ngIf="loading"></div>
+          {{ loading ? 'Procesando...' : 'Finalizar Venta' }}
+        </button>
+        
+        <button (click)="limpiarVenta()" class="btn-secondary btn-with-icon">
+          <i class="material-icons">refresh</i>
+          Limpiar Todo
+        </button>
+        
+        <button (click)="router.navigate(['/ventas'])" class="btn-outline btn-with-icon">
+          <i class="material-icons">arrow_back</i>
+          Ir  al  Panel de Ventas
+        </button>
+      </div>
       
-      <div class="form-group">
-        <label>Método de Pago:</label>
-        <select [(ngModel)]="venta.id_metodo_pago" class="form-select">
-          <option *ngFor="let metodo of metodosPago" [value]="metodo.id_metodo_pago">
-            {{ metodo.metodo_pago }}
-          </option>
-        </select>
+      <div class="action-status">
+        <div class="status-item" *ngIf="venta.id_cliente === 0">
+          <i class="material-icons status-icon status-warning">warning</i>
+          <span>Seleccione un cliente</span>
+        </div>
+        <div class="status-item" *ngIf="venta.detalles.length === 0">
+          <i class="material-icons status-icon status-warning">warning</i>
+          <span>Agregue productos al carrito</span>
+        </div>
+        <div class="status-item" *ngIf="venta.id_cliente !== 0 && venta.detalles.length > 0">
+          <i class="material-icons status-icon status-success">check_circle</i>
+          <span>Listo para procesar</span>
+        </div>
       </div>
     </div>
 
-    <!-- Mensajes de Error -->
-    <div *ngIf="error" class="error-message">
-      {{ error }}
-    </div>
-
-    <!-- Botones de Acción -->
-    <div class="action-buttons">
-      <button 
-        (click)="finalizarVenta()" 
-        [disabled]="loading || venta.detalles.length === 0 || venta.id_cliente === 0"
-        class="btn-primary">
-        {{ loading ? 'Procesando...' : 'Finalizar Venta' }}
+    <!-- Mensajes de error -->
+    <div *ngIf="error" class="error-message slide-up full-width">
+      <i class="material-icons">error_outline</i>
+      <div class="error-content">
+        <h4>Error</h4>
+        <p>{{ error }}</p>
+      </div>
+      <button (click)="error = ''" class="btn-close-error">
+        <i class="material-icons">close</i>
       </button>
     </div>
+  </div>
+  
+  <!-- Footer informativo -->
+  <div class="footer-info">
+    <span>© {{ currentYear }} Sistema Agua Viña</span>
+    <span class="separator">|</span>
+    <span>Vendedor: {{ getVendedorNombre() }}</span>
+    <span class="separator">|</span>
+    <span>Última actualización: {{ lastUpdate | date:'HH:mm:ss' }}</span>
   </div>
 </div>

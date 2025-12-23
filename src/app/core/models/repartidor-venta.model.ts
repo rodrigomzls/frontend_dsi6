@@ -15,6 +15,7 @@ export interface RepartidorVenta {
     // ✅ AGREGAR ESTAS PROPIEDADES FALTANTES
   id_metodo_pago: number;  // NUEVA
   metodo_pago: string;
+   tipo_comprobante_solicitado?: string; // ← AGREGAR ESTE CAMPO
   notas?: string;
   fecha_creacion: string;
   // Nuevos campos para tracking de ruta

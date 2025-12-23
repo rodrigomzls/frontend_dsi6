@@ -234,5 +234,15 @@ export class DetalleVentaComponent implements OnInit {
     ventana?.close();
   }, 500);
 }
-
+// En detalle-venta.component.ts
+getTipoComprobanteTexto(tipo: string | undefined): string {
+  if (!tipo) return 'Sin comprobante'; // Manejar undefined/null
+  
+  switch(tipo) {
+    case 'FACTURA': return 'Factura Electrónica';
+    case 'BOLETA': return 'Boleta Electrónica';
+    case 'SIN_COMPROBANTE': return 'Nota de Venta';
+    default: return 'Sin comprobante';
+  }
+}
 }

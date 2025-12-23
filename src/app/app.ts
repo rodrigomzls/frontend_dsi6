@@ -7,6 +7,8 @@ import { AuthService } from './core/services/auth.service';
 import { Subscription } from 'rxjs';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { ResponsiveUtils } from './core/utils/responsive.utils';
+import { BreakpointService } from './core/services/breakpoint.service';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -22,9 +24,10 @@ export class App implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private breakpointService: BreakpointService
   ) {}
-
+private resizeObserver: ResizeObserver | undefined;
   ngOnInit() {
     // Suscribirse a cambios de autenticación
     this.authSubscription = this.authService.currentUser$.subscribe(user => {
@@ -39,11 +42,47 @@ export class App implements OnInit, OnDestroy {
 
     // Verificar autenticación al cargar la app
     this.authService.checkToken();
+      // Observar cambios de tamaño
+    this.setupResponsiveObservers();
+  }
+  private setupResponsiveObservers() {
+    // Detectar cambios de tamaño
+    this.resizeObserver = new ResizeObserver((entries) => {
+      entries.forEach(() => {
+        this.handleResponsiveChanges();
+      });
+    });
+    
+    this.resizeObserver.observe(document.body);
+    
+    // También escuchar orientación
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => this.handleResponsiveChanges(), 100);
+    });
+  }
+
+ private handleResponsiveChanges() {
+    const deviceType = ResponsiveUtils.getDeviceType();
+    const orientation = ResponsiveUtils.getOrientation();
+    
+    // Añadir clases al body para CSS responsive
+    document.body.classList.remove('is-mobile', 'is-tablet', 'is-desktop', 'is-landscape', 'is-portrait');
+    document.body.classList.add(`is-${deviceType}`, `is-${orientation}`);
+    
+    // Ajustar para dispositivos con notch
+    if (ResponsiveUtils.hasNotch()) {
+      document.body.classList.add('has-notch');
+    }
+    
+    // Ajustar para foldables
+    if (ResponsiveUtils.isFoldable()) {
+      document.body.classList.add('is-foldable');
+    }
   }
 
   ngOnDestroy() {
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
+      if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 

@@ -170,12 +170,12 @@
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #7f8c8d;
+  color: #1766db;
 }
 
 .empty-state i {
   margin-bottom: 20px;
-  color: #bdc3c7;
+  color: #15cfc0;
 }
 
 /* Loading y errores */

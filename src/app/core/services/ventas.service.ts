@@ -17,6 +17,11 @@ export interface Venta {
   id_vendedor?: number | null;   // ✅ Agregar | null aquí
   notas?: string;
   detalles: VentaDetalle[];
+    // ✅ NUEVAS PROPIEDADES PARA COMPROBANTES
+  tipo_comprobante?: string;
+   tipo_comprobante_solicitado?: string; // ← AGREGAR ESTE CAMPO
+  serie_comprobante?: string;
+  numero_correlativo?: number;
   
   nombre_completo?: string;
   telefono?: string;
@@ -48,12 +53,23 @@ export interface EstadoVenta {
   estado: string;
 }
 
+// ✅ INTERFAZ PARA LA RESPUESTA DEL NÚMERO DE COMPROBANTE
+export interface SiguienteNumeroResponse {
+  success: boolean;
+  tipo: string;
+  serie: string;
+  numero_secuencial: number;
+  correlativo: string;
+  serie_numero: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class VentasService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:4000/api/ventas';
+  private sunatApiUrl = 'http://localhost:4000/api/sunat'; // ✅ URL para SUNAT
 
   getVentas(): Observable<Venta[]> {
     return this.http.get<Venta[]>(this.apiUrl);
@@ -89,6 +105,17 @@ export class VentasService {
     }
     return this.http.patch(`${this.apiUrl}/${idVenta}/estado`, body);
   }
+
+// ✅ NUEVO MÉTODO: Obtener siguiente número de comprobante
+  getSiguienteNumeroComprobante(tipo: string, idCliente: number): Observable<SiguienteNumeroResponse> {
+    return this.http.post<SiguienteNumeroResponse>(`${this.sunatApiUrl}/siguiente-numero`, {
+      tipo: tipo,
+      id_cliente: idCliente
+    });
+  }
+
+
+
 
   // ✅ Estados que coinciden EXACTAMENTE con la base de datos
   getEstadosVenta(): EstadoVenta[] {

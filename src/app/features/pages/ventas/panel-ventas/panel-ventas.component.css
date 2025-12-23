@@ -1,63 +1,74 @@
 /* src/app/features/pages/ventas/panel-ventas/panel-ventas.component.css */
+/* VERSIÓN RESPONSIVE COMPLETA CON SUNAT */
+
+/* === VARIABLES RESPONSIVE === */
+:root {
+  --panel-spacing: clamp(0.5rem, 2vw, 1rem);
+  --panel-radius: clamp(6px, 2vw, 10px);
+  --panel-font-base: clamp(0.875rem, 2vw, 1rem);
+  --panel-font-heading: clamp(1rem, 3vw, 1.2rem);
+}
+
+/* === CONTENEDOR PRINCIPAL === */
 .panel-ventas-container {
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: var(--panel-spacing);
   background: #f8f9fa;
   min-height: 100vh;
 }
 
+/* === HEADER === */
 .header {
   text-align: center;
   margin-top: 10px;
   margin-bottom: 30px;
   background: white;
-  padding: 25px;
-  border-radius: 12px;
+  padding: var(--panel-spacing);
+  border-radius: var(--panel-radius);
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .header h1 {
   color: #057cbe;
   margin-bottom: 8px;
-  font-size: 2.2rem;
-  margin-bottom: 30px;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
 }
 
 .header p {
   color: #666;
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
   margin: 0;
 }
 
-/* Barra de herramientas */
+/* === TOOLBAR RESPONSIVE === */
 .toolbar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
   background: white;
-  padding: 20px;
-  border-radius: 12px;
+  padding: var(--panel-spacing);
+  border-radius: var(--panel-radius);
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 15px;
+  margin-bottom: 1rem;
 }
 
 .btn-primary {
   background: #009949;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: clamp(0.75rem, 2vw, 0.875rem) clamp(1rem, 3vw, 1.5rem);
+  border-radius: var(--panel-radius);
+  font-size: var(--panel-font-base);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  white-space: nowrap;
 }
 
 .btn-primary:hover {
@@ -68,26 +79,28 @@
 
 .filters {
   display: flex;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 0.25rem;
+  width: 100%;
 }
 
 .search-input,
 .filter-select,
 .filter-input {
-  padding: 10px 12px;
+  padding: 0.75rem;
   border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  font-size: 0.9rem;
+  border-radius: var(--panel-radius);
+  font-size: var(--panel-font-base);
   transition: all 0.3s ease;
-  min-width: 180px;
+  width: 100%;
+  min-height: 44px;
 }
 
 .search-input:focus,
@@ -98,72 +111,87 @@
   box-shadow: 0 0 0 3px rgba(0, 153, 73, 0.1);
 }
 
-/* Estadísticas */
+.btn-clear {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 0.75rem 1rem;
+  border-radius: var(--panel-radius);
+  font-size: var(--panel-font-base);
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.3s ease;
+}
+
+.btn-clear:hover {
+  background: #ff5252;
+}
+
+/* === ESTADÍSTICAS === */
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-bottom: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .stat-card {
   background: white;
-  padding: 20px;
-  border-radius: 10px;
+  padding: 1rem;
+  border-radius: var(--panel-radius);
   text-align: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   border-left: 4px solid #009949;
-  transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-3px);
 }
 
 .stat-number {
   display: block;
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: bold;
   color: #009949;
-  margin-bottom: 5px;
+  margin-bottom: 0.25rem;
 }
 
 .stat-label {
   color: #666;
-  font-size: 0.9rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.9rem);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* Tabla de ventas */
+/* === VISTA DE ESCRITORIO === */
+.ventas-desktop {
+  display: block;
+}
+
 .ventas-table-container {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--panel-radius);
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
 .ventas-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--panel-font-base);
 }
 
 .ventas-table th {
   background: #f8f9fa;
-  padding: 15px 12px;
+  padding: 1rem 0.75rem;
   text-align: left;
   font-weight: 600;
   color: #333;
   border-bottom: 2px solid #e1e5e9;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-size: 0.8rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.8rem);
 }
 
 .ventas-table td {
-  padding: 12px;
+  padding: 0.75rem;
   border-bottom: 1px solid #f1f1f1;
   vertical-align: middle;
 }
@@ -180,11 +208,17 @@
 
 .venta-cliente strong {
   color: #333;
+  font-size: var(--panel-font-base);
+}
+
+.cliente-telefono small {
+  color: #666;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
 }
 
 .venta-fecha {
   color: #666;
-  font-size: 0.85rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
 }
 
 .venta-fecha small {
@@ -194,17 +228,20 @@
 .venta-total {
   font-weight: 600;
   color: #009949;
-  font-size: 1rem;
+  font-size: var(--panel-font-base);
 }
 
-/* Estados de venta */
+/* === ESTADOS DE VENTA === */
 .estado-badge {
-  padding: 6px 12px;
+  padding: 0.375rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-block;
+  text-align: center;
+  min-width: 100px;
 }
 
 .estado-pendiente {
@@ -255,37 +292,28 @@
   border: 1px solid #d6d8db;
 }
 
-/* Selector de estado */
-.estado-select {
-  padding: 6px 10px;
-  border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  background: white;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-  min-width: 140px;
+/* === COLUMNA SUNAT === */
+.venta-sunat {
+  min-width: 120px;
 }
 
-.estado-select:focus {
-  outline: none;
-  border-color: #009949;
-}
-
-/* Botones de acción */
+/* === BOTÓN DETALLE === */
 .btn-detalle {
   background: #057cbe;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--panel-radius);
+  font-size: clamp(0.75rem, 1.5vw, 0.8rem);
   cursor: pointer;
   transition: all 0.3s ease;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.25rem;
+  min-height: 36px;
+  min-width: 60px;
+  justify-content: center;
 }
 
 .btn-detalle:hover {
@@ -293,27 +321,150 @@
   transform: translateY(-1px);
 }
 
-.btn-secondary {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  font-size: 0.9rem;
+/* === VISTA MÓVIL === */
+.ventas-mobile {
+  display: none;
 }
 
-.btn-secondary:hover {
-  background: #5a6268;
+.venta-card-mobile {
+  background: white;
+  border-radius: var(--panel-radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  border: 1px solid #e1e5e9;
 }
 
-/* Paginación */
-.pagination {
+.venta-header-mobile {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.venta-id-mobile {
+  font-weight: 600;
+  color: #057cbe;
+  font-size: var(--panel-font-base);
+}
+
+.venta-fecha-mobile {
+  color: #666;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+}
+
+.venta-cliente-mobile strong {
+  color: #333;
+  font-size: var(--panel-font-base);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.cliente-telefono-mobile {
+  color: #666;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+  margin-bottom: 0.75rem;
+}
+
+.venta-info-mobile {
+  background: #f8f9fa;
+  border-radius: var(--panel-radius);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.info-row:last-child {
+  margin-bottom: 0;
+}
+
+.info-label {
+  color: #666;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+  font-weight: 500;
+}
+
+.info-value {
+  color: #333;
+  font-size: var(--panel-font-base);
+  font-weight: 500;
+}
+
+.estado-badge-mobile {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: clamp(0.7rem, 1.5vw, 0.75rem);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.venta-actions-mobile {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.sunat-action-mobile {
+  flex: 1;
+}
+
+.btn-sunat-mobile {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+}
+
+.btn-detalle-mobile {
+  flex: 1;
+  background: #057cbe;
+  color: white;
+  border: none;
+  border-radius: var(--panel-radius);
+  padding: 0.5rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-height: 44px;
+  transition: background 0.3s ease;
+}
+
+.btn-detalle-mobile:hover {
+  background: #046ba3;
+}
+
+/* === COMPROBANTE INFO === */
+.comprobante-info {
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+.text-success {
+  color: #28a745;
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+}
+
+/* === PAGINACIÓN === */
+.pagination {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
   background: #f8f9fa;
   border-top: 1px solid #e1e5e9;
 }
@@ -322,11 +473,17 @@
   background: white;
   color: #333;
   border: 2px solid #e1e5e9;
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  border-radius: var(--panel-radius);
   cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
+  font-size: var(--panel-font-base);
+  min-height: 44px;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .page-btn:hover:not(:disabled) {
@@ -340,244 +497,198 @@
   color: #6c757d;
   cursor: not-allowed;
   border-color: #dee2e6;
+  opacity: 0.6;
 }
 
 .page-info {
   color: #666;
-  font-size: 0.9rem;
+  font-size: var(--panel-font-base);
   font-weight: 500;
+  text-align: center;
 }
 
-/* Estados de carga y mensajes */
+/* === ESTADOS DE CARGA Y MENSAJES === */
 .loading {
   text-align: center;
-  padding: 60px 20px;
+  padding: 3rem 1rem;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--panel-radius);
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .loading p {
   color: #009949;
-  font-size: 1.1rem;
+  font-size: var(--panel-font-base);
   font-weight: 500;
 }
 
 .error-message {
   background: #f8d7da;
   color: #721c24;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 1rem;
+  border-radius: var(--panel-radius);
   border: 1px solid #f5c6cb;
   text-align: center;
-  margin: 20px 0;
+  margin: 1rem 0;
   font-weight: 500;
 }
 
 .no-results,
 .no-ventas {
   text-align: center;
-  padding: 60px 20px;
+  padding: 3rem 1rem;
   background: white;
-  border-radius: 12px;
+  border-radius: var(--panel-radius);
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .no-results p,
 .no-ventas p {
   color: #666;
-  font-size: 1.1rem;
-  margin-bottom: 20px;
+  font-size: var(--panel-font-base);
+  margin-bottom: 1rem;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--panel-radius);
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-size: var(--panel-font-base);
+  min-height: 44px;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+/* === MEDIA QUERIES RESPONSIVE === */
+
+/* Tablets y pantallas medianas */
+@media (min-width: 768px) {
   .toolbar {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
   
   .filters {
-    justify-content: center;
+    flex-direction: row;
+    width: auto;
   }
   
-  .ventas-table {
-    font-size: 0.8rem;
+  .filter-group {
+    width: auto;
+    min-width: 150px;
   }
   
-  .ventas-table th,
-  .ventas-table td {
-    padding: 8px 6px;
+  .pagination {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  .page-info {
+    order: 0;
   }
 }
 
-@media (max-width: 768px) {
-  .panel-ventas-container {
-    padding: 10px;
+/* Pantallas pequeñas (móviles) */
+@media (max-width: 767px) {
+  .ventas-desktop {
+    display: none;
   }
   
-  .header {
-    padding: 20px;
-  }
-  
-  .header h1 {
-    font-size: 1.8rem;
+  .ventas-mobile {
+    display: block;
   }
   
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
-  
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .search-input,
-  .filter-select,
-  .filter-input {
-    min-width: auto;
-  }
-  
-  .ventas-table-container {
-    overflow-x: auto;
-  }
-  
-  .ventas-table {
-    min-width: 800px;
-  }
-  
-  .pagination {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-  
-  .page-info {
-    order: -1;
-  }
 }
 
+/* Dispositivos muy pequeños */
 @media (max-width: 480px) {
   .stats {
     grid-template-columns: 1fr;
   }
   
   .stat-card {
-    padding: 15px;
+    padding: 0.75rem;
   }
   
   .stat-number {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+  }
+  
+  .venta-actions-mobile {
+    flex-direction: column;
+  }
+  
+  .btn-detalle-mobile,
+  .btn-sunat-mobile {
+    width: 100%;
   }
 }
 
-/* Animaciones */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* Pantallas grandes */
+@media (min-width: 1024px) {
+  .panel-ventas-container {
+    max-width: 1400px;
+    margin: 0 auto;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .ventas-table {
+    font-size: 0.9rem;
+  }
+  
+  .ventas-table th,
+  .ventas-table td {
+    padding: 1rem;
   }
 }
 
-.venta-row {
-  animation: fadeIn 0.3s ease-out;
+/* Orientación horizontal en móviles */
+@media (orientation: landscape) and (max-height: 500px) {
+  .ventas-mobile {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .venta-card-mobile {
+    margin-bottom: 0;
+  }
 }
 
-.stat-card {
-  animation: fadeIn 0.4s ease-out;
+/* Safe areas para dispositivos con notch */
+@supports (padding: max(0px)) {
+  .panel-ventas-container {
+    padding-left: max(var(--panel-spacing), env(safe-area-inset-left));
+    padding-right: max(var(--panel-spacing), env(safe-area-inset-right));
+  }
 }
 
-/* Scrollbar personalizado para tabla */
+/* Mejora accesibilidad táctil */
+button, 
+.btn-detalle,
+.btn-detalle-mobile,
+.btn-primary,
+.btn-secondary,
+.page-btn {
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+}
+
+/* Scroll optimizado para móviles */
 .ventas-table-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.ventas-table-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+  height: 6px;
 }
 
 .ventas-table-container::-webkit-scrollbar-thumb {
   background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.ventas-table-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-/* Efectos hover mejorados */
-.filter-group label {
-  font-size: 0.8rem;
-  color: #666;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.venta-metodo {
-  color: #666;
-  font-size: 0.85rem;
-  text-transform: capitalize;
-}
-
-/* Colores para métodos de pago */
-.venta-metodo[data-metodo="Efectivo"] {
-  color: #28a745;
-}
-
-.venta-metodo[data-metodo="Yape"] {
-  color: #007bff;
-}
-
-.venta-metodo[data-metodo="Transferencia"] {
-  color: #6f42c1;
-}
-
-.venta-metodo[data-metodo="Tarjeta"] {
-  color: #fd7e14;
-}
-/* En panel-ventas.component.css */
-.filters {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.filter-select, .filter-input, .search-input {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.btn-clear {
-  background: #ff6b6b;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-clear:hover {
-  background: #ff5252;
-}
-
-/* Indicador de filtros activos */
-.filters-active {
-  border-left: 4px solid #4CAF50;
-  padding-left: 10px;
+  border-radius: 3px;
 }
