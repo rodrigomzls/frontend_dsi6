@@ -1,8 +1,6 @@
-import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -13,7 +11,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { MatChipsModule } from '@angular/material/chips';
 
 import { Cliente } from '../../../core/models/cliente.model';
 import { ClienteService } from '../../../core/services/cliente.service';
@@ -25,9 +22,7 @@ import { MapModalComponent } from '../../../components/map-modal/map-modal.compo
   selector: 'app-cliente-list',
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     MatTableModule,
-    MatPaginatorModule,
     MatSortModule,
     MatFormFieldModule,
     MatInputModule,
@@ -37,102 +32,172 @@ import { MapModalComponent } from '../../../components/map-modal/map-modal.compo
     MatProgressSpinnerModule,
     MatTooltipModule,
     MatSnackBarModule,
-    MatSelectModule,
-    MatChipsModule
+    MatSelectModule
   ],
   templateUrl: './cliente-list.component.html',
   styleUrl: './cliente-list.component.css',
 })
 export class ClienteListComponent implements OnInit {
-  pageSize = 5; // default rows to show
+  pageSize = 10;
+  currentPage = 0;
   displayedColumns: string[] = [
     'numero',
-    'nombre',
-    'tipo_documento',
-    'dni',
-    'telefono',
+    'informacion',
+    'contacto',
     'direccion',
-    'tipo_cliente',
-    'razon_social',
+    'tipo',
     'acciones'
   ];
 
-  dataSource: MatTableDataSource<any>;
+  dataSource: MatTableDataSource<Cliente> = new MatTableDataSource<Cliente>([]);
+  allClientes: Cliente[] = []; // Todos los clientes
+  filteredClientes: Cliente[] = []; // Clientes filtrados
+  paginatedClientes: Cliente[] = []; // Clientes para la página actual
   isLoading = true;
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private clienteService: ClienteService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar
-  ) {
-    this.dataSource = new MatTableDataSource<any>();
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadClientes();
-  }
-
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-    // Asegurar que el paginador inicial tenga el pageSize definido
-    try {
-      if (this.paginator) this.paginator.pageSize = this.pageSize;
-    } catch (e) { /* noop */ }
-  }
-
-  changePageSize(size: number): void {
-    this.pageSize = size;
-    if (this.paginator) {
-      this.paginator.pageSize = size;
-      this.dataSource.paginator = this.paginator;
-      try {
-        if ((this.paginator as any)._changePageSize) {
-          (this.paginator as any)._changePageSize(size);
-        } else {
-          this.paginator.firstPage();
-        }
-      } catch (e) { /* noop */ }
-    }
   }
 
   loadClientes(): void {
     this.isLoading = true;
     this.clienteService.getClientes().subscribe({
       next: (clientes) => {
-        this.dataSource.data = clientes;
-        // Asegurar pageSize actual en el paginador
-        try { if (this.paginator) this.paginator.pageSize = this.pageSize; } catch (e) { /* noop */ }
+        console.log('Clientes cargados:', clientes);
+        
+        // Guardar todos los datos
+        this.allClientes = [...clientes];
+        this.filteredClientes = [...clientes];
+        
+        // Aplicar paginación inicial
+        this.applyPagination();
+        
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading clients:', error);
+        console.error('Error cargando clientes:', error);
         this.isLoading = false;
         this.showErrorMessage('Error al cargar los clientes');
       }
     });
   }
 
-  applyFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+  // Aplicar paginación
+  applyPagination(): void {
+    const startIndex = this.currentPage * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    
+    // Obtener datos para la página actual
+    this.paginatedClientes = this.filteredClientes.slice(startIndex, endIndex);
+    
+    // Actualizar dataSource
+    this.dataSource.data = this.paginatedClientes;
+  }
 
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
+  // Cambiar tamaño de página
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 0; // Resetear a primera página
+    this.applyPagination();
+  }
+
+  // Aplicar filtro
+  applyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    
+    if (!filterValue) {
+      // Sin filtro, mostrar todos los clientes
+      this.filteredClientes = [...this.allClientes];
+    } else {
+      // Aplicar filtro
+      this.filteredClientes = this.allClientes.filter(cliente => 
+        (cliente.nombre && cliente.nombre.toLowerCase().includes(filterValue)) ||
+        (cliente.dni && cliente.dni.toLowerCase().includes(filterValue)) ||
+        (cliente.telefono && cliente.telefono.toLowerCase().includes(filterValue)) ||
+        (cliente.direccion && cliente.direccion.toLowerCase().includes(filterValue)) ||
+        (cliente.tipo_cliente && cliente.tipo_cliente.toLowerCase().includes(filterValue)) ||
+        (cliente.razon_social && cliente.razon_social.toLowerCase().includes(filterValue))
+      );
+    }
+    
+    this.currentPage = 0; // Resetear a primera página
+    this.applyPagination();
+  }
+
+  // Navegación de páginas
+  nextPage(): void {
+    if (this.hasNextPage()) {
+      this.currentPage++;
+      this.applyPagination();
     }
   }
 
+  previousPage(): void {
+    if (this.hasPreviousPage()) {
+      this.currentPage--;
+      this.applyPagination();
+    }
+  }
+
+  firstPage(): void {
+    this.currentPage = 0;
+    this.applyPagination();
+  }
+
+  lastPage(): void {
+    this.currentPage = this.getTotalPages() - 1;
+    this.applyPagination();
+  }
+
+  hasNextPage(): boolean {
+    return this.currentPage < this.getTotalPages() - 1;
+  }
+
+  hasPreviousPage(): boolean {
+    return this.currentPage > 0;
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.filteredClientes.length / this.pageSize);
+  }
+
+  // Métodos para información de paginación
+  getCurrentPageStart(): number {
+    if (this.filteredClientes.length === 0) return 0;
+    return (this.currentPage * this.pageSize) + 1;
+  }
+
+  getCurrentPageEnd(): number {
+    const start = this.currentPage * this.pageSize;
+    const end = start + this.pageSize;
+    return Math.min(end, this.filteredClientes.length);
+  }
+
+  getTotalFiltered(): number {
+    return this.filteredClientes.length;
+  }
+
+  getTotalClientes(): number {
+    return this.allClientes.length;
+  }
+
+  getPageNumber(index: number): number {
+    return (this.currentPage * this.pageSize) + index + 1;
+  }
+
+  // Métodos de diálogo
   openAddDialog(): void {
     const dialogRef = this.dialog.open(ClienteFormComponent, {
-      width: '800px', // Un poco más ancho para el formulario completo
+      width: '800px',
       maxWidth: '95vw',
-      height: 'auto',
-      maxHeight: '90vh',
       panelClass: 'cliente-form-dialog',
-    autoFocus: false
+      autoFocus: false
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -144,13 +209,11 @@ export class ClienteListComponent implements OnInit {
 
   openEditDialog(cliente: Cliente): void {
     const dialogRef = this.dialog.open(ClienteFormComponent, {
-      width: '800px', // Un poco más ancho para el formulario completo
-       maxWidth: '95vw',
-      height: 'auto',
-      maxHeight: '90vh',
+      width: '800px',
+      maxWidth: '95vw',
       panelClass: 'cliente-form-dialog',
-       data: { cliente },
-    autoFocus: false
+      data: { cliente },
+      autoFocus: false
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -176,7 +239,7 @@ export class ClienteListComponent implements OnInit {
             this.showSuccessMessage('Cliente eliminado correctamente');
           },
           error: (error) => {
-            console.error('Error deleting client:', error);
+            console.error('Error eliminando cliente:', error);
             this.showErrorMessage('Error al eliminar el cliente');
           }
         });
@@ -185,7 +248,6 @@ export class ClienteListComponent implements OnInit {
   }
 
   openMapDialog(cliente: Cliente): void {
-    // Verificar si hay dirección para geocodificar
     if (!cliente.direccion) {
       this.showErrorMessage('No hay dirección disponible para este cliente');
       return;
@@ -200,29 +262,29 @@ export class ClienteListComponent implements OnInit {
         telefono: cliente.telefono,
         tipo_cliente: cliente.tipo_cliente,
         razon_social: cliente.razon_social,
-        coordenadas: cliente['coordenadas'] // Opcional, si decides agregar este campo
+        coordenadas: cliente['coordenadas']
       }
     });
   }
 
   getTipoClienteColor(tipoCliente: string): string {
-    const colors: { [key: string]: string } = {
-      'Bodega': 'primary',
-      'Restaurante': 'accent',
-      'Gimnasio': 'warn',
-      'Persona': 'basic',
-      'Empresa': 'primary'
-    };
-    return colors[tipoCliente] || 'basic';
+    if (!tipoCliente) return 'basic';
+    const tipo = tipoCliente.toLowerCase();
+    if (tipo.includes('bodega')) return 'primary';
+    if (tipo.includes('restaurante')) return 'accent';
+    if (tipo.includes('gimnasio')) return 'warn';
+    if (tipo.includes('empresa')) return 'primary';
+    if (tipo.includes('persona')) return 'basic';
+    return 'basic';
   }
 
   getTipoDocumentoColor(tipoDocumento: string): string {
-    const colors: { [key: string]: string } = {
-      'DNI': 'primary',
-      'RUC': 'accent',
-      'CE': 'warn'
-    };
-    return colors[tipoDocumento] || 'basic';
+    if (!tipoDocumento) return 'basic';
+    const tipo = tipoDocumento.toLowerCase();
+    if (tipo.includes('dni')) return 'primary';
+    if (tipo.includes('ruc')) return 'accent';
+    if (tipo.includes('ce')) return 'warn';
+    return 'basic';
   }
 
   private showSuccessMessage(message: string): void {

@@ -1,4 +1,4 @@
-/* header.component.css - VERSIÓN CON USER-ACTIONS EN EL MENÚ */
+/* header.component.css - VERSIÓN CORREGIDA PARA ESCRITORIO */
 
 /* === VARIABLES CSS === */
 :root {
@@ -71,13 +71,23 @@
   font-size: 28px;
 }
 
-/* === NAVEGACIÓN PARA ESCRITORIO === */
+/* === NAVEGACIÓN PARA ESCRITORIO (ESTILOS BASE) === */
 .nav-links {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex: 1; /* Ocupa el espacio disponible */
+  justify-content: center; /* Centra los elementos en escritorio */
+}
+
+/* Contenedor de los items del menú */
+.nav-menu-items {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
+/* Botones en escritorio */
 .nav-links button {
   display: flex;
   align-items: center;
@@ -93,6 +103,7 @@
   white-space: nowrap;
   z-index: 1;
   position: relative;
+  transition: background-color 0.2s ease;
 }
 
 .nav-links button:hover {
@@ -103,12 +114,18 @@
   font-size: 20px;
 }
 
+/* Texto de navegación */
+.nav-text {
+  color: #333;
+}
+
 /* === ACCIONES DE USUARIO (SOLO ESCRITORIO) === */
 .user-actions.desktop-only {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   z-index: 1001;
+  margin-left: auto; /* Empuja a la derecha */
 }
 
 .user-btn {
@@ -196,7 +213,7 @@
   font-size: 22px;
 }
 
-/* === MÓVIL - MENÚ HAMBURGUESA === */
+/* === MÓVIL Y TABLET (menor o igual a 1024px) === */
 @media (max-width: 1024px) {
   .menu-toggle {
     display: flex;
@@ -209,13 +226,7 @@
     display: none !important;
   }
   
-  /* Mostrar elementos móviles */
-  .mobile-user-info,
-  .mobile-user-actions {
-    display: flex;
-  }
-  
-  /* NAV-LINKS EN MÓVIL */
+  /* Ocultar navegación en escritorio cuando es móvil */
   .nav-links {
     position: fixed;
     top: 64px;
@@ -231,19 +242,27 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     z-index: 1001;
     overflow-y: auto;
+    justify-content: flex-start; /* Alinea al inicio en móvil */
   }
   
-  /* Cuando el menú está abierto */
-  .nav-links.mobile-open {
-    right: 0;
-  }
-  
-  /* Contenedor de los items del menú */
+  /* Contenedor de los items del menú en móvil */
   .nav-menu-items {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     flex: 1;
+    width: 100%;
+  }
+  
+  /* Cuando el menú está abierto en móvil */
+  .nav-links.mobile-open {
+    right: 0;
+  }
+  
+  /* Mostrar elementos móviles cuando el menú está abierto */
+  .mobile-user-info,
+  .mobile-user-actions {
+    display: flex;
   }
   
   /* Botones del menú en móvil */
@@ -424,5 +443,60 @@
 @media (max-width: 1024px) {
   .mat-menu-panel {
     display: none !important;
+  }
+}
+
+/* Estilos para pantallas grandes (mayores a 1024px) - ESCRITORIO */
+@media (min-width: 1025px) {
+  /* Ocultar elementos móviles en escritorio */
+  .menu-toggle {
+    display: none !important;
+  }
+  
+  .mobile-user-info,
+  .mobile-user-actions,
+  .mobile-overlay {
+    display: none !important;
+  }
+  
+  /* Asegurar que la navegación sea visible en escritorio */
+  .nav-links {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important;
+    flex-direction: row !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+  
+  /* Contenedor de items en escritorio */
+  .nav-menu-items {
+    flex-direction: row !important;
+    gap: 0.5rem !important;
+  }
+  
+  /* Botones en escritorio */
+  .nav-links button {
+    background: transparent !important;
+    color: #333 !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+  }
+  
+  .nav-links button .mat-icon {
+    color: #333 !important;
+    font-size: 20px !important;
+    margin-right: 0 !important;
+  }
+  
+  .nav-text {
+    color: #333 !important;
+  }
+  
+  /* Asegurar que mat-menus funcionen en escritorio */
+  .mat-menu-panel {
+    display: block !important;
   }
 }

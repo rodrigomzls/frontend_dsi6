@@ -1,18 +1,24 @@
 <div class="confirm-dialog">
-      <h2 class="dialog-title">
-        <mat-icon class="title-icon">warning</mat-icon>
-        Confirmar Eliminación
-      </h2>
+  <!-- Título dinámico -->
+  <h2 class="dialog-title" [class]="getTitleClass()">
+    <mat-icon class="title-icon" *ngIf="data.showIcon">{{ data.icon }}</mat-icon>
+    {{ data.title }}
+  </h2>
 
-      <div class="dialog-content">
-        <p>{{ data.message }}</p>
-      </div>
+  <!-- Contenido -->
+  <div class="dialog-content" [innerHTML]="data.message"></div>
 
-      <div class="dialog-actions">
-        <button mat-button (click)="onCancel()" class="cancel-btn">Cancelar</button>
-        <button mat-raised-button color="warn" (click)="onConfirm()" class="confirm-btn">
-          <mat-icon>delete</mat-icon>
-          Eliminar
-        </button>
-      </div>
-    </div>
+  <!-- Acciones -->
+  <div class="dialog-actions">
+    <button mat-button (click)="onCancel()" class="cancel-btn">
+      {{ data.cancelText }}
+    </button>
+    <button mat-raised-button 
+            [color]="data.confirmColor" 
+            (click)="onConfirm()" 
+            class="confirm-btn">
+      <mat-icon>{{ getConfirmIcon() }}</mat-icon>
+      {{ data.confirmText }}
+    </button>
+  </div>
+</div>

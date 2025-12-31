@@ -1,85 +1,269 @@
 <!-- src/app/features/pages/ventas/panel-ventas/panel-ventas.component.html -->
 <div class="panel-ventas-container">
+  <!-- Header principal -->
   <div class="header">
     <h1>📋 Panel de Ventas</h1>
     <p>Gestiona y sigue el estado de todas las ventas</p>
   </div>
 
-  <!-- Barra de herramientas -->
+  <!-- Panel de estadísticas avanzadas (solo Admin y Vendedor) -->
+  <!-- En el lugar donde usas el componente, pasa las ventas -->
+<div *ngIf="(authService.isAdmin() || authService.isVendedor()) && mostrarEstadisticas" 
+     class="estadisticas-avanzadas">
+  
+  <!-- Componente de estadísticas CON VENTAS PASADAS -->
+  <app-estadisticas-ventas
+    [todasLasVentas]="ventas">
+  </app-estadisticas-ventas>
+    
+    <!-- Resumen diario rápido -->
+   
+  </div>
+
+  <!-- Barra de herramientas MEJORADA -->
   <div class="toolbar">
-    <button (click)="nuevaVenta()" class="btn-primary">
-      ➕ Nueva Venta
+   <!-- En panel-ventas.component.html - REEMPLAZA la sección de exportación -->
+<!-- En panel-ventas.component.html - REEMPLAZA la sección del dropdown -->
+<!-- REEMPLAZA solo la sección del dropdown dentro de toolbar-left -->
+<div class="toolbar-left">
+  <button (click)="nuevaVenta()" class="btn-primary">
+    ➕ Nueva Venta
+  </button>
+  
+  <button *ngIf="authService.hasModuleAccess('ventas_asignacion_rutas')" 
+          (click)="goToAsignacionRutas()"  
+          class="btn-primary">
+    🚚 Asignar Rutas
+  </button>
+  
+  <!-- Menú desplegable de exportación MEJORADO -->
+  <div class="export-dropdown">
+    <button class="btn-secondary dropdown-toggle" 
+            (click)="toggleExportDropdown($event)">
+      📊 Exportar Reportes
     </button>
-    <button *ngIf="authService.hasModuleAccess('ventas_asignacion_rutas')" 
-            (click)="goToAsignacionRutas()"  
-            class="btn-primary">
-      🚚 Asignar Rutas
-    </button>
-    <div class="filters">
-      <!-- Búsqueda -->
-      <div class="filter-group">
-        <input 
-          type="text" 
-          [(ngModel)]="searchTerm" 
-          (input)="aplicarFiltros()"
-          placeholder="Buscar por cliente o ID..."
-          class="search-input">
+    
+    <div class="dropdown-menu" [class.show]="showExportDropdown">
+      
+      <div class="dropdown-header">
+        <i class="fas fa-download"></i>
+        Exportar Datos
       </div>
-
-      <!-- Filtro por estado -->
-      <div class="filter-group">
-        <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()" class="filter-select">
-          <option [value]="0">Todos los estados</option>
-          <option *ngFor="let estado of estadosVenta" [value]="estado.id_estado_venta">
-            {{ estado.estado }}
-          </option>
-        </select>
+      
+      <button (click)="exportarVentas('excel')" class="dropdown-item">
+        <i class="fas fa-file-excel text-success"></i>
+        <div>
+          <strong>Excel (Recomendado)</strong>
+          <small>CSV optimizado para Excel</small>
+        </div>
+      </button>
+      
+      <button (click)="exportarVentas('csv')" class="dropdown-item">
+        <i class="fas fa-file-csv text-primary"></i>
+        <div>
+          <strong>CSV Estándar</strong>
+          <small>Para otros programas</small>
+        </div>
+      </button>
+      
+      <button (click)="exportarVentas('json')" class="dropdown-item">
+        <i class="fas fa-file-code text-warning"></i>
+        <div>
+          <strong>JSON</strong>
+          <small>Para desarrolladores</small>
+        </div>
+      </button>
+      
+      <div class="dropdown-divider"></div>
+      
+      <div class="dropdown-header">
+        <i class="fas fa-file-pdf"></i>
+        Reportes PDF
       </div>
-
-      <!-- Filtro por fecha -->
-      <div class="filter-group">
-        <input 
-          type="date" 
-          [(ngModel)]="filtroFecha" 
-          (change)="aplicarFiltros()"
-          class="filter-input">
+      
+      <button (click)="exportarVentas('pdf')" class="dropdown-item">
+        <i class="fas fa-list text-danger"></i>
+        <div>
+          <strong>Listado Completo</strong>
+          <small>Todas las ventas en tabla</small>
+        </div>
+      </button>
+      
+      <button (click)="exportarResumenEjecutivo()" class="dropdown-item">
+        <i class="fas fa-chart-line text-info"></i>
+        <div>
+          <strong>Resumen Ejecutivo</strong>
+          <small>Estadísticas y análisis</small>
+        </div>
+      </button>
+      
+      <div class="dropdown-divider"></div>
+      
+      <button (click)="mostrarOpcionesAvanzadas()" class="dropdown-item">
+        <i class="fas fa-cog"></i>
+        <div>
+          <strong>Opciones Avanzadas</strong>
+          <small>Filtros personalizados</small>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+    
+    <div class="toolbar-right">
+      <!-- Filtro por rango de fechas (avanzado) -->
+      <div class="filtro-rango" *ngIf="authService.isAdmin()">
+        <input type="date" [(ngModel)]="filtroRangoFechas.inicio" 
+               placeholder="Desde"
+               class="filtro-rango-input">
+        <span class="separador">a</span>
+        <input type="date" [(ngModel)]="filtroRangoFechas.fin" 
+               placeholder="Hasta"
+               class="filtro-rango-input">
+        <button (click)="aplicarFiltroRangoFechas()" class="btn-small">
+          Aplicar
+        </button>
       </div>
-
-      <!-- Limpiar filtros -->
-      <button (click)="limpiarFiltros()" class="btn-clear">
-        Limpiar Filtros
+      
+      <!-- Toggle estadísticas -->
+      <button (click)="mostrarEstadisticas = !mostrarEstadisticas" 
+              class="btn-toggle"
+              *ngIf="authService.isAdmin() || authService.isVendedor()">
+        <i class="fas" [ngClass]="mostrarEstadisticas ? 'fa-eye-slash' : 'fa-chart-bar'"></i>
+        {{ mostrarEstadisticas ? 'Ocultar' : 'Mostrar' }} Estadísticas
       </button>
     </div>
   </div>
 
+  <!-- Buscador y filtros - sección actualizada -->
+  <div class="filters">
+    <!-- Buscador -->
+    <div class="filter-group">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (input)="aplicarFiltros()"
+          placeholder="Buscar por cliente, ID o razón social..."
+          class="search-input">
+      </div>
+    </div>
+
+    <!-- Filtro por estado -->
+    <div class="filter-group">
+      <label class="filter-label">
+        <i class="fas fa-flag"></i> Estado:
+      </label>
+      <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()" class="filter-select">
+        <option [value]="0">Todos los estados</option>
+        <option *ngFor="let estado of estadosVenta" [value]="estado.id_estado_venta">
+          {{ estado.estado }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Filtro por fecha -->
+    <div class="filter-group">
+      <label class="filter-label">
+        <i class="fas fa-calendar"></i> Fecha:
+      </label>
+      <input 
+        type="date" 
+        [(ngModel)]="filtroFecha" 
+        (change)="aplicarFiltros()"
+        class="filter-input">
+    </div>
+
+    <!-- Limpiar filtros -->
+    <button (click)="limpiarFiltros()" class="btn-clear" *ngIf="hayFiltrosActivos()">
+      <i class="fas fa-times"></i> Limpiar
+    </button>
+  </div>
+
+  <!-- Indicadores de filtros activos -->
+  <div class="filtros-activos" *ngIf="hayFiltrosActivos()">
+    <div class="filtros-tags">
+      <span class="filtro-tag" *ngIf="filtroEstado > 0" (click)="removerFiltro('estado')">
+        <i class="fas fa-flag"></i> Estado: {{ getEstadoNombre(filtroEstado) }}
+        <i class="fas fa-times close-tag"></i>
+      </span>
+      <span class="filtro-tag" *ngIf="filtroEstadoPago" (click)="removerFiltro('estadoPago')">
+        <i class="fas fa-money-bill-wave"></i> Pago: {{ getNombreEstadoPago(filtroEstadoPago) }}
+        <i class="fas fa-times close-tag"></i>
+      </span>
+      <span class="filtro-tag" *ngIf="filtroFecha" (click)="removerFiltro('fecha')">
+        <i class="fas fa-calendar"></i> Fecha: {{ formatearFechaTabla(filtroFecha) }}
+        <i class="fas fa-times close-tag"></i>
+      </span>
+      <span class="filtro-tag" *ngIf="searchTerm" (click)="removerFiltro('busqueda')">
+        <i class="fas fa-search"></i> Buscando: "{{ searchTerm }}"
+        <i class="fas fa-times close-tag"></i>
+      </span>
+    </div>
+    <!-- Agregar en la sección de filtros activos -->
+<span class="filtro-tag" *ngIf="filtroRangoFechas.inicio && filtroRangoFechas.fin" 
+      (click)="removerFiltro('rango')">
+  <i class="fas fa-calendar-alt"></i> 
+  Rango: {{ formatearFechaTabla(filtroRangoFechas.inicio) }} - {{ formatearFechaTabla(filtroRangoFechas.fin) }}
+  <i class="fas fa-times close-tag"></i>
+</span>
+  </div>
+
   <!-- Estadísticas rápidas -->
-  <div class="stats" *ngIf="ventas.length > 0">
+  <div class="stats" *ngIf="ventas.length > 0 && !loading">
     <div class="stat-card">
       <span class="stat-number">{{ ventas.length }}</span>
       <span class="stat-label">Total Ventas</span>
+      <small>Registradas en el sistema</small>
     </div>
     <div class="stat-card">
       <span class="stat-number">{{ ventasFiltradas.length }}</span>
       <span class="stat-label">Filtradas</span>
+      <small>Con los filtros aplicados</small>
     </div>
     <div class="stat-card">
-      <span class="stat-number">{{ ventasPendientes }}</span>
-      <span class="stat-label">Pendientes</span>
+      <span class="stat-number">{{ getVentasPagadas() }}</span>
+      <span class="stat-label">Pagadas</span>
+      <small>Completadas</small>
     </div>
   </div>
 
   <!-- Loading -->
   <div *ngIf="loading" class="loading">
-    <p>🔄 Cargando ventas...</p>
+    <div class="spinner-large"></div>
+    <p>Cargando ventas...</p>
+    <small>Por favor, espera un momento</small>
   </div>
 
   <!-- Error -->
   <div *ngIf="error && !loading" class="error-message">
-    {{ error }}
+    <div class="error-content">
+      <i class="fas fa-exclamation-triangle fa-2x"></i>
+      <div>
+        <h4>Error al cargar las ventas</h4>
+        <p>{{ error }}</p>
+        <button (click)="cargarVentas()" class="btn-reintentar">
+          <i class="fas fa-redo"></i> Reintentar
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Tabla de ventas - VERSIÓN RESPONSIVE COMPLETA -->
   <div *ngIf="!loading && ventasFiltradas.length > 0" class="ventas-table-container">
+    <!-- Información de resultados -->
+    <div class="resultados-info">
+      <span class="badge-info">
+        <i class="fas fa-list"></i>
+        Mostrando {{ ventasPaginadas.length }} de {{ ventasFiltradas.length }} ventas
+      </span>
+      <span class="badge-success" *ngIf="getTotalVentasPagadasFiltradas() > 0">
+        <i class="fas fa-money-bill-wave"></i>
+        Total filtrado: S/ {{ getTotalVentasPagadasFiltradas().toFixed(2) }}
+      </span>
+    </div>
+
     <!-- Vista de escritorio -->
     <div class="ventas-desktop">
       <table class="ventas-table">
@@ -97,47 +281,96 @@
         </thead>
         <tbody>
           <tr *ngFor="let venta of ventasPaginadas" class="venta-row">
-            <td class="venta-id">#{{ venta.id_venta }}</td>
-            <td class="venta-cliente">
-              <strong>{{ venta.nombre_completo || 'Cliente' }}</strong>
-              <div *ngIf="venta.telefono" class="cliente-telefono">
-                <small>📞 {{ venta.telefono }}</small>
-              </div>
-            </td>
-            <td class="venta-fecha">
-              {{ formatearFechaTabla(venta.fecha) }}<br>
-              <small>{{ formatearHoraTabla(venta.hora) }}</small>
-            </td>
-            <td class="venta-total">S/ {{ venta.total }}</td>
-            <td class="venta-estado">
-              <span [class]="'estado-badge ' + getEstadoClass(venta.estado || '')">
-                {{ venta.estado }}
-              </span>
-            </td>
-            <td class="venta-metodo">{{ venta.metodo_pago }}</td>
-            <td class="venta-sunat">
-              <app-emitir-comprobante
-                [idVenta]="venta.id_venta!"
-                [estadoVenta]="venta.id_estado_venta"
-                [comprobanteEmitido]="venta.comprobante_emitido || 0"
-                [tipoComprobanteSolicitado]="venta.tipo_comprobante_solicitado || 'SIN_COMPROBANTE'"
-                (comprobanteEmitidoEvent)="onComprobanteEmitido($event)"
-                size="small">
-              </app-emitir-comprobante>
-              
-              <!-- Mostrar si ya tiene comprobante -->
-              <div *ngIf="venta.comprobante_emitido === 1" class="comprobante-info">
-                <small class="text-success">
-                  <i class="fas fa-check-circle"></i> Emitido
+            <td class="venta-id">
+              <div class="venta-id-content">
+                <strong>#{{ venta.id_venta }}</strong>
+                <small *ngIf="venta.vendedor" class="vendedor-info">
+                  <i class="fas fa-user-tag"></i> {{ venta.vendedor }}
                 </small>
               </div>
             </td>
-            <td class="venta-detalle">
-              <button 
-                (click)="verDetalleVenta(venta.id_venta!)"
-                class="btn-detalle">
-                Ver
-              </button>
+            <td class="venta-cliente">
+              <div class="cliente-info">
+                <strong>{{ venta.nombre_completo || 'Cliente' }}</strong>
+                <div *ngIf="venta.razon_social" class="razon-social">
+                  <small>{{ venta.razon_social }}</small>
+                </div>
+                <div *ngIf="venta.telefono" class="cliente-telefono">
+                  <small><i class="fas fa-phone"></i> {{ venta.telefono }}</small>
+                </div>
+                <div *ngIf="venta.repartidor" class="repartidor-info">
+                  <small><i class="fas fa-motorcycle"></i> {{ venta.repartidor }}</small>
+                </div>
+              </div>
+            </td>
+            <td class="venta-fecha">
+              <div class="fecha-info">
+                <strong>{{ formatearFechaTabla(venta.fecha) }}</strong>
+                <small>{{ formatearHoraTabla(venta.hora) }}</small>
+                <small *ngIf="venta.fecha_creacion" class="creacion-info">
+                  Creada: {{ formatearFechaHoraCorta(venta.fecha_creacion) }}
+                </small>
+              </div>
+            </td>
+            <td class="venta-total">
+              <div class="total-info">
+                <strong>S/ {{ venta.total }}</strong>
+                <small *ngIf="venta.detalles?.length" class="detalles-count">
+                  {{ venta.detalles.length }} productos
+                </small>
+              </div>
+            </td>
+            <td class="venta-estado">
+              <div class="estado-container">
+                <span [class]="'estado-badge ' + getEstadoClass(venta.estado || '')">
+                  {{ venta.estado }}
+                </span>
+                
+              </div>
+            </td>
+            <td class="venta-metodo">
+              <div class="metodo-info">
+                <span class="metodo-icon" [ngClass]="'metodo-' + venta.id_metodo_pago">
+                  <i [ngClass]="getMetodoPagoIcon(venta.id_metodo_pago)"></i>
+                </span>
+                <span>{{ venta.metodo_pago }}</span>
+              </div>
+            </td>
+            <td class="venta-sunat">
+              <div class="sunat-container">
+                <!-- Componente SUNAT -->
+                <app-emitir-comprobante
+                  [idVenta]="venta.id_venta!"
+                  [estadoVenta]="venta.id_estado_venta"
+                  [comprobanteEmitido]="venta.comprobante_emitido || 0"
+                  [tipoComprobanteSolicitado]="venta.tipo_comprobante_solicitado || 'SIN_COMPROBANTE'"
+                  (comprobanteEmitidoEvent)="onComprobanteEmitido($event)"
+                  size="small"
+                  class="comprobante-btn">
+                </app-emitir-comprobante>
+                
+                <!-- Estado del comprobante -->
+                <div *ngIf="venta.comprobante_emitido === 1" class="comprobante-info">
+                  <small class="text-success">
+                    <i class="fas fa-check-circle"></i> Emitido
+                  </small>
+                  <small *ngIf="venta.tipo_comprobante_solicitado && venta.tipo_comprobante_solicitado !== 'SIN_COMPROBANTE'"
+                         class="tipo-comprobante">
+                    {{ venta.tipo_comprobante_solicitado }}
+                  </small>
+                </div>
+              </div>
+            </td>
+            <td class="venta-acciones">
+              <div class="acciones-container">
+                <!-- Botón ver detalles -->
+                <button 
+                  (click)="verDetalleVenta(venta.id_venta!)"
+                  class="btn-detalle"
+                  title="Ver detalles">
+                  <i class="fas fa-eye"></i> Ver
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -148,7 +381,10 @@
     <div class="ventas-mobile">
       <div *ngFor="let venta of ventasPaginadas" class="venta-card-mobile">
         <div class="venta-header-mobile">
-          <div class="venta-id-mobile">#{{ venta.id_venta }}</div>
+          <div class="venta-id-mobile">
+            <strong>#{{ venta.id_venta }}</strong>
+            <small *ngIf="venta.vendedor">{{ venta.vendedor }}</small>
+          </div>
           <div class="venta-fecha-mobile">
             {{ formatearFechaTabla(venta.fecha) }} {{ formatearHoraTabla(venta.hora) }}
           </div>
@@ -157,15 +393,21 @@
         <div class="venta-content-mobile">
           <div class="venta-cliente-mobile">
             <strong>{{ venta.nombre_completo || 'Cliente' }}</strong>
+            <div *ngIf="venta.razon_social" class="razon-social-mobile">
+              {{ venta.razon_social }}
+            </div>
             <div *ngIf="venta.telefono" class="cliente-telefono-mobile">
-              📞 {{ venta.telefono }}
+              <i class="fas fa-phone"></i> {{ venta.telefono }}
+            </div>
+            <div *ngIf="venta.repartidor" class="repartidor-info-mobile">
+              <i class="fas fa-motorcycle"></i> {{ venta.repartidor }}
             </div>
           </div>
           
           <div class="venta-info-mobile">
             <div class="info-row">
               <span class="info-label">Total:</span>
-              <span class="info-value">S/ {{ venta.total }}</span>
+              <span class="info-value total-mobile">S/ {{ venta.total }}</span>
             </div>
             <div class="info-row">
               <span class="info-label">Estado:</span>
@@ -175,7 +417,16 @@
             </div>
             <div class="info-row">
               <span class="info-label">Método:</span>
-              <span class="info-value">{{ venta.metodo_pago }}</span>
+              <span class="info-value">
+                <i [ngClass]="getMetodoPagoIcon(venta.id_metodo_pago)"></i>
+                {{ venta.metodo_pago }}
+              </span>
+            </div>
+            <div class="info-row" *ngIf="venta.comprobante_emitido === 1">
+              <span class="info-label">Comprobante:</span>
+              <span class="text-success">
+                <i class="fas fa-check-circle"></i> Emitido
+              </span>
             </div>
           </div>
           
@@ -190,7 +441,7 @@
                 (comprobanteEmitidoEvent)="onComprobanteEmitido($event)"
                 size="small"
                 btnClass="btn-sunat-mobile"
-                btnText="">
+                btnText="SUNAT">
               </app-emitir-comprobante>
             </div>
             
@@ -200,6 +451,13 @@
               class="btn-detalle-mobile">
               <i class="fas fa-eye"></i> Detalles
             </button>
+            
+            <!-- Cambiar estado (solo Admin y Vendedor) -->
+            <button *ngIf="authService.isAdmin() || authService.isVendedor()"
+                    class="btn-estado-mobile"
+                    (click)="mostrarSelectorEstado(venta)">
+              <i class="fas fa-exchange-alt"></i> Estado
+            </button>
           </div>
         </div>
       </div>
@@ -207,40 +465,70 @@
 
     <!-- Paginación -->
     <div class="pagination" *ngIf="totalPages > 1">
-      <button 
-        (click)="cambiarPagina(currentPage - 1)" 
-        [disabled]="currentPage === 1"
-        class="page-btn">
-        ◀️ Anterior
-      </button>
+      <div class="pagination-info">
+        <span>Página {{ currentPage }} de {{ totalPages }}</span>
+        <small>({{ totalItems }} ventas en total)</small>
+      </div>
       
-      <span class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
-        ({{ totalItems }} ventas)
-      </span>
+      <div class="pagination-controls">
+        <button 
+          (click)="cambiarPagina(currentPage - 1)" 
+          [disabled]="currentPage === 1"
+          class="page-btn prev-btn">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        
+        <div class="page-numbers">
+          <button *ngFor="let page of paginas" 
+                  (click)="cambiarPagina(page)"
+                  [class.active]="page === currentPage"
+                  class="page-number">
+            {{ page }}
+          </button>
+        </div>
+        
+        <button 
+          (click)="cambiarPagina(currentPage + 1)" 
+          [disabled]="currentPage === totalPages"
+          class="page-btn next-btn">
+          Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
       
-      <button 
-        (click)="cambiarPagina(currentPage + 1)" 
-        [disabled]="currentPage === totalPages"
-        class="page-btn">
-        Siguiente ▶️
-      </button>
+      <div class="items-per-page">
+        <label>Mostrar:</label>
+        <select [(ngModel)]="itemsPerPage" (change)="cambiarItemsPorPagina()" class="items-select">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+        <span>por página</span>
+      </div>
     </div>
   </div>
 
   <!-- Sin resultados -->
   <div *ngIf="!loading && ventasFiltradas.length === 0 && ventas.length > 0" class="no-results">
-    <p>😔 No se encontraron ventas con los filtros aplicados</p>
-    <button (click)="limpiarFiltros()" class="btn-secondary">
-      Limpiar filtros
-    </button>
+    <div class="no-results-content">
+      <i class="fas fa-search fa-3x"></i>
+      <h3>No se encontraron ventas</h3>
+      <p>No hay ventas que coincidan con los filtros aplicados.</p>
+      <button (click)="limpiarFiltros()" class="btn-primary">
+        <i class="fas fa-times"></i> Limpiar todos los filtros
+      </button>
+    </div>
   </div>
 
   <!-- Sin ventas -->
   <div *ngIf="!loading && ventas.length === 0" class="no-ventas">
-    <p>📭 No hay ventas registradas aún</p>
-    <button (click)="nuevaVenta()" class="btn-primary">
-      ➕ Crear primera venta
-    </button>
+    <div class="no-ventas-content">
+      <i class="fas fa-shopping-cart fa-3x"></i>
+      <h3>No hay ventas registradas aún</h3>
+      <p>Comienza creando tu primera venta.</p>
+      <button (click)="nuevaVenta()" class="btn-primary">
+        <i class="fas fa-plus"></i> Crear primera venta
+      </button>
+    </div>
   </div>
 </div>

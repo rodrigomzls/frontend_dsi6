@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -38,12 +38,13 @@ import { ConfirmDialogComponent } from '../../../components/confirm-dialog/confi
   styleUrls: ['./repartidor-list.component.css']
 })
 export class RepartidorListComponent implements OnInit {
-  displayedColumns: string[] = ['nombre', 'telefono', 'numero_documento', 'placa_furgon', 'activo', 'fecha_contratacion', 'fecha_creacion', 'acciones'];
+  displayedColumns: string[] = ['nombre', 'contacto', 'vehiculo', 'estado', 'fecha_registro', 'acciones'];
   dataSource: MatTableDataSource<Repartidor> = new MatTableDataSource<Repartidor>([]);
   isLoading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild('tableWrapper') tableWrapper!: ElementRef;
 
   constructor(
     private repartidorService: RepartidorService,
@@ -114,7 +115,7 @@ export class RepartidorListComponent implements OnInit {
       }
       
       // Buscar en estado activo
-      if ((data.activo ? 'sí' : 'no').includes(searchTerm)) {
+      if ((data.activo ? 'activo' : 'inactivo').includes(searchTerm)) {
         return true;
       }
       
@@ -135,7 +136,8 @@ export class RepartidorListComponent implements OnInit {
   openAddDialog(): void {
     const dialogRef = this.dialog.open(RepartidorFormComponent, {
       width: '600px',
-      maxHeight: '90vh'
+      maxHeight: '90vh',
+      panelClass: 'repartidor-form-dialog'
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -147,6 +149,7 @@ export class RepartidorListComponent implements OnInit {
     const dialogRef = this.dialog.open(RepartidorFormComponent, {
       width: '600px',
       maxHeight: '90vh',
+      panelClass: 'repartidor-form-dialog',
       data: { repartidor }
     });
 
@@ -175,11 +178,18 @@ export class RepartidorListComponent implements OnInit {
   deleteRepartidor(repartidor: Repartidor): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
-      data: { message: `¿Eliminar a ${repartidor.persona?.nombre_completo || 'este repartidor'}?` }
+      panelClass: 'confirm-dialog',
+      data: { 
+        title: 'Confirmar eliminación',
+        message: `¿Estás seguro de eliminar al repartidor <strong>${repartidor.persona?.nombre_completo || 'este repartidor'}</strong>?`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.isLoading = true;
         this.repartidorService.deleteRepartidor(repartidor.id_repartidor).subscribe({
           next: () => {
             this.showSuccessMessage('Repartidor eliminado correctamente');
@@ -187,6 +197,7 @@ export class RepartidorListComponent implements OnInit {
           },
           error: (err) => {
             console.error('Error eliminando repartidor:', err);
+            this.isLoading = false;
             this.showErrorMessage(err?.error?.message || 'Error al eliminar repartidor');
           }
         });
@@ -194,12 +205,30 @@ export class RepartidorListComponent implements OnInit {
     });
   }
 
-  private showSuccessMessage(msg: string) {
-    this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['success-snackbar'], horizontalPosition: 'right', verticalPosition: 'top' });
-  }
-
-  private showErrorMessage(msg: string) {
-    this.snackBar.open(msg, 'Cerrar', { duration: 5000, panelClass: ['error-snackbar'], horizontalPosition: 'right', verticalPosition: 'top' });
+  // NUEVO: Calcular antigüedad del repartidor
+  calcularAntiguedad(fechaCreacion: any): string {
+    if (!fechaCreacion) return '';
+    
+    const fecha = new Date(fechaCreacion);
+    if (isNaN(fecha.getTime())) return '';
+    
+    const hoy = new Date();
+    const diffMs = hoy.getTime() - fecha.getTime();
+    const diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDias < 30) {
+      return `${diffDias} días`;
+    } else if (diffDias < 365) {
+      const meses = Math.floor(diffDias / 30);
+      return `${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+    } else {
+      const años = Math.floor(diffDias / 365);
+      const mesesRestantes = Math.floor((diffDias % 365) / 30);
+      if (mesesRestantes > 0) {
+        return `${años} ${años === 1 ? 'año' : 'años'} y ${mesesRestantes} meses`;
+      }
+      return `${años} ${años === 1 ? 'año' : 'años'}`;
+    }
   }
 
   // Formatea fechas recibidas como ISO timestamp o como DATE string (YYYY-MM-DD)
@@ -216,6 +245,28 @@ export class RepartidorListComponent implements OnInit {
     // Si es Date u otro tipo, intentar crear Date y formatear
     const d = new Date(value);
     if (isNaN(d.getTime())) return '';
-    return d.toISOString().split('T')[0];
+    return d.toLocaleDateString('es-PE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  private showSuccessMessage(msg: string) {
+    this.snackBar.open(msg, 'Cerrar', { 
+      duration: 3000, 
+      panelClass: ['success-snackbar'], 
+      horizontalPosition: 'right', 
+      verticalPosition: 'top' 
+    });
+  }
+
+  private showErrorMessage(msg: string) {
+    this.snackBar.open(msg, 'Cerrar', { 
+      duration: 5000, 
+      panelClass: ['error-snackbar'], 
+      horizontalPosition: 'right', 
+      verticalPosition: 'top' 
+    });
   }
 }

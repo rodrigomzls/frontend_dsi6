@@ -1,10 +1,10 @@
 // src/app/core/services/ventas.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-// ✅ SOLO UNA definición de interfaces
-// En ventas.service.ts - CORREGIDO
+// ✅ Interfaces
 export interface Venta {
   id_venta?: number;
   id_cliente: number;
@@ -13,16 +13,14 @@ export interface Venta {
   total: number;
   id_metodo_pago: number;
   id_estado_venta: number;
-  id_repartidor?: number | null; // ✅ Ya permite null
-  id_vendedor?: number | null;   // ✅ Agregar | null aquí
+  id_repartidor?: number | null;
+  id_vendedor?: number | null;
   notas?: string;
   detalles: VentaDetalle[];
-    // ✅ NUEVAS PROPIEDADES PARA COMPROBANTES
   tipo_comprobante?: string;
-   tipo_comprobante_solicitado?: string; // ← AGREGAR ESTE CAMPO
+  tipo_comprobante_solicitado?: string;
   serie_comprobante?: string;
   numero_correlativo?: number;
-  
   nombre_completo?: string;
   telefono?: string;
   direccion?: string;
@@ -30,14 +28,12 @@ export interface Venta {
   metodo_pago?: string;
   vendedor?: string;
   repartidor?: string;
-
-  // ✅ AGREGAR estas propiedades que vienen de la base de datos
   fecha_creacion?: string;
   fecha_actualizacion?: string;
   razon_social?: string;
   coordenadas?: string;
   placa_furgon?: string;
-  comprobante_emitido?: number; // ✅ AGREGAR ESTE CAMPO
+  comprobante_emitido?: number;
 }
 
 export interface VentaDetalle {
@@ -53,7 +49,6 @@ export interface EstadoVenta {
   estado: string;
 }
 
-// ✅ INTERFAZ PARA LA RESPUESTA DEL NÚMERO DE COMPROBANTE
 export interface SiguienteNumeroResponse {
   success: boolean;
   tipo: string;
@@ -63,14 +58,34 @@ export interface SiguienteNumeroResponse {
   serie_numero: string;
 }
 
+export interface EstadisticasVentas {
+  totalHoy: number;
+  totalMes: number;
+  totalGeneral: number;
+  ventasHoy: number;
+  ventasMes: number;
+  promedioTicket: number;
+  ventasPorMetodoPago: {
+    metodo: string;
+    cantidad: number;
+    total: number;
+  }[];
+  ventasPorDia: {
+    fecha: string;
+    cantidad: number;
+    total: number;
+  }[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class VentasService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:4000/api/ventas';
-  private sunatApiUrl = 'http://localhost:4000/api/sunat'; // ✅ URL para SUNAT
+  private sunatApiUrl = 'http://localhost:4000/api/sunat';
 
+  // ✅ MÉTODOS BÁSICOS
   getVentas(): Observable<Venta[]> {
     return this.http.get<Venta[]>(this.apiUrl);
   }
@@ -94,7 +109,7 @@ export class VentasService {
   asignarRepartidor(idVenta: number, idRepartidor: number): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${idVenta}/asignar-repartidor`, {
       id_repartidor: idRepartidor,
-      id_estado_venta: 5 // En ruta
+      id_estado_venta: 5
     });
   }
 
@@ -106,7 +121,6 @@ export class VentasService {
     return this.http.patch(`${this.apiUrl}/${idVenta}/estado`, body);
   }
 
-// ✅ NUEVO MÉTODO: Obtener siguiente número de comprobante
   getSiguienteNumeroComprobante(tipo: string, idCliente: number): Observable<SiguienteNumeroResponse> {
     return this.http.post<SiguienteNumeroResponse>(`${this.sunatApiUrl}/siguiente-numero`, {
       tipo: tipo,
@@ -114,14 +128,55 @@ export class VentasService {
     });
   }
 
+  // ✅ MÉTODOS DE ESTADÍSTICAS - CORREGIDOS
+  getEstadisticasVentas(): Observable<EstadisticasVentas> {
+    // ✅ URL CORRECTA: /api/ventas/estadisticas/ventas
+    return this.http.get<EstadisticasVentas>(`${this.apiUrl}/estadisticas/ventas`).pipe(
+      catchError(error => {
+        console.error('Error en getEstadisticasVentas:', error);
+        // Retornar estadísticas vacías en caso de error
+        return of(this.getEstadisticasVacio());
+      })
+    );
+  }
 
+  getTotalPagosPorDia(fecha: string): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/total-pagos-dia/${fecha}`).pipe(
+      catchError(error => {
+        console.error('Error en getTotalPagosPorDia:', error);
+        return of(0);
+      })
+    );
+  }
 
+  getResumenVentasPorMetodoPago(fechaInicio: string, fechaFin: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/resumen-metodos-pago`, {
+      params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin }
+    }).pipe(
+      catchError(error => {
+        console.error('Error en getResumenVentasPorMetodoPago:', error);
+        return of([]);
+      })
+    );
+  }
 
-  // ✅ Estados que coinciden EXACTAMENTE con la base de datos
+  // ✅ MÉTODO AUXILIAR PARA ESTADÍSTICAS VACÍAS
+  private getEstadisticasVacio(): EstadisticasVentas {
+    return {
+      totalHoy: 0,
+      totalMes: 0,
+      totalGeneral: 0,
+      ventasHoy: 0,
+      ventasMes: 0,
+      promedioTicket: 0,
+      ventasPorMetodoPago: [],
+      ventasPorDia: []
+    };
+  }
+
+  // ✅ DATOS ESTÁTICOS
   getEstadosVenta(): EstadoVenta[] {
     return [
-      //**{ id_estado_venta: 1, estado: 'Pendiente' },  { id_estado_venta: 4, estado: 'Listo para repartos' }, 
-    // ✅ Con "s" **//
       { id_estado_venta: 5, estado: 'En ruta' },
       { id_estado_venta: 7, estado: 'Pagado' },
       { id_estado_venta: 8, estado: 'Cancelado' }

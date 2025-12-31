@@ -5,7 +5,7 @@
     <p>Revisa tu historial de entregas completadas</p>
   </div>
 
-  <!-- Estadísticas -->
+  <!-- Estadísticas MEJORADAS -->
   <div class="stats-grid" *ngIf="!loading && historial.length > 0">
     <div class="stat-card">
       <div class="stat-icon success">
@@ -14,6 +14,7 @@
       <div class="stat-info">
         <h3>{{ getTotalEntregas() }}</h3>
         <p>Entregas Completadas</p>
+        <small class="stat-subtitle">Total de entregas pagadas</small>
       </div>
     </div>
     
@@ -24,20 +25,181 @@
       <div class="stat-info">
         <h3>{{ getTotalCanceladas() }}</h3>
         <p>Entregas Canceladas</p>
+        <small class="stat-subtitle">Total de entregas canceladas</small>
       </div>
     </div>
     
-    <div class="stat-card">
-      <div class="stat-icon primary">
-        <i class="fas fa-money-bill-wave"></i>
+    <!-- En el HTML, cambia las referencias: -->
+<div class="stat-card">
+  <div class="stat-icon primary">
+    <i class="fas fa-money-bill-wave"></i>
+  </div>
+  <div class="stat-info">
+    <h3>S/ {{ totalIngresosFixed }}</h3> <!-- Cambiado aquí -->
+    <p>💰 Dinero por Entregar</p>
+    <small class="stat-subtitle">Recaudado hoy - Pendiente de entrega</small>
+  </div>
+</div>
+
+<div class="stat-card">
+  <div class="stat-icon info">
+    <i class="fas fa-hand-holding-usd"></i>
+  </div>
+  <div class="stat-info">
+    <h3>S/ {{ totalEntregadoAlAdminFixed }}</h3> <!-- Cambiado aquí -->
+    <p>✅ Dinero Entregado</p>
+    <small class="stat-subtitle">Total entregado al administrador</small>
+  </div>
+</div>
+  </div>
+
+<div class="info-panel" *ngIf="!loading && historial.length > 0 && getTotalIngresos() > 0">
+  <div class="info-content">
+    <i class="fas fa-info-circle"></i>
+    <div class="info-text">
+      <h4>📋 Control de Dinero del Día</h4>
+      <p>
+        <strong>S/ {{ getTotalIngresos().toFixed(2) }}</strong> es el dinero que has <strong>recaudado HOY</strong> 
+        ({{ getCantidadVentasHoy() }} ventas) y que <strong>aún no has entregado al administrador</strong>.
+      </p>
+      <p class="info-note" *ngIf="hayDineroPendienteDeDiasAnteriores()">
+        ⚠️ <strong>Nota importante:</strong> También hay dinero pendiente de entregar de días anteriores. 
+        Consulta con el administrador para regularizar estas entregas.
+      </p>
+      <p class="info-instruction">
+        <i class="fas fa-lightbulb"></i> 
+        <strong>Procedimiento correcto:</strong> Al finalizar tu jornada, entrega TODO el dinero recaudado hoy 
+        (en efectivo, transferencia o Yape) al administrador.
+      </p>
+    </div>
+    <div class="info-actions">
+      <button class="btn btn-success btn-sm" (click)="registrarEntregaDinero()" 
+              [disabled]="getTotalIngresos() <= 0">
+        <i class="fas fa-hand-holding-usd"></i> Entregar Dinero de HOY
+      </button>
+      <button class="btn btn-outline btn-sm" (click)="verHistorialEntregasDinero()">
+        <i class="fas fa-history"></i> Ver Historial Completo
+      </button>
+    </div>
+  </div>
+</div>
+
+  <!-- BUSCADOR Y FILTROS MEJORADOS -->
+  <div class="filtros-avanzados" *ngIf="!loading && historial.length > 0">
+    <div class="filtros-header">
+      <h3><i class="fas fa-filter"></i> Filtros de Búsqueda</h3>
+      <p class="filtros-subtitle">Busca y filtra tus entregas según diferentes criterios</p>
+    </div>
+    
+    <div class="filtros-row">
+      <!-- Buscador por nombre -->
+      <div class="filtro-item">
+        <label for="buscador">
+          <i class="fas fa-search"></i> Buscar cliente:
+        </label>
+        <div class="search-container">
+          <input 
+            type="text" 
+            id="buscador" 
+            placeholder="Nombre del cliente, razón social..." 
+            [(ngModel)]="terminoBusqueda"
+            (input)="aplicarFiltros()">
+          <i class="fas fa-user search-icon"></i>
+        </div>
       </div>
-      <div class="stat-info">
-        <h3>S/ {{ getTotalIngresos().toFixed(2) }}</h3>
-        <p>Total Entregado</p>
+      
+      <!-- Filtro por fecha -->
+      <div class="filtro-item">
+        <label for="fecha">
+          <i class="fas fa-calendar"></i> Fecha:
+        </label>
+        <div class="date-container">
+          <input 
+            type="date" 
+            id="fecha" 
+            [(ngModel)]="filtroFecha"
+            (change)="aplicarFiltros()">
+        </div>
+      </div>
+      
+      <!-- Filtro por método de pago -->
+      <div class="filtro-item">
+        <label for="metodoPago">
+          <i class="fas fa-credit-card"></i> Método de pago:
+        </label>
+        <select 
+          id="metodoPago" 
+          [(ngModel)]="filtroMetodoPago"
+          (change)="aplicarFiltros()"
+          class="select-metodo">
+          <option value="todos">Todos los métodos</option>
+          <option value="1">💵 Efectivo</option>
+          <option value="2">📱 Yape</option>
+          <option value="3">🏦 Transferencia</option>
+          <option value="4">💳 Tarjeta</option>
+        </select>
+      </div>
+      
+      <!-- Filtro por estado -->
+      <div class="filtro-item">
+        <label for="estado">
+          <i class="fas fa-flag"></i> Estado:
+        </label>
+        <select 
+          id="estado" 
+          [(ngModel)]="filtroEstado"
+          (change)="aplicarFiltros()"
+          class="select-estado">
+          <option value="todos">Todos los estados</option>
+          <option value="Pagado">✅ Pagado</option>
+          <option value="Cancelado">❌ Cancelado</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Controles de filtros -->
+    <div class="filtros-controls">
+      <!-- Botón para limpiar filtros -->
+      <button class="btn btn-secondary btn-sm" (click)="limpiarFiltros()" *ngIf="hayFiltrosActivos()">
+        <i class="fas fa-times"></i> Limpiar filtros
+      </button>
+      
+      <!-- Contador de resultados -->
+      <div class="resultados-contador">
+        <span class="badge badge-info">
+          <i class="fas fa-list"></i>
+          {{ historialFiltrado.length }} de {{ historial.length }} resultados
+        </span>
+      </div>
+    </div>
+    
+    <!-- Indicadores de filtros activos -->
+    <div class="filtros-activos" *ngIf="hayFiltrosActivos()">
+      <div class="filtros-activos-header">
+        <small><i class="fas fa-filter"></i> Filtros aplicados:</small>
+      </div>
+      <div class="filtros-tags">
+        <span class="filtro-tag" *ngIf="terminoBusqueda" (click)="removerFiltro('busqueda')">
+          <i class="fas fa-user"></i> Cliente: "{{ terminoBusqueda }}"
+          <i class="fas fa-times close-tag"></i>
+        </span>
+        <span class="filtro-tag" *ngIf="filtroFecha" (click)="removerFiltro('fecha')">
+          <i class="fas fa-calendar"></i> Fecha: {{ formatearFecha(filtroFecha) }}
+          <i class="fas fa-times close-tag"></i>
+        </span>
+        <span class="filtro-tag" *ngIf="filtroMetodoPago !== 'todos'" (click)="removerFiltro('metodoPago')">
+          <i class="fas fa-credit-card"></i> Pago: {{ obtenerNombreMetodoPago(filtroMetodoPago) }}
+          <i class="fas fa-times close-tag"></i>
+        </span>
+        <span class="filtro-tag" *ngIf="filtroEstado !== 'todos'" (click)="removerFiltro('estado')">
+          <i class="fas fa-flag"></i> Estado: {{ filtroEstado }}
+          <i class="fas fa-times close-tag"></i>
+        </span>
       </div>
     </div>
   </div>
 
+  <!-- Estados de carga y error -->
   <div class="loading-section" *ngIf="loading">
     <div class="spinner"></div>
     <p>Cargando historial de entregas...</p>
@@ -53,48 +215,113 @@
     </button>
   </div>
 
-  <div class="filtros" *ngIf="!loading && historial.length > 0">
-    <label>Filtrar por estado:</label>
-    <select [(ngModel)]="filtroEstado">
-      <option value="todos">Todos los estados</option>
-      <option value="pagado">Pagados</option>
-      <option value="cancelado">Cancelados</option>
-    </select>
-  </div>
-
+  <!-- Lista de historial -->
   <div class="historial-list" *ngIf="!loading && !error">
+    <!-- Mensaje cuando no hay resultados -->
+    <div class="empty-state" *ngIf="historialFiltrado.length === 0 && historial.length > 0">
+      <div class="empty-icon">
+        <i class="fas fa-search fa-3x"></i>
+      </div>
+      <h3>No se encontraron resultados</h3>
+      <p>No hay entregas que coincidan con los filtros aplicados.</p>
+      <button class="btn btn-primary" (click)="limpiarFiltros()">
+        <i class="fas fa-times"></i> Limpiar filtros
+      </button>
+    </div>
+
+    <!-- Lista de entregas -->
     <div class="historial-card" *ngFor="let entrega of historialFiltrado" (click)="verDetalleVenta(entrega.id_venta)">
       <div class="historial-header">
         <div class="historial-info">
           <h3>Entrega #{{ entrega.id_venta }}</h3>
-          <span class="badge" [ngClass]="getEstadoBadgeClass(entrega.estado)">
-            {{ entrega.estado }}
-          </span>
+          <div class="badges-container">
+            <span class="badge" [ngClass]="getEstadoBadgeClass(entrega.estado)">
+              {{ entrega.estado }}
+            </span>
+            <span class="badge metodo-pago" [ngClass]="'metodo-pago-' + entrega.id_metodo_pago">
+              <i class="fas" [ngClass]="getIconoMetodoPago(entrega.id_metodo_pago)"></i>
+              {{ entrega.metodo_pago }}
+            </span>
+          </div>
         </div>
         <div class="historial-fecha">
-          <small>{{ entrega.fecha }} {{ entrega.hora }}</small>
+          <div class="fecha-icon">
+            <i class="fas fa-calendar"></i>
+            {{ entrega.fecha }}
+          </div>
+          <div class="hora-icon">
+            <i class="fas fa-clock"></i>
+            {{ entrega.hora }}
+          </div>
         </div>
       </div>
 
       <div class="historial-body">
         <div class="cliente-info">
-          <h4>{{ entrega.nombre_completo }}</h4>
-          <p *ngIf="entrega.razon_social"><strong>Razón Social:</strong> {{ entrega.razon_social }}</p>
-          <p><i class="fas fa-map-marker-alt"></i> {{ entrega.direccion }}</p>
+          <div class="cliente-header">
+            <h4>
+              <i class="fas fa-user"></i>
+              {{ entrega.nombre_completo }}
+            </h4>
+            <span class="cliente-id">ID: {{ entrega.id_cliente }}</span>
+          </div>
+          <p *ngIf="entrega.razon_social" class="razon-social">
+            <strong><i class="fas fa-building"></i> Razón Social:</strong> {{ entrega.razon_social }}
+          </p>
+          <p class="direccion">
+            <i class="fas fa-map-marker-alt"></i> 
+            <span>{{ entrega.direccion || 'Sin dirección especificada' }}</span>
+          </p>
+          <p class="telefono" *ngIf="entrega.telefono">
+            <i class="fas fa-phone"></i> {{ entrega.telefono }}
+          </p>
         </div>
 
         <div class="historial-details">
-          <p><strong>Total:</strong> S/ {{ entrega.total }}</p>
-          <p><strong>Método de pago:</strong> {{ entrega.metodo_pago }}</p>
-          <p *ngIf="entrega.notas"><strong>Notas:</strong> {{ entrega.notas }}</p>
+          <div class="detalle-item total">
+            <strong><i class="fas fa-money-bill-wave"></i> Total:</strong>
+            <span class="valor-destacado">S/ {{ entrega.total }}</span>
+          </div>
+          <div class="detalle-item metodo">
+            <strong><i class="fas fa-credit-card"></i> Método:</strong>
+            <span class="metodo-valor">{{ entrega.metodo_pago }}</span>
+          </div>
+          <div class="detalle-item notas" *ngIf="entrega.notas">
+            <strong><i class="fas fa-sticky-note"></i> Notas:</strong>
+            <span class="notas-texto">{{ entrega.notas }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="historial-footer">
+        <div class="footer-left">
+          <span class="footer-item">
+            <i class="fas fa-calendar-plus"></i>
+            Creada: {{ formatearFechaHora(entrega.fecha_creacion) }}
+          </span>
+        </div>
+        <div class="footer-right">
+          <span class="ver-detalle">
+            Ver detalle <i class="fas fa-arrow-right"></i>
+          </span>
         </div>
       </div>
     </div>
 
-    <div class="empty-state" *ngIf="historialFiltrado.length === 0">
-      <i class="fas fa-search fa-3x"></i>
-      <h3>No hay resultados</h3>
-      <p>No se encontraron entregas con el filtro seleccionado.</p>
+    <!-- Paginación (opcional) -->
+    <div class="paginacion" *ngIf="historialFiltrado.length > 10">
+      <div class="paginacion-info">
+        Mostrando {{ Math.min(historialFiltrado.length, 10) }} de {{ historialFiltrado.length }} entregas
+      </div>
+      <div class="paginacion-controles">
+        <button class="btn btn-sm btn-outline" [disabled]="paginaActual === 1" (click)="paginaAnterior()">
+          <i class="fas fa-chevron-left"></i> Anterior
+        </button>
+        <span class="pagina-info">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button class="btn btn-sm btn-outline" [disabled]="paginaActual === totalPaginas" (click)="paginaSiguiente()">
+          Siguiente <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
     </div>
   </div>
 </div>
