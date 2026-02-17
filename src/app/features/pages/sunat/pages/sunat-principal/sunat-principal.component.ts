@@ -19,7 +19,7 @@ import { saveAs } from 'file-saver';
 
 import { SunatService, ComprobanteSunat } from '../../../../../core/services/sunat.service';
 import { TruncatePipe } from '../../../../../pipes/truncate.pipe'; // Ajusta la ruta
-
+import { FormatNumberPipe } from '../../../../../pipes/format-number.pipe'; // ✅ IMPORTAR EL NUEVO PIPE
 @Component({
   selector: 'app-sunat-principal',
   standalone: true,
@@ -37,7 +37,8 @@ import { TruncatePipe } from '../../../../../pipes/truncate.pipe'; // Ajusta la 
     MatNativeDateModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
-    TruncatePipe, // ✅ AGREGAR EL PIPE AQUÍ
+    TruncatePipe,      // ✅ PIPE PARA TRUNCAR TEXTO
+    FormatNumberPipe,  // ✅ PIPE PARA FORMATEAR NÚMEROS
     MatTooltipModule,
     MatTabsModule
   ],
@@ -67,18 +68,18 @@ export class SunatPrincipalComponent implements OnInit {
   loading: boolean = false;
   error: string = '';
   
-  // Columnas de la tabla
-  displayedColumns: string[] = [
-    'id_comprobante',
-    'venta',
-    'tipo',
-    'serie_numero',
-    'cliente',
-    'total',
-    'estado',
-    'fecha_envio',
-    'acciones'
-  ];
+displayedColumns: string[] = [
+  'id_comprobante',
+  'venta',
+  'tipo',
+  'serie_numero',
+  'cliente',
+  'documento', // Nueva columna
+  'total',
+  'estado',
+  'fecha_envio',
+  'acciones'
+];
   
   // Tipos y estados para filtros
   tiposComprobante: any[] = [
@@ -93,54 +94,69 @@ export class SunatPrincipalComponent implements OnInit {
     { value: 'RECHAZADO', label: 'Rechazado' },
     { value: 'PENDIENTE', label: 'Pendiente' }
   ];
+// Añade estas propiedades después de las existentes
+filtroFechaDesdeObj: Date | null = null;
+filtroFechaHastaObj: Date | null = null;
+
+
+
 
   ngOnInit() {
     this.cargarComprobantes();
   }
 
-  cargarComprobantes() {
-    this.loading = true;
-    this.error = '';
-    
-    const params: any = {
-      pagina: this.paginaActual,
-      limite: this.itemsPorPagina
-    };
-    
-    if (this.filtroTipo) params.tipo = this.filtroTipo;
-    if (this.filtroEstado) params.estado = this.filtroEstado;
-    if (this.filtroFechaDesde) params.fecha_desde = this.filtroFechaDesde;
-    if (this.filtroFechaHasta) params.fecha_hasta = this.filtroFechaHasta;
-    if (this.searchTerm) params.search = this.searchTerm;
-    
-    this.sunatService.getComprobantes(params).subscribe({
-      next: (response) => {
-        this.comprobantes = response.comprobantes;
-        this.totalItems = response.total;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.error?.error || 'Error al cargar comprobantes';
-        this.loading = false;
-        console.error('Error cargando comprobantes:', error);
-      }
-    });
-  }
+// Mejora el método cargarComprobantes para mejor manejo de errores
+cargarComprobantes() {
+  this.loading = true;
+  this.error = '';
+  
+  const params: any = {
+    pagina: this.paginaActual,
+    limite: this.itemsPorPagina
+  };
+  
+  if (this.filtroTipo) params.tipo = this.filtroTipo;
+  if (this.filtroEstado) params.estado = this.filtroEstado;
+  if (this.filtroFechaDesde) params.fecha_desde = this.filtroFechaDesde;
+  if (this.filtroFechaHasta) params.fecha_hasta = this.filtroFechaHasta;
+  if (this.searchTerm) params.search = this.searchTerm;
+  
+  console.log('📡 Enviando parámetros:', params); // Para debug
+  
+  this.sunatService.getComprobantes(params).subscribe({
+    next: (response) => {
+      console.log('✅ Respuesta recibida:', response);
+      this.comprobantes = response.comprobantes || [];
+      this.totalItems = response.total || 0;
+      this.loading = false;
+    },
+    error: (error) => {
+      console.error('❌ Error:', error);
+      this.error = error.error?.error || 'Error al cargar comprobantes';
+      this.loading = false;
+      this.comprobantes = [];
+      this.totalItems = 0;
+    }
+  });
+}
 
   aplicarFiltros() {
     this.paginaActual = 1;
     this.cargarComprobantes();
   }
 
-  limpiarFiltros() {
-    this.filtroTipo = '';
-    this.filtroEstado = '';
-    this.filtroFechaDesde = '';
-    this.filtroFechaHasta = '';
-    this.searchTerm = '';
-    this.paginaActual = 1;
-    this.cargarComprobantes();
-  }
+// Modifica el método limpiarFiltros
+limpiarFiltros() {
+  this.filtroTipo = '';
+  this.filtroEstado = '';
+  this.filtroFechaDesde = '';
+  this.filtroFechaHasta = '';
+  this.filtroFechaDesdeObj = null;
+  this.filtroFechaHastaObj = null;
+  this.searchTerm = '';
+  this.paginaActual = 1;
+  this.cargarComprobantes();
+}
 
   cambiarPagina(event: any) {
     this.paginaActual = event.pageIndex + 1;
@@ -212,4 +228,39 @@ export class SunatPrincipalComponent implements OnInit {
   get totalPaginas(): number {
     return Math.ceil(this.totalItems / this.itemsPorPagina);
   }
+  // Métodos para manejar cambios de fecha
+onFechaDesdeChange() {
+  if (this.filtroFechaDesdeObj) {
+    this.filtroFechaDesde = this.formatDateForAPI(this.filtroFechaDesdeObj);
+  } else {
+    this.filtroFechaDesde = '';
+  }
+  this.aplicarFiltros();
+}
+
+onFechaHastaChange() {
+  if (this.filtroFechaHastaObj) {
+    this.filtroFechaHasta = this.formatDateForAPI(this.filtroFechaHastaObj);
+  } else {
+    this.filtroFechaHasta = '';
+  }
+  this.aplicarFiltros();
+}
+
+// Método auxiliar para formatear fecha para API
+private formatDateForAPI(date: Date): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+// Método para obtener icono según estado
+getEstadoIcon(estado: string): string {
+  switch (estado) {
+    case 'ACEPTADO': return 'check_circle';
+    case 'RECHAZADO': return 'cancel';
+    case 'PENDIENTE': return 'pending';
+    default: return 'help';
+  }
+}
 }

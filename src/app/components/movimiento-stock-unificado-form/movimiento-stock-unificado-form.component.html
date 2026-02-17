@@ -7,7 +7,7 @@
       <!-- Producto -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>📦 Producto *</mat-label>
-        <mat-select formControlName="id_producto" [disabled]="isLoading">
+        <mat-select formControlName="id_producto">
           <mat-option *ngFor="let producto of productos" [value]="producto.id_producto">
             {{ producto.nombre }} - Stock: {{ producto.stock }}
           </mat-option>
@@ -72,7 +72,7 @@
           <div class="auto-lote-info">
             <div class="info-item">
               <strong>Número de Lote:</strong> 
-              <span class="lote-number">{{ generarNumeroLote() }}</span>
+              <span class="lote-number">{{ numeroLoteDisplay || 'Generando...' }}</span>
             </div>
             <div class="info-item">
               <strong>Fecha de Caducidad:</strong> 

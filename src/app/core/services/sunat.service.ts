@@ -15,11 +15,16 @@ export interface ComprobanteSunat {
   estado: string;
   total: number;
   cliente_nombre: string;
+  cliente_ruc?: string;    // Para FACTURA
+  cliente_dni?: string;     // Para BOLETA
+  cliente_documento?: string; // Documento genérico
+  cliente_tipo_documento?: string; // Tipo de documento (DNI/RUC)
   fecha_envio: string;
   fecha_generacion: string;
   xml_generado?: string;
   respuesta_sunat?: any;
   serie_numero?: string;
+  igv?: number; // AÑADIR ESTA LÍNEA para el modal
 }
 
 export interface EmisionResponse {

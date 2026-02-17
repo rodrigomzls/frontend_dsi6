@@ -148,4 +148,20 @@ getProductsForSales(): Observable<any[]> {
       catchError(this.handleError)
     );
   }
+  // src/app/core/services/producto.service.ts
+// AGREGAR ESTE MÉTODO A LA CLASE EXISTENTE
+
+// ========== NUEVO MÉTODO PARA VERIFICAR LOTES DE PRODUCTO ==========
+verificarLotesProducto(id_producto: number): Observable<any> {
+  return this.http.get<any>(`${this.apiUrl}/lotes/producto/${id_producto}/verificar`).pipe(
+    catchError(this.handleError)
+  );
+}
+
+// ========== NUEVO MÉTODO PARA OBTENER STOCK REAL ==========
+getStockRealProducto(id_producto: number): Observable<any> {
+  return this.http.get<any>(`${this.apiUrl}/lotes/producto/${id_producto}/stock-real`).pipe(
+    catchError(this.handleError)
+  );
+}
 }

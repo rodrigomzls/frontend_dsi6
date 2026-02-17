@@ -3,10 +3,10 @@
   <!-- Header mejorado -->
   <div class="header-section">
     <div class="header-content">
-      <button (click)="volverAPanel()" class="btn-back">
-        <i class="fas fa-arrow-left"></i>
-        Volver al Panel
-      </button>
+     <button (click)="volverAPanel()" class="btn-back">
+  <i class="fas fa-arrow-left"></i>
+  Volver
+</button>
       <div class="header-info">
         <h1 class="page-title">
           <i class="fas fa-route"></i>
@@ -66,15 +66,6 @@
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon zones">
-        <i class="fas fa-map-marker-alt"></i>
-      </div>
-      <div class="stat-content">
-        <h3 class="stat-number">{{ zonasConVentas.length }}</h3>
-        <p class="stat-label">Zonas con Pedidos</p>
-      </div>
-    </div>
   </div>
 
   <!-- Sección principal de asignación -->
@@ -114,9 +105,12 @@
             <div class="venta-header">
               <div class="venta-id">
                 <span class="order-number">#{{ venta.id_venta }}</span>
+                <!-- REEMPLAZAR en las líneas donde se muestran fechas -->
                 <span class="order-date">
                   <i class="fas fa-calendar"></i>
-                  {{ formatearFecha(venta.fecha) }} a las {{ formatearHora(venta.hora) }}
+                  <!-- ANTES: {{ formatearFecha(venta.fecha) }} a las {{ formatearHora(venta.hora) }} -->
+                  <!-- DESPUÉS: -->
+                  {{ fechaService.formatFechaTabla(venta.fecha) }} a las {{ fechaService.formatHora(venta.hora) }}
                 </span>
               </div>
             </div>
@@ -164,14 +158,23 @@
                 </select>
               </div>
               
-              <button 
-                (click)="verDetalleVenta(venta.id_venta)" 
-                class="btn-detail"
-                [disabled]="!venta.id_venta">
-                <i class="fas fa-eye"></i>
-                Ver Detalles
-              </button>
-            </div>
+              <!-- MODIFICA la condición del botón en asignacion-rutas.component.html -->
+<div class="action-buttons">
+  <button 
+    (click)="verDetalleVenta(venta.id_venta)" 
+    class="btn-detail">
+    <i class="fas fa-eye"></i> Ver Detalles
+  </button>
+  
+  <!-- MODIFICADO: Mostrar botón de cancelar para estado 4 y permisos -->
+ <!-- Temporalmente, elimina el *ngIf para ver si el botón aparece -->
+<button 
+  (click)="cancelarVenta(venta.id_venta!, venta)" 
+  class="btn-cancelar-venta">
+  <i class="fas fa-times-circle"></i> Cancelar Venta
+</button>
+</div>
+</div>
           </div>
         </div>
       </div>

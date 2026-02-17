@@ -328,18 +328,287 @@ private procesarCancelacion(idVenta: number, motivo: string) {
   });
 }
 
-  verDetalleVenta(idVenta: number) {
-    this.router.navigate(['/repartidor/venta', idVenta]);
+ verDetalleVenta(idVenta: number) {
+  // Guardar la ruta actual antes de navegar
+  const currentRoute = this.router.url;
+  localStorage.setItem('previous_repartidor_route', currentRoute);
+  
+  this.router.navigate(['/repartidor/venta', idVenta]);
+}
+
+  // Reemplaza el método abrirMapa existente con esta versión mejorada
+abrirMapa(direccion: string, coordenadas?: string, clienteNombre?: string) {
+  if (!direccion || direccion.trim() === '') {
+    this.mostrarError('No hay dirección disponible para esta entrega');
+    return;
   }
 
-  abrirMapa(direccion: string, coordenadas?: string) {
-    if (coordenadas) {
-      const [lat, lng] = coordenadas.split(',');
-      window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
-    } else {
-      window.open(`https://www.google.com/maps?q=${encodeURIComponent(direccion)}`, '_blank');
-    }
+  // Si hay coordenadas, usarlas directamente (mejor opción)
+  if (coordenadas) {
+    const [lat, lng] = coordenadas.split(',');
+    window.open(`https://www.google.com/maps/@${lat},${lng},17z`, '_blank');
+    return;
   }
+
+  // Normalizar y preparar la dirección para Google Maps
+  const direccionNormalizada = this.normalizarDireccionPucallpa(direccion);
+  
+  // Intentar diferentes estrategias de búsqueda
+  this.intentarEstrategiasMapa(direccionNormalizada, clienteNombre);
+}
+
+// Método para normalizar direcciones de Pucallpa
+private normalizarDireccionPucallpa(direccion: string): string {
+  let normalizada = direccion.trim();
+  
+  // Diccionario de normalizaciones para Pucallpa
+  const normalizaciones = [
+    // Abreviaciones comunes
+    { regex: /\bav\.\b/gi, reemplazo: 'Avenida' },
+    { regex: /\bjr\.\b/gi, reemplazo: 'Jirón' },
+    { regex: /\bcll\.\b/gi, reemplazo: 'Calle' },
+    { regex: /\burb\.\b/gi, reemplazo: 'Urbanización' },
+    { regex: /\bpje\.\b/gi, reemplazo: 'Pasaje' },
+    { regex: /\bmz\.\b/gi, reemplazo: 'Manzana' },
+    { regex: /\blt\.\b/gi, reemplazo: 'Lote' },
+    { regex: /\bms\s/gi, reemplazo: 'Manzana ' },
+    
+    // Errores comunes
+    { regex: /\bmz\s/gi, reemplazo: 'Manzana ' },
+    { regex: /\blt\s/gi, reemplazo: 'Lote ' },
+    { regex: /\bMz\s/gi, reemplazo: 'Manzana ' },
+    { regex: /\bLt\s/gi, reemplazo: 'Lote ' },
+    
+    // Tildes y mayúsculas
+    { regex: /\bc\.\s/gi, reemplazo: 'Calle ' },
+    { regex: /\blos cedros\b/gi, reemplazo: 'Los Cedros' },
+    { regex: /\blos mangos\b/gi, reemplazo: 'Los Mangos' },
+    { regex: /\blas flores\b/gi, reemplazo: 'Las Flores' },
+    { regex: /\bmanco capac\b/gi, reemplazo: 'Manco Cápac' },
+    { regex: /\btupac amaru\b/gi, reemplazo: 'Túpac Amaru' },
+  ];
+
+  // Aplicar normalizaciones
+  normalizaciones.forEach(({ regex, reemplazo }) => {
+    normalizada = normalizada.replace(regex, reemplazo);
+  });
+
+  // Capitalizar cada palabra
+  normalizada = normalizada
+    .split(' ')
+    .map(palabra => {
+      if (palabra.length === 0) return '';
+      // Mantener números intactos
+      if (/^\d+$/.test(palabra)) return palabra;
+      // Capitalizar primera letra
+      return palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase();
+    })
+    .join(' ');
+
+  // Agregar ciudad y país si no están
+  if (!normalizada.toLowerCase().includes('pucallpa') && 
+      !normalizada.toLowerCase().includes('25002') &&
+      !normalizada.toLowerCase().includes('perú')) {
+    normalizada += ', Pucallpa, Perú';
+  }
+
+  return normalizada;
+}
+
+// Método para intentar diferentes estrategias de búsqueda
+private intentarEstrategiasMapa(direccion: string, clienteNombre?: string) {
+  const estrategias = this.generarEstrategiasBusqueda(direccion, clienteNombre);
+  
+  // Preguntar al usuario qué estrategia usar
+  this.mostrarSeleccionEstrategia(estrategias, direccion);
+}
+
+// Generar diferentes formas de buscar la dirección
+private generarEstrategiasBusqueda(direccion: string, clienteNombre?: string): {nombre: string, url: string}[] {
+  const estrategias = [];
+  
+  // Estrategia 1: Dirección completa normalizada
+  estrategias.push({
+    nombre: 'Dirección completa',
+    url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`
+  });
+  
+  // Estrategia 2: Solo la calle principal (sin manzana/lote)
+  const callePrincipal = this.extraerCallePrincipal(direccion);
+  if (callePrincipal !== direccion) {
+    estrategias.push({
+      nombre: `Solo ${callePrincipal}`,
+      url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(callePrincipal + ', Pucallpa, Perú')}`
+    });
+  }
+  
+  // Estrategia 3: Buscar referencia conocida + calle
+  const referencias = this.generarReferencias(direccion, clienteNombre);
+  referencias.forEach(ref => {
+    estrategias.push({
+      nombre: ref.nombre,
+      url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ref.busqueda)}`
+    });
+  });
+  
+  // Estrategia 4: Plus Code (si se detecta)
+  const plusCode = this.detectarPlusCode(direccion);
+  if (plusCode) {
+    estrategias.push({
+      nombre: `Plus Code: ${plusCode}`,
+      url: `https://www.google.com/maps/search/?api=1&query=${plusCode}`
+    });
+  }
+  
+  return estrategias;
+}
+
+// Extraer solo la calle principal (sin detalles específicos)
+private extraerCallePrincipal(direccion: string): string {
+  // Patrones para eliminar detalles específicos
+  const patronesAEliminar = [
+    /\s+[Mm]z\.?\s*[A-Za-z0-9]+\s*[Ll]t\.?\s*\d+/gi, // Mz A Lt 2
+    /\s+[Ll]t\.?\s*\d+/gi, // Lt 5
+    /\s+[Mm]anzana\s+[A-Za-z0-9]+\s+[Ll]ote\s+\d+/gi,
+    /\s+manzana\s+[A-Za-z0-9]+\s+lote\s+\d+/gi,
+    /\s+dpto\.?\s*\d+/gi,
+    /\s+departamento\s+\d+/gi,
+    /\s+oficina\s+\d+/gi,
+    /\s+interior\s+\d+/gi,
+    /\s+altura\s+\d+/gi,
+  ];
+  
+  let calle = direccion;
+  patronesAEliminar.forEach(patron => {
+    calle = calle.replace(patron, '');
+  });
+  
+  return calle.trim();
+}
+
+// Generar referencias de búsqueda
+private generarReferencias(direccion: string, clienteNombre?: string): {nombre: string, busqueda: string}[] {
+  const referencias = [];
+  
+  // Extraer posibles puntos de referencia
+  const palabrasClave = direccion.toLowerCase().split(' ');
+  
+  if (palabrasClave.includes('hospital') || palabrasClave.includes('clínica')) {
+    referencias.push({
+      nombre: 'Hospital más cercano',
+      busqueda: 'Hospital, Pucallpa'
+    });
+  }
+  
+  if (palabrasClave.includes('colegio') || palabrasClave.includes('escuela')) {
+    referencias.push({
+      nombre: 'Colegio en la zona',
+      busqueda: 'Colegio, Pucallpa'
+    });
+  }
+  
+  if (palabrasClave.includes('mercado') || palabrasClave.includes('tienda')) {
+    referencias.push({
+      nombre: 'Mercado cercano',
+      busqueda: 'Mercado, Pucallpa'
+    });
+  }
+  
+  if (palabrasClave.includes('parque') || palabrasClave.includes('plaza')) {
+    referencias.push({
+      nombre: 'Parque más cercano',
+      busqueda: 'Parque, Pucallpa'
+    });
+  }
+  
+  // Si el cliente es un restaurante o negocio, buscar por nombre
+  if (clienteNombre && (
+      clienteNombre.toLowerCase().includes('restaurante') ||
+      clienteNombre.toLowerCase().includes('bodega') ||
+      clienteNombre.toLowerCase().includes('gimnasio')
+  )) {
+    referencias.push({
+      nombre: `Buscar "${clienteNombre}"`,
+      busqueda: clienteNombre + ', Pucallpa'
+    });
+  }
+  
+  return referencias;
+}
+
+// Detectar Plus Codes en la dirección
+private detectarPlusCode(direccion: string): string | null {
+  const plusCodeRegex = /[A-Z0-9]{4}\+[A-Z0-9]{3}/;
+  const match = direccion.match(plusCodeRegex);
+  return match ? match[0] : null;
+}
+
+// Mostrar selección de estrategia al usuario
+private mostrarSeleccionEstrategia(estrategias: {nombre: string, url: string}[], direccionOriginal: string) {
+  if (estrategias.length === 1) {
+    // Solo una estrategia, abrir directamente
+    window.open(estrategias[0].url, '_blank');
+    return;
+  }
+  
+  // Crear opciones para SweetAlert2
+  const opciones = estrategias.reduce((acc, estrategia, index) => {
+    acc[index] = estrategia.nombre;
+    return acc;
+  }, {} as {[key: number]: string});
+  
+  Swal.fire({
+    title: '🔍 Seleccionar búsqueda en mapa',
+    html: `
+      <div style="text-align: left; margin-bottom: 15px;">
+        <p><strong>Dirección:</strong> ${direccionOriginal}</p>
+        <p class="text-muted" style="font-size: 0.9em;">
+          Google Maps puede tener dificultades con algunas direcciones. 
+          Seleccione la mejor opción:
+        </p>
+      </div>
+    `,
+    input: 'select',
+    inputOptions: opciones,
+    inputPlaceholder: 'Seleccione cómo buscar...',
+    showCancelButton: true,
+    confirmButtonText: 'Abrir en Maps',
+    cancelButtonText: 'Cancelar',
+   // CORREGIDO: Eliminar la comparación con 0
+inputValidator: (value) => {
+  if (!value) {
+    return 'Debe seleccionar una opción';
+  }
+  return null;
+},
+    width: '600px'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const index = parseInt(result.value);
+      window.open(estrategias[index].url, '_blank');
+      
+      // Opcional: Guardar la estrategia que funcionó para futuras referencias
+      this.registrarEstrategiaExitosa(estrategias[index].nombre);
+    }
+  });
+}
+
+// Registrar qué estrategia funcionó (para aprendizaje futuro)
+private registrarEstrategiaExitosa(estrategia: string) {
+  console.log(`✅ Estrategia exitosa: ${estrategia}`);
+  // Aquí podrías guardar en localStorage o enviar a un servicio
+  // para aprender qué estrategias funcionan mejor para cada zona
+}
+
+// Método auxiliar para mostrar errores
+private mostrarError(mensaje: string) {
+  Swal.fire({
+    title: '❌ Error',
+    text: mensaje,
+    icon: 'error',
+    confirmButtonText: 'Entendido'
+  });
+}
 
   // MEJORA: Método para formatear fecha y hora
   formatearFechaHora(fechaHora: string | undefined): string {
@@ -506,4 +775,73 @@ verificarPagoYape(idVenta: number): Promise<boolean> {
     const entrega = this.entregas.find(e => e.id_venta === idVenta);
     return entrega ? entrega.total : 0;
   }
+
+  // Método para manejar direcciones específicas de Pucallpa
+private manejarDireccionesEspecificas(direccion: string): string | null {
+  // Mapeo de direcciones problemáticas conocidas en Pucallpa
+  const direccionesConocidas: {[key: string]: string} = {
+    'jr.los mangos ms 3 lt 2': 'Jirón Los Mangos, Pucallpa',
+    'av. los cedros mz.b lt.5': 'Avenida Los Cedros, Pucallpa',
+    'urb. imosa mz.a lt.9': 'Urbanización Imosa, Pucallpa',
+    'hospital ii ramón castilla': 'Hospital II Ramón Castilla, Pucallpa',
+    'jc7m+jhq pucallpa': 'JC7M+JHQ Pucallpa, Perú',
+    // Agrega más direcciones problemáticas aquí
+  };
+  
+  const direccionLower = direccion.toLowerCase().trim();
+  
+  // Buscar coincidencia exacta
+  if (direccionesConocidas[direccionLower]) {
+    return direccionesConocidas[direccionLower];
+  }
+  
+  // Buscar coincidencia parcial
+  for (const [key, value] of Object.entries(direccionesConocidas)) {
+    if (direccionLower.includes(key)) {
+      return value;
+    }
+  }
+  
+  return null;
+}
+
+// Método para extraer y formatear coordenadas de texto
+private extraerCoordenadasDeTexto(texto: string): string | null {
+  // Patrones comunes de coordenadas
+  const patrones = [
+    /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/,  // -8.385828, -74.5587662
+    /(-?\d+\.\d+);\s*(-?\d+\.\d+)/,     // -8.385828; -74.5587662
+    /lat:\s*(-?\d+\.\d+)\s*lng:\s*(-?\d+\.\d+)/i,
+    /@(-?\d+\.\d+),(-?\d+\.\d+)/,       // @-8.385828,-74.5587662
+  ];
+  
+  for (const patron of patrones) {
+    const match = texto.match(patron);
+    if (match) {
+      return `${match[1]},${match[2]}`;
+    }
+  }
+  
+  return null;
+}
+// Método para copiar dirección al portapapeles
+copiarDireccion(direccion: string) {
+  const direccionFormateada =
+    ` ${direccion}`  
+    direccion;
+  
+  navigator.clipboard.writeText(direccionFormateada).then(() => {
+    Swal.fire({
+      title: '✅ Copiada',
+      text: 'Dirección copiada al portapapeles',
+      icon: 'success',
+      timer: 1500,
+      showConfirmButton: false,
+      timerProgressBar: true
+    });
+  }).catch(err => {
+    console.error('Error al copiar:', err);
+    this.mostrarError('No se pudo copiar la dirección');
+  });
+}
 }

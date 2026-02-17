@@ -5,16 +5,19 @@ import { Observable, throwError, catchError, map } from 'rxjs';
 import { Cliente, Country, Department, Province, District } from '../models/cliente.model';
 
 // Interface para clientes en ventas
+// Interface para clientes en ventas - VERSIÓN CORREGIDA
 export interface ClienteVenta {
   id_cliente: number;
   tipo_cliente: string;
   nombre_completo?: string;
+  razon_social?: string; // Añadir este campo
   activo?: boolean;
   fecha_registro?: string;
   persona?: {
     nombre_completo: string;
     telefono: string;
     numero_documento: string;
+    tipo_documento?: string; // ✅ AÑADIR ESTA LÍNEA
     direccion?: string;
     coordenadas?: string;
   };
@@ -47,13 +50,14 @@ export class ClienteService {
   }
 
  // En cliente.service.ts - corrige el método getClientesParaVentas
+// En cliente.service.ts - método getClientesParaVentas
 getClientesParaVentas(): Observable<ClienteVenta[]> {
   return this.http.get<any[]>(`${this.apiUrl}/clientes`).pipe(
     map(clientes => clientes.map(cliente => {
       console.log('🔍 Cliente recibido del backend:', cliente); // Para debug
       
       return {
-        id_cliente: cliente.id_cliente || cliente.id, // ✅ Usar id_cliente si existe, sino id
+        id_cliente: cliente.id_cliente || cliente.id,
         tipo_cliente: cliente.tipo_cliente,
         razon_social: cliente.razon_social,
         activo: cliente.activo,
@@ -62,6 +66,7 @@ getClientesParaVentas(): Observable<ClienteVenta[]> {
           nombre_completo: cliente.nombre_completo || cliente.nombre,
           telefono: cliente.telefono,
           numero_documento: cliente.numero_documento || cliente.dni,
+          tipo_documento: cliente.tipo_documento, // ✅ ASEGURAR QUE ESTÉ INCLUIDO
           direccion: cliente.direccion,
           coordenadas: cliente.coordenadas
         }

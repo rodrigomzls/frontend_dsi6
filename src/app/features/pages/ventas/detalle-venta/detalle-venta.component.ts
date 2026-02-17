@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VentasService, Venta } from '../../../../core/services/ventas.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { FechaService } from '../../../../core/services/fecha.service'; // ← AÑADIR
 
 @Component({
   selector: 'app-detalle-venta',
@@ -15,6 +16,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 export class DetalleVentaComponent implements OnInit {
   private ventasService = inject(VentasService);
   private authService = inject(AuthService);
+  public fechaService = inject(FechaService); // ← AÑADIR
   private route = inject(ActivatedRoute);
   public router = inject(Router);
 
@@ -22,11 +24,24 @@ export class DetalleVentaComponent implements OnInit {
   loading = false;
   error = '';
   notFound = false;
+  
 
-  ngOnInit() {
+ // AÑADIR método para debug
+// También corrige el método ngOnInit:
+ngOnInit() {
     this.cargarVenta();
-  }
-
+    // Añadir para debug
+    setTimeout(() => {
+        if (this.venta) {
+            console.log('🔍 VERIFICANDO FECHA EN DETALLE:', {
+                id: this.venta.id_venta,
+                fechaBD: this.venta.fecha,
+                fechaFormateada: this.fechaService.formatFechaCompleta(this.venta.fecha), // CAMBIAR
+                fechaObj: new Date(this.venta.fecha)
+            });
+        }
+    }, 1000);
+}
   cargarVenta() {
     const id = this.route.snapshot.paramMap.get('id');
     
@@ -70,31 +85,11 @@ export class DetalleVentaComponent implements OnInit {
     return classes[estado] || 'estado-desconocido';
   }
 
-  // ✅ CORREGIDO: Formatear fecha correctamente
-  formatearFecha(fecha: string): string {
-    if (!fecha) return 'Fecha no disponible';
-    
-    try {
-      // Si la fecha viene como '2025-10-21T05:00:00.000Z' o '2025-10-21'
-      const fechaObj = new Date(fecha);
-      
-      // Verificar si la fecha es válida
-      if (isNaN(fechaObj.getTime())) {
-        console.warn('Fecha inválida:', fecha);
-        return 'Fecha inválida';
-      }
-      
-      return fechaObj.toLocaleDateString('es-PE', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch (error) {
-      console.error('Error formateando fecha:', error, 'Fecha original:', fecha);
-      return 'Error en fecha';
-    }
-  }
+  // En detalle-venta.component.ts - método formatearFecha
+// REEMPLAZAR el método formatearFecha en detalle-venta.component.ts
+
+
+// Añadir también este método para fechas cortas
 
   // ✅ NUEVO: Formatear hora en formato 12 horas (09:34 AM/PM)
   formatearHora(hora: string): string {
@@ -118,9 +113,24 @@ export class DetalleVentaComponent implements OnInit {
   }
 
   // Navegación
-  volverAPanel() {
+// En detalle-venta.component.ts, agrega o modifica el método volverAPanel()
+volverAPanel() {
+  // Leer la ruta guardada en localStorage
+  const previousRoute = localStorage.getItem('previous_ventas_route');
+  
+  if (previousRoute) {
+    // Limpiar el localStorage después de usarlo
+    localStorage.removeItem('previous_ventas_route');
+    
+    // Navegar a la ruta anterior
+    console.log('Volviendo a ruta anterior:', previousRoute);
+    this.router.navigate([previousRoute]);
+  } else {
+    // Si no hay ruta guardada, volver al panel por defecto
+    console.log('No hay ruta anterior, volviendo a /ventas');
     this.router.navigate(['/ventas']);
   }
+}
 
   // Método para cambiar estado
   cambiarEstado() {
@@ -148,7 +158,8 @@ export class DetalleVentaComponent implements OnInit {
   }
 
   // ✅ NUEVO: Imprimir comprobante sencillo
-  imprimirComprobante() {
+// Corrige el método imprimirComprobante para usar el servicio:
+imprimirComprobante() {
   if (!this.venta) return;
 
   const ventana = window.open('', '_blank', 'width=800,height=600');
@@ -188,7 +199,7 @@ export class DetalleVentaComponent implements OnInit {
         <h1>Comprobante de Venta</h1>
         <p><strong>ID Venta:</strong> ${this.venta.id_venta}</p>
         <p><strong>Cliente:</strong> ${this.venta.nombre_completo || 'Cliente General'}</p>
-        <p><strong>Fecha:</strong> ${this.formatearFecha(this.venta.fecha)} ${this.formatearHora(this.venta.hora)}</p>
+        <p><strong>Fecha:</strong> ${this.fechaService.formatFechaCompleta(this.venta.fecha)} ${this.fechaService.formatHora(this.venta.hora)}</p> <!-- CAMBIAR -->
 
         <table>
           <thead>
@@ -234,15 +245,26 @@ export class DetalleVentaComponent implements OnInit {
     ventana?.close();
   }, 500);
 }
-// En detalle-venta.component.ts
+// Mejorar la función getTipoComprobanteTexto
 getTipoComprobanteTexto(tipo: string | undefined): string {
-  if (!tipo) return 'Sin comprobante'; // Manejar undefined/null
+  if (!tipo) {
+    // Si no hay tipo en la venta, verificar si hay algún comprobante SUNAT
+    if (this.venta && this.venta.id_venta) {
+      // Podrías hacer una consulta adicional aquí si necesitas
+      return 'Sin comprobante';
+    }
+    return 'Sin comprobante';
+  }
   
-  switch(tipo) {
+  switch(tipo.toUpperCase()) { // Usar toUpperCase para mayor seguridad
     case 'FACTURA': return 'Factura Electrónica';
     case 'BOLETA': return 'Boleta Electrónica';
     case 'SIN_COMPROBANTE': return 'Nota de Venta';
-    default: return 'Sin comprobante';
+    case 'NOTA': return 'Nota de Venta';
+    case '': 
+    case 'NULL': 
+    case 'UNDEFINED': return 'Nota de Venta';
+    default: return tipo; // Devolver el valor original si no coincide
   }
 }
 }

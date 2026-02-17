@@ -581,3 +581,283 @@ button[disabled] {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* AGREGAR al CSS existente */
+
+/* Remover estilos de filtros de fecha */
+.filtros-row {
+  display: block; /* Cambiado de grid a block */
+  margin-bottom: 24px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Mejorar resumen ejecutivo */
+.resumen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.resumen-header h2 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.fecha-generacion {
+  color: #7f8c8d;
+  font-size: 14px;
+  background: #f8f9fa;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid #ecf0f1;
+}
+
+/* Métricas mejoradas */
+.metricas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.metrica-card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  background: white;
+}
+
+.metrica-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.metrica-card.productos {
+  border-top: 4px solid #3498db;
+}
+
+.metrica-card.valor {
+  border-top: 4px solid #2ecc71;
+}
+
+.metrica-card.movimientos {
+  border-top: 4px solid #9b59b6;
+}
+
+.metrica-card.alertas {
+  border-top: 4px solid #f39c12;
+}
+
+.metrica {
+  padding: 20px;
+}
+
+.metrica-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.metrica-valor {
+  font-size: 2em;
+  font-weight: 700;
+  margin: 0;
+  color: #2c3e50;
+  line-height: 1.2;
+}
+
+.metrica-desc {
+  font-size: 12px;
+  color: #95a5a6;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Resumen de estados compacto */
+.resumen-estados-compacto {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #ecf0f1;
+}
+
+.estado-summary {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.estado-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.estado-indicator.normal {
+  background: #d5f4e6;
+  color: #27ae60;
+}
+
+.estado-indicator.bajo {
+  background: #fdebd0;
+  color: #f39c12;
+}
+
+.estado-indicator.agotado {
+  background: #fadbd8;
+  color: #e74c3c;
+}
+
+.estado-count {
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.estado-label {
+  font-size: 13px;
+}
+
+/* Mejorar tabla */
+.reporte-table th {
+  background: #34495e;
+  color: white;
+  font-weight: 600;
+  padding: 14px 10px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reporte-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+/* Ajustar anchos de columnas */
+.producto-col { width: 25%; min-width: 250px; }
+.categoria-col { width: 12%; min-width: 100px; }
+.stock-col { width: 8%; min-width: 80px; }
+.stock-min-col { width: 8%; min-width: 80px; }
+.diferencia-col { width: 10%; min-width: 90px; }
+.precio-col { width: 10%; min-width: 90px; }
+.valor-col { width: 12%; min-width: 110px; }
+.estado-col { width: 10%; min-width: 100px; }
+
+/* Mejorar visualización de productos */
+.producto-desc {
+  color: #7f8c8d;
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.4;
+  display: block;
+}
+
+/* Estados más compactos */
+.estado-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.normal-badge {
+  background-color: #e8f6ef;
+  color: #27ae60;
+}
+
+.bajo-badge {
+  background-color: #fef5e7;
+  color: #f39c12;
+}
+
+.agotado-badge {
+  background-color: #fdEDec;
+  color: #e74c3c;
+}
+
+/* Pie de tabla */
+.tabla-footer {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #ecf0f1;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.estado-resumen {
+  font-weight: 600;
+  margin: 0 8px;
+}
+
+.estado-resumen.normal {
+  color: #27ae60;
+}
+
+.estado-resumen.bajo {
+  color: #f39c12;
+}
+
+.estado-resumen.agotado {
+  color: #e74c3c;
+}
+
+.total-final p {
+  margin: 0;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+/* Responsive mejorado */
+@media (max-width: 1024px) {
+  .metricas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .metricas-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .tabla-container {
+    font-size: 14px;
+  }
+  
+  .reporte-table th,
+  .reporte-table td {
+    padding: 10px 6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .estado-summary {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .estado-indicator {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

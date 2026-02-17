@@ -2694,3 +2694,366 @@
     align-items: flex-start;
   }
 }
+/* ===== ESTILOS PARA ALERTAS MEJORADAS ===== */
+.alert-warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  animation: slideInDown 0.5s ease;
+}
+
+.alert-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 15px;
+}
+
+.alert-icon {
+  flex-shrink: 0;
+}
+
+.alert-text {
+  flex: 1;
+}
+
+.alert-text h4 {
+  margin: 0 0 10px 0;
+  color: #856404;
+}
+
+.alert-note {
+  margin: 10px 0 0 0;
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+.alert-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Estilos para desglose de dinero */
+.desglose-pendiente {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 10px 0;
+  border: 1px solid #dee2e6;
+}
+
+.desglose-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.desglose-item:last-child {
+  border-bottom: none;
+}
+
+.desglose-item.pendiente-antiguo {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.desglose-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.desglose-valor {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Animaciones */
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive para alertas */
+@media (max-width: 768px) {
+  .alert-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .alert-actions {
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .desglose-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 5px;
+  }
+}
+/* En repartidor-styles.css - AGREGAR al final */
+
+/* Estilos para la modal de historial mejorada */
+.modal-historial-mejorada .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-historial-mejorada .modal-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.modal-historial-mejorada .modal-filtros {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #dee2e6;
+}
+
+.modal-historial-mejorada .filtros-rapidos {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.modal-historial-mejorada .filtro-rapido {
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-historial-mejorada .filtro-rapido:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.modal-historial-mejorada .filtro-rapido.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.modal-historial-mejorada .tabla-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.modal-historial-mejorada table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modal-historial-mejorada th {
+  position: sticky;
+  top: 0;
+  background: #007bff;
+  color: white;
+  z-index: 10;
+}
+
+.modal-historial-mejorada .export-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+/* Responsive para la modal */
+@media (max-width: 768px) {
+  .modal-historial-mejorada .modal-filtros {
+    padding: 10px;
+  }
+  
+  .modal-historial-mejorada .filtros-rapidos {
+    flex-direction: column;
+  }
+  
+  .modal-historial-mejorada .tabla-container {
+    max-height: 300px;
+  }
+  
+  .modal-historial-mejorada table {
+    font-size: 12px;
+  }
+  
+  .modal-historial-mejorada th,
+  .modal-historial-mejorada td {
+    padding: 8px;
+  }
+}
+/* En tu repartidor-styles.css - Agrega estos estilos al final */
+
+/* ===== PAGINACIÓN MEJORADA ===== */
+.paginacion {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.paginacion-info {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.paginacion-controles {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.paginacion-controles .btn-outline {
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  min-width: 100px;
+  transition: all 0.3s ease;
+}
+
+.paginacion-controles .btn-outline:not(:disabled):hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  transform: translateY(-2px);
+}
+
+.paginacion-controles .btn-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selector-pagina {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.select-pagina {
+  padding: 6px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.9rem;
+  min-width: 60px;
+  cursor: pointer;
+}
+
+.select-pagina:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.selector-items {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-left: auto;
+}
+
+.select-items {
+  padding: 5px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.select-items:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Responsive para paginación */
+@media (max-width: 768px) {
+  .paginacion {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .paginacion-controles {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .selector-items {
+    margin-left: 0;
+    justify-content: center;
+  }
+  
+  .paginacion-controles .btn-outline {
+    width: 100%;
+  }
+  
+  .selector-pagina {
+    justify-content: center;
+    width: 100%;
+  }
+}
+/* Agrega al final de repartidor-styles.css */
+.mapa-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-outline-info {
+  background: transparent;
+  border: 1px solid #17a2b8;
+  color: #17a2b8;
+}
+
+.btn-outline-info:hover {
+  background: #17a2b8;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .mapa-actions {
+    flex-direction: column;
+  }
+  
+  .mapa-actions .btn {
+    width: 100%;
+  }
+}

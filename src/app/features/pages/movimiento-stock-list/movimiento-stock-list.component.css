@@ -75,11 +75,13 @@
   margin-bottom: 0.25rem;
 }
 
+/* La solución más simple y directa */
 .stat-label {
   font-size: 0.85rem;
-  opacity: 0.9;
+  font-weight: 600; /* Más negrita */
+  color: #ffffff !important; /* Blanco sólido */
+  opacity: 1 !important;
 }
-
 /* Panel de Control */
 .control-panel {
   max-width: 1200px;

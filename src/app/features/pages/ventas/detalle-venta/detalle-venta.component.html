@@ -5,10 +5,10 @@
     
     <!-- Header Mejorado -->
     <div class="header">
-      <button (click)="volverAPanel()" class="btn-back">
-        <i class="fas fa-arrow-left"></i>
-        Volver al Panel
-      </button>
+     <button (click)="volverAPanel()" class="btn-back">
+  <i class="fas fa-arrow-left"></i>
+  Volver
+</button>
       
       <h1>
         <i class="fas fa-file-invoice-dollar"></i>
@@ -41,9 +41,9 @@
       </h2>
       <p>La venta que buscas no existe o fue eliminada.</p>
       <button (click)="volverAPanel()" class="btn-back">
-        <i class="fas fa-arrow-left"></i>
-        Volver al Panel
-      </button>
+      <i class="fas fa-arrow-left"></i>
+      Volver
+    </button>
     </div>
 
     <!-- Detalle de la venta -->
@@ -101,14 +101,17 @@
             Información General
           </h2>
           <div class="info-grid-compacto">
-            <div class="info-item-compacto">
-              <label><i class="fas fa-calendar"></i> Fecha</label>
-              <span class="info-valor">{{ formatearFecha(venta.fecha) }}</span>
-            </div>
-            <div class="info-item-compacto">
-              <label><i class="fas fa-clock"></i> Hora</label>
-              <span class="info-valor">{{ formatearHora(venta.hora) }}</span>
-            </div>
+            <!-- En info-general-compacto - CAMBIAR -->
+          <div class="info-item-compacto">
+            <label><i class="fas fa-calendar"></i> Fecha</label>
+            <!-- REEMPLAZAR: {{ formatearFecha(venta.fecha) }} -->
+            <span class="info-valor">{{ fechaService.formatFechaCompleta(venta.fecha) }}</span>
+          </div>
+          <div class="info-item-compacto">
+            <label><i class="fas fa-clock"></i> Hora</label>
+            <!-- REEMPLAZAR: {{ formatearHora(venta.hora) }} -->
+            <span class="info-valor">{{ fechaService.formatHora(venta.hora) }}</span>
+          </div>
             <div class="info-item-compacto">
               <label><i class="fas fa-tag"></i> Estado</label>
               <span [class]="'estado-badge ' + getEstadoClass(venta.estado || '')">

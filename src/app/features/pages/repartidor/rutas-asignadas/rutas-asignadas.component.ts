@@ -64,9 +64,13 @@ export class RutasAsignadasComponent implements OnInit {
     });
   }
 
-  verDetalleVenta(idVenta: number) {
-    this.router.navigate(['/repartidor/venta', idVenta]);
-  }
+ verDetalleVenta(idVenta: number) {
+  // Guardar la ruta actual antes de navegar
+  const currentRoute = this.router.url;
+  localStorage.setItem('previous_repartidor_route', currentRoute);
+  
+  this.router.navigate(['/repartidor/venta', idVenta]);
+}
 
   iniciarEntrega(idVenta: number, event?: Event) {
     if (event) {

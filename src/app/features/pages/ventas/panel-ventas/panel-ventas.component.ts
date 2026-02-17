@@ -9,7 +9,7 @@ import { EmitirComprobanteComponent } from '../../../../components/sunat/emitir-
 import { EstadisticasVentasComponent } from '../../../../components/ventas/estadisticas-ventas/estadisticas-ventas.component';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
+import { FechaService } from '../../../../core/services/fecha.service';
 @Component({
   selector: 'app-panel-ventas',
   standalone: true,
@@ -25,7 +25,7 @@ export class PanelVentasComponent implements OnInit, OnDestroy {
   public ventasService = inject(VentasService);
   public authService = inject(AuthService);
   public router = inject(Router);
-
+  public fechaService = inject(FechaService);
   // Datos
   ventas: Venta[] = [];
   ventasFiltradas: Venta[] = [];
@@ -61,28 +61,36 @@ export class PanelVentasComponent implements OnInit, OnDestroy {
     fin: ''
   };
 
-  // Métodos mejorados para el dropdown
-  toggleExportDropdown(event?: Event) {
-    if (event) {
-      event.stopPropagation();
-    }
-    this.showExportDropdown = !this.showExportDropdown;
-    
-    if (this.showExportDropdown) {
-      // Agregar listener para cerrar al hacer clic fuera
-      setTimeout(() => {
-        document.addEventListener('click', this.handleClickOutside.bind(this));
-      });
-    } else {
-      this.removeEventListeners();
-    }
-  }
+// Variables para las fechas
+maxDate: string = '';
+minDate: string = '';
 
-  closeExportDropdown() {
-    this.showExportDropdown = false;
-    this.removeEventListeners();
-  }
+// Añade estas variables después de las declaraciones existentes:
+filtroRangoTemp = {
+  inicio: '',
+  fin: ''
+};
 
+rangoAplicado = {
+  inicio: '',
+  fin: ''
+};
+
+// Método toggleExportDropdown - CORREGIDO
+toggleExportDropdown(event?: Event) {
+  if (event) {
+    event.stopPropagation();
+    event.preventDefault(); // Añadir esto
+  }
+  console.log('Toggle dropdown. Estado actual:', this.showExportDropdown);
+  this.showExportDropdown = !this.showExportDropdown;
+}
+
+// Método closeExportDropdown - CORREGIDO
+closeExportDropdown() {
+  console.log('Cerrando dropdown...'); // Para debug
+  this.showExportDropdown = false;
+}
   private handleClickOutside(event: MouseEvent) {
     const dropdownElement = document.querySelector('.export-dropdown');
     const buttonElement = document.querySelector('.dropdown-toggle');
@@ -132,6 +140,7 @@ export class PanelVentasComponent implements OnInit, OnDestroy {
 
  // REEMPLAZA las líneas donde usas emojis en el PDF:
 exportarResumenEjecutivo() {
+   this.closeExportDropdown(); // AÑADIR esta línea
   if (!this.authService.isAdmin()) {
     this.mostrarAlerta('Solo los administradores pueden exportar resúmenes', 'warning');
     return;
@@ -787,15 +796,36 @@ private calcularEstadisticasResumen(ventas: Venta[]): any {
     });
   }
 
-  ngOnInit() {
+// Añade este método para debug en ngOnInit:
+ngOnInit() {
     this.cargarVentas();
     this.estadosVenta = this.ventasService.getEstadosVenta();
     this.cargarEstadisticasAvanzadas();
+     // Inicializar fechas para los filtros
+  this.inicializarFechas();
+    
+    // Debug después de cargar
     setTimeout(() => {
-      this.verificarEstadosVentas();
-      this.verificarFechasVentas();
-    }, 1000);
-  }
+        this.debugFechasCargadas();
+    }, 1500);
+}
+debugFechasCargadas() {
+    console.log('🔍 DEBUG FECHAS CARGADAS:');
+    this.ventas.forEach(v => {
+        if (v.id_venta && v.id_venta >= 94 && v.id_venta <= 97) {
+            const fechaExtraida = this.fechaService.extraerSoloFecha(v.fecha);
+            console.log(`Venta #${v.id_venta}:`, {
+                fechaOriginal: v.fecha,
+                fechaExtraida: fechaExtraida,
+                tipoFecha: typeof v.fecha,
+                fechaFormateada: this.fechaService.formatFechaTabla(v.fecha),
+                fechaObj: new Date(v.fecha),
+                horaOriginal: v.hora,
+                horaFormateada: this.fechaService.formatHora(v.hora)
+            });
+        }
+    });
+}
 
   ngOnDestroy() {
     this.removeEventListeners();
@@ -808,6 +838,90 @@ private calcularEstadisticasResumen(ventas: Venta[]): any {
     
     this.calcularEstadisticasLocales();
   }
+
+// Reemplaza el método inicializarFechas():
+inicializarFechas() {
+  const hoy = new Date();
+  
+  // Fecha máxima: hoy
+  this.maxDate = hoy.toISOString().split('T')[0];
+  
+  // Fecha mínima: 1 año atrás
+  const haceUnAnio = new Date();
+  haceUnAnio.setFullYear(hoy.getFullYear() - 1);
+  this.minDate = haceUnAnio.toISOString().split('T')[0];
+  
+  // Inicializar fechas temporales
+  this.filtroRangoTemp = { inicio: '', fin: '' };
+  this.rangoAplicado = { inicio: '', fin: '' };
+}
+// Método para cambio de fecha específica
+onFechaEspecificaChange() {
+  if (this.filtroFecha) {
+    // Si se selecciona una fecha específica, limpiar el rango
+    this.filtroRangoFechas = { inicio: '', fin: '' };
+  }
+  this.aplicarFiltros();
+}
+
+
+// Modifica el método limpiarFiltroRango():
+limpiarFiltroRango() {
+  // Limpiar todo
+  this.filtroRangoTemp = { inicio: '', fin: '' };
+  this.filtroRangoFechas = { inicio: '', fin: '' };
+  this.rangoAplicado = { inicio: '', fin: '' };
+  
+  this.aplicarFiltros();
+  this.mostrarAlerta('Rango de fechas limpiado', 'info');
+}
+
+
+// Modifica el método establecerRangoRapido():
+establecerRangoRapido(tipo: string) {
+  const hoy = new Date();
+  
+  switch (tipo) {
+    case 'hoy':
+      const hoyStr = hoy.toISOString().split('T')[0];
+      this.filtroRangoTemp = { inicio: hoyStr, fin: hoyStr };
+      break;
+      
+    case 'ayer':
+      const ayer = new Date(hoy);
+      ayer.setDate(hoy.getDate() - 1);
+      const ayerStr = ayer.toISOString().split('T')[0];
+      this.filtroRangoTemp = { inicio: ayerStr, fin: ayerStr };
+      break;
+      
+    case 'semana':
+      const inicioSemana = new Date(hoy);
+      inicioSemana.setDate(hoy.getDate() - hoy.getDay()); // Domingo
+      const finSemana = new Date(hoy);
+      finSemana.setDate(hoy.getDate() + (6 - hoy.getDay())); // Sábado
+      
+      this.filtroRangoTemp = {
+        inicio: inicioSemana.toISOString().split('T')[0],
+        fin: finSemana.toISOString().split('T')[0]
+      };
+      break;
+      
+    case 'mes':
+      const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+      const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+      
+      this.filtroRangoTemp = {
+        inicio: inicioMes.toISOString().split('T')[0],
+        fin: finMes.toISOString().split('T')[0]
+      };
+      break;
+  }
+  
+  // No aplicar automáticamente, solo mostrar en los inputs
+  // El usuario debe presionar "Aplicar Rango"
+  
+  this.mostrarAlerta(`Rango "${tipo}" seleccionado. Presiona "Aplicar Rango" para filtrar.`, 'info');
+}
 
   calcularEstadisticasLocales() {
   const hoy = new Date().toISOString().split('T')[0];
@@ -859,71 +973,126 @@ private calcularEstadisticasResumen(ventas: Venta[]): any {
     return resultado;
   }
 
-  aplicarFiltroRangoFechas() {
-    if (this.filtroRangoFechas.inicio && this.filtroRangoFechas.fin) {
-      this.filtroFecha = '';
-      this.aplicarFiltrosConRango();
-    } else if (this.filtroRangoFechas.inicio || this.filtroRangoFechas.fin) {
-      alert('Por favor, seleccione ambas fechas para el rango');
-    }
+// Reemplaza el método aplicarFiltroRangoFechas():
+aplicarFiltroRangoFechas() {
+  if (this.filtroRangoTemp.inicio && this.filtroRangoTemp.fin) {
+    // Copiar las fechas temporales a las activas
+    this.filtroRangoFechas = {
+      inicio: this.filtroRangoTemp.inicio,
+      fin: this.filtroRangoTemp.fin
+    };
+    
+    // Guardar el rango aplicado para mostrar
+    this.rangoAplicado = {
+      inicio: this.filtroRangoFechas.inicio,
+      fin: this.filtroRangoFechas.fin
+    };
+    
+    // Limpiar fecha específica
+    this.filtroFecha = '';
+    
+    // Aplicar filtros
+    this.aplicarFiltrosConRango();
+    
+    // Mostrar confirmación CORREGIDA
+const inicioFormateada = this.fechaService.formatFechaTabla(this.filtroRangoFechas.inicio);
+const finFormateada = this.fechaService.formatFechaTabla(this.filtroRangoFechas.fin);
+    this.mostrarAlerta(`Rango aplicado: ${inicioFormateada} - ${finFormateada}`, 'success');
+  } else {
+    this.mostrarAlerta('Por favor, seleccione ambas fechas para el rango', 'warning');
   }
+}
+// Añade este método para formatear fechas correctamente:
+private formatarFechaParaMostrar(fecha: string): string {
+  if (!fecha) return '';
+  
+  try {
+    const fechaObj = new Date(fecha);
+    if (isNaN(fechaObj.getTime())) return fecha;
+    
+    // Formato DD/MM/YYYY
+    const dia = fechaObj.getDate().toString().padStart(2, '0');
+    const mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+    const anio = fechaObj.getFullYear();
+    
+    return `${dia}/${mes}/${anio}`;
+  } catch (error) {
+    console.error('Error formateando fecha:', error, 'Fecha:', fecha);
+    return fecha;
+  }
+}
 
-  aplicarFiltrosConRango() {
-    console.log('🔍 Aplicando filtros con rango:', this.filtroRangoFechas);
+// Modifica el método aplicarFiltrosConRango() para usar rangoAplicado:
+aplicarFiltrosConRango() {
+  console.log('🔍 Aplicando filtros con rango:', this.filtroRangoFechas);
 
-    let filtered = [...this.ventas];
+  let filtered = [...this.ventas];
 
-    if (this.filtroRangoFechas.inicio && this.filtroRangoFechas.fin) {
-      const inicio = new Date(this.filtroRangoFechas.inicio);
-      const fin = new Date(this.filtroRangoFechas.fin);
+  if (this.filtroRangoFechas.inicio && this.filtroRangoFechas.fin) {
+    const inicio = this.filtroRangoFechas.inicio;
+    const fin = this.filtroRangoFechas.fin;
+    
+    console.log('📅 Comparando rango:', inicio, 'hasta', fin);
+    
+    filtered = filtered.filter(venta => {
+      if (!venta.fecha) return false;
       
-      fin.setHours(23, 59, 59, 999);
+      // Usar el servicio para extraer solo la fecha
+      const fechaVenta = this.fechaService.extraerSoloFecha(venta.fecha);
       
-      filtered = filtered.filter(venta => {
-        if (!venta.fecha) return false;
-        const fechaVenta = new Date(venta.fecha);
-        return fechaVenta >= inicio && fechaVenta <= fin;
-      });
-    }
+      // Validar
+      if (!fechaVenta.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        console.warn(`⚠️ Venta #${venta.id_venta} fecha inválida:`, {
+          original: venta.fecha,
+          extraida: fechaVenta
+        });
+        return false;
+      }
+      
+      return fechaVenta >= inicio && fechaVenta <= fin;
+    });
+    
+    console.log(`📊 Filtrado por rango ${inicio} - ${fin}: ${filtered.length} ventas`);
+  }
 
     if (this.filtroEstado > 0) {
-      const estadoFiltro = Number(this.filtroEstado);
-      filtered = filtered.filter(venta => venta.id_estado_venta === estadoFiltro);
-    }
-
-    if (this.filtroEstadoPago) {
-      switch (this.filtroEstadoPago) {
-        case 'pagado':
-          filtered = filtered.filter(v => v.estado === 'Pagado');
-          break;
-        case 'pendiente':
-          filtered = filtered.filter(v => v.estado !== 'Pagado' && v.estado !== 'Cancelado');
-          break;
-        case 'cancelado':
-          filtered = filtered.filter(v => v.estado === 'Cancelado');
-          break;
-      }
-    }
-
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(venta => {
-        return (
-          venta.nombre_completo?.toLowerCase().includes(term) ||
-          venta.id_venta?.toString().includes(term) ||
-          venta.estado?.toLowerCase().includes(term) ||
-          venta.telefono?.includes(term) ||
-          venta.razon_social?.toLowerCase().includes(term)
-        );
-      });
-    }
-
-    console.log(`📊 Resultados filtrados: ${filtered.length} de ${this.ventas.length}`);
-    
-    this.ventasFiltradas = filtered;
-    this.totalItems = filtered.length;
-    this.currentPage = 1;
+    const estadoFiltro = Number(this.filtroEstado);
+    filtered = filtered.filter(venta => venta.id_estado_venta === estadoFiltro);
   }
+
+  if (this.filtroEstadoPago) {
+    switch (this.filtroEstadoPago) {
+      case 'pagado':
+        filtered = filtered.filter(v => v.estado === 'Pagado');
+        break;
+      case 'pendiente':
+        filtered = filtered.filter(v => v.estado !== 'Pagado' && v.estado !== 'Cancelado');
+        break;
+      case 'cancelado':
+        filtered = filtered.filter(v => v.estado === 'Cancelado');
+        break;
+    }
+  }
+
+  if (this.searchTerm) {
+    const term = this.searchTerm.toLowerCase();
+    filtered = filtered.filter(venta => {
+      return (
+        venta.nombre_completo?.toLowerCase().includes(term) ||
+        venta.id_venta?.toString().includes(term) ||
+        venta.estado?.toLowerCase().includes(term) ||
+        venta.telefono?.includes(term) ||
+        venta.razon_social?.toLowerCase().includes(term)
+      );
+    });
+  }
+
+  console.log(`📊 Resultados filtrados: ${filtered.length} de ${this.ventas.length}`);
+  
+  this.ventasFiltradas = filtered;
+  this.totalItems = filtered.length;
+  this.currentPage = 1;
+}
 
   getResumenDiario(): {[key: string]: {total: number, cantidad: number}} {
     const resumen: {[key: string]: {total: number, cantidad: number}} = {};
@@ -961,34 +1130,48 @@ private calcularEstadisticasResumen(ventas: Venta[]): any {
     });
   }
 
-  formatearFechaTabla(fecha: string): string {
-    if (!fecha) return '';
+ // En panel-ventas.component.ts
+// REEMPLAZAR el método formatearFechaTabla en panel-ventas.component.ts
+
+// AÑADIR este método para debug
+verificarFechasEnPanel() {
+    console.log('🔍 VERIFICANDO FECHAS EN PANEL:');
+    this.ventasFiltradas.forEach((venta, index) => {
+        if (venta.id_venta === 97 || venta.id_venta === 96 || venta.id_venta === 95) {
+            console.log(`Venta #${venta.id_venta}:`, {
+                fechaBD: venta.fecha,
+                fechaFormateada: this.fechaService.formatFechaTabla(venta.fecha),
+                fechaObj: new Date(venta.fecha)
+            });
+        }
+    });
+}
+// Agregar método para fecha-hora completa
+formatearFechaHoraCompleta(fecha: string, hora: string): string {
+    if (!fecha || !hora) return '';
     
     try {
-      let fechaAjustada = fecha;
-      
-      if (fecha.length === 10 && fecha.indexOf('T') === -1) {
-        fechaAjustada = fecha + 'T12:00:00';
-      }
-      
-      const fechaObj = new Date(fechaAjustada);
-      
-      if (isNaN(fechaObj.getTime())) {
-        console.warn('❌ Fecha inválida:', fecha);
-        return fecha;
-      }
-      
-      const dia = fechaObj.getDate().toString().padStart(2, '0');
-      const mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
-      const anio = fechaObj.getFullYear();
-      
-      return `${dia}/${mes}/${anio}`;
-      
+        // Crear fecha completa en Perú
+        const fechaCompleta = new Date(`${fecha}T${hora}:00-05:00`);
+        
+        if (isNaN(fechaCompleta.getTime())) {
+            return `${fecha} ${hora}`;
+        }
+        
+        return fechaCompleta.toLocaleString('es-PE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'America/Lima'
+        });
     } catch (error) {
-      console.error('❌ Error formateando fecha:', error);
-      return fecha;
+        console.error('Error formateando fecha-hora:', error);
+        return `${fecha} ${hora}`;
     }
-  }
+}
 
   formatearFechaParaExportacion(fecha: string): string {
     if (!fecha) return '';
@@ -1007,23 +1190,7 @@ private calcularEstadisticasResumen(ventas: Venta[]): any {
     }
   }
 
-  formatearHoraTabla(hora: string): string {
-    if (!hora) return '';
-    
-    try {
-      const [horas, minutos] = hora.split(':');
-      const fecha = new Date();
-      fecha.setHours(parseInt(horas), parseInt(minutos));
-      
-      return fecha.toLocaleTimeString('es-PE', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch (error) {
-      return hora;
-    }
-  }
+  
 
   aplicarFiltros() {
     if (this.filtroRangoFechas.inicio && this.filtroRangoFechas.fin) {
@@ -1181,10 +1348,13 @@ private calcularEstadisticasResumen(ventas: Venta[]): any {
     }
   }
 
-  verDetalleVenta(id: number) {
-    this.router.navigate(['/ventas', id]);
-  }
-
+ // En panel-ventas.component.ts, modificar el método verDetalleVenta:
+verDetalleVenta(id: number) {
+  // Guardar la ruta actual antes de navegar
+  localStorage.setItem('previous_ventas_route', '/ventas');
+  
+  this.router.navigate(['/ventas', id]);
+}
   nuevaVenta() {
     this.router.navigate(['/ventas/nueva']);
   }
@@ -1243,38 +1413,38 @@ private calcularEstadisticasResumen(ventas: Venta[]): any {
     }
   }
 
-  hayFiltrosActivos(): boolean {
-    return (
-      this.filtroEstado > 0 ||
-      this.filtroEstadoPago !== '' ||
-      this.filtroFecha !== '' ||
-      this.searchTerm !== '' ||
-      this.filtroRangoFechas.inicio !== '' ||
-      this.filtroRangoFechas.fin !== ''
-    );
-  }
+// Modifica el método hayFiltrosActivos() para que no considere el rango temporal:
+hayFiltrosActivos(): boolean {
+  return (
+    this.filtroEstado > 0 ||
+    this.filtroEstadoPago !== '' ||
+    this.filtroFecha !== '' ||
+    this.searchTerm !== '' ||
+    (this.filtroRangoFechas.inicio !== '' && this.filtroRangoFechas.fin !== '')
+  );
+}
 
-  removerFiltro(tipo: string) {
-    switch (tipo) {
-      case 'estado':
-        this.filtroEstado = 0;
-        break;
-      case 'estadoPago':
-        this.filtroEstadoPago = '';
-        break;
-      case 'fecha':
-        this.filtroFecha = '';
-        break;
-      case 'busqueda':
-        this.searchTerm = '';
-        break;
-      case 'rango':
-        this.filtroRangoFechas = { inicio: '', fin: '' };
-        break;
-    }
-    this.aplicarFiltros();
+// Modifica el método removerFiltro() para el caso 'rango':
+removerFiltro(tipo: string) {
+  switch (tipo) {
+    case 'estado':
+      this.filtroEstado = 0;
+      break;
+    case 'estadoPago':
+      this.filtroEstadoPago = '';
+      break;
+    case 'fecha':
+      this.filtroFecha = '';
+      break;
+    case 'busqueda':
+      this.searchTerm = '';
+      break;
+    case 'rango':
+      this.limpiarFiltroRango(); // Usar el método que limpia todo
+      break;
   }
-
+  this.aplicarFiltros();
+}
   getNombreEstadoPago(estado: string): string {
     const estados: {[key: string]: string} = {
       'pagado': 'Pagado',
@@ -1349,4 +1519,18 @@ getVentasCanceladas(): number {
     }
   }
   
+  // En panel-ventas.component.ts - AÑADE métodos auxiliares
+getFechaFiltroFormateada(fecha: string): string {
+  if (!fecha) return '';
+  return this.fechaService.formatFechaInput(fecha);
+}
+
+getRangoFechasFormateado(): string {
+  if (!this.filtroRangoFechas.inicio || !this.filtroRangoFechas.fin) return '';
+  
+  const inicio = this.fechaService.formatFechaInput(this.filtroRangoFechas.inicio);
+  const fin = this.fechaService.formatFechaInput(this.filtroRangoFechas.fin);
+  
+  return `${inicio} - ${fin}`;
+}
 }

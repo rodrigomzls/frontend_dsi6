@@ -15,6 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { InventarioService } from '../../../../core/services/inventario.service';
 import { ExportService } from '../../../../core/services/export.service';
+import { TruncatePipe } from '../../../../shared/pipes/truncate.pipe'; // IMPORTAR EL PIPE
 
 @Component({
   selector: 'app-inventario-reportes',
@@ -32,7 +33,8 @@ import { ExportService } from '../../../../core/services/export.service';
     MatInputModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    TruncatePipe // AGREGAR AQUÍ EL PIPE
   ],
   templateUrl: './inventario-reportes.component.html',
   styleUrls: ['./inventario-reportes.component.css']
@@ -42,6 +44,7 @@ export class InventarioReportesComponent implements OnInit {
   datosCargados = false;
   cargando = false;
   exportando = false;
+  fechaGeneracion: Date = new Date();
   
   metricas = {
     totalProductos: 0,
@@ -60,56 +63,59 @@ export class InventarioReportesComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.filtrosForm = this.fb.group({
-      tipoReporte: ['stock-general'],
-      fechaInicio: [null],
-      fechaFin: [null]
+      tipoReporte: ['stock-general']
+      // Se removieron los campos de fecha
     });
   }
 
-  ngOnInit() {}
-
-generarReporte() {
-  if (this.filtrosForm.invalid) {
-    this.snackBar.open('Por favor complete los filtros requeridos', 'Cerrar', {
-      duration: 3000
-    });
-    return;
+  ngOnInit() {
+    // Generar reporte automáticamente al cargar el componente
+    this.generarReporte();
   }
 
-  this.cargando = true;
-  const filtros = this.filtrosForm.value;
-  this.filtrosAplicados = { ...filtros };
-
-  // ✅ CORRECCIÓN: Formatear fechas para incluir días completos
-  const filtrosParaBackend = {
-    tipoReporte: filtros.tipoReporte,
-    fechaInicio: filtros.fechaInicio ? this.formatearFecha(filtros.fechaInicio, 'inicio') : null,
-    fechaFin: filtros.fechaFin ? this.formatearFecha(filtros.fechaFin, 'fin') : null
-  };
-
-  console.log('Filtros enviados al backend:', filtrosParaBackend);
-
-  this.inventarioService.getReporteStock(filtrosParaBackend).subscribe({
-    next: (response: any) => {
-      this.cargando = false;
-      this.datosCargados = true;
-      
-      // Procesar datos del backend
-      this.procesarDatosReporte(response);
-      
-      this.snackBar.open('Reporte generado exitosamente', 'Cerrar', {
+  generarReporte() {
+    if (this.filtrosForm.invalid) {
+      this.snackBar.open('Por favor selecciona un tipo de reporte', 'Cerrar', {
         duration: 3000
       });
-    },
-    error: (error) => {
-      this.cargando = false;
-      console.error('Error al generar reporte:', error);
-      this.snackBar.open('Error al generar el reporte', 'Cerrar', {
-        duration: 3000
-      });
+      return;
     }
-  });
-}
+
+    this.cargando = true;
+    this.fechaGeneracion = new Date();
+    const filtros = this.filtrosForm.value;
+    this.filtrosAplicados = { ...filtros };
+
+    // Enviar solo el tipo de reporte (sin fechas)
+    const filtrosParaBackend = {
+      tipoReporte: filtros.tipoReporte
+      // No se incluyen fechas
+    };
+
+    console.log('Filtros enviados al backend:', filtrosParaBackend);
+
+    this.inventarioService.getReporteStock(filtrosParaBackend).subscribe({
+      next: async (response: any) => { // HACER ASYNC
+        this.cargando = false;
+        this.datosCargados = true;
+        
+        // Procesar datos del backend
+        await this.procesarDatosReporte(response); // AGREGAR AWAIT
+        
+        this.snackBar.open('Reporte generado exitosamente', 'Cerrar', {
+          duration: 2000
+        });
+      },
+      error: (error) => {
+        this.cargando = false;
+        console.error('Error al generar reporte:', error);
+        this.snackBar.open('Error al generar el reporte', 'Cerrar', {
+          duration: 3000
+        });
+      }
+    });
+  }
+
   /**
    * Exportar a PDF
    */
@@ -252,20 +258,20 @@ generarReporte() {
     }
   }
 
-// En inventario-reportes.component.ts - actualizar procesarDatosReporte
-private procesarDatosReporte(response: any) {
+  // CORRECCIÓN: Hacer async el método
+ private async procesarDatosReporte(response: any) {
   console.log('Respuesta del backend:', response);
   
-  // Actualizar métricas
+  // Usar los datos que ya vienen del backend
   this.metricas = {
     totalProductos: response.metricas?.total_productos || 0,
     valorTotal: parseFloat(response.metricas?.valor_total) || 0,
-    // ✅ USAR el total de movimientos calculado por el backend
-    totalMovimientos: response.metricas?.total_movimientos || 
-                     response.movimientos?.reduce((sum: number, mov: any) => 
-                       sum + (mov.cantidad_movimientos || 0), 0) || 0
+    // Usar el total_movimientos que ya viene en la respuesta del backend
+    totalMovimientos: response.metricas?.total_movimientos || 0
   };
 
+  console.log('Métricas del backend:', this.metricas);
+  
   // Procesar productos para la tabla
   this.datosReporte = response.productos?.map((producto: any) => ({
     producto: producto.nombre,
@@ -287,6 +293,10 @@ private procesarDatosReporte(response: any) {
   console.log('Métricas calculadas:', this.metricas);
   console.log('Productos con problemas:', this.productosConProblemas);
 }
+
+
+  // Método para obtener total de movimientos (sin filtro de fechas)
+
 
   // Métodos auxiliares para la vista
   getRowClass(item: any): string {
@@ -316,7 +326,7 @@ private procesarDatosReporte(response: any) {
 
   getEstadoText(estado: string): string {
     switch(estado) {
-      case 'normal': return 'NORMAL';
+      case 'normal': return 'OK';
       case 'bajo': return 'BAJO';
       case 'agotado': return 'AGOTADO';
       default: return estado.toUpperCase();
@@ -339,14 +349,4 @@ private procesarDatosReporte(response: any) {
   contarPorEstado(estado: string): number {
     return this.datosReporte.filter(item => item.estado === estado).length;
   }
-
-  // ✅ CORRECCIÓN: Mejorar el formateo de fechas
-private formatearFecha(fecha: Date, tipo: 'inicio' | 'fin' = 'inicio'): string {
-  if (tipo === 'fin') {
-    // Para fecha fin, no ajustamos - el backend se encarga de incluir todo el día
-    return fecha.toISOString().split('T')[0];
-  }
-  // Para fecha inicio, usar el día completo desde las 00:00
-  return fecha.toISOString().split('T')[0];
-}
 }

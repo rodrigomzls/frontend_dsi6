@@ -7,6 +7,7 @@ import { VentasService, Venta, EstadoVenta } from '../../../../core/services/ven
 import { RepartidorService } from '../../../../core/services/repartidor.service';
 import { Repartidor } from '../../../../core/models/repartidor.model';
 import { AuthService } from '../../../../core/services/auth.service';
+import { FechaService } from '../../../../core/services/fecha.service'; // ← AÑADIR
 import Swal from 'sweetalert2';
 
 @Component({
@@ -20,6 +21,7 @@ export class AsignacionRutasComponent implements OnInit {
   private ventasService = inject(VentasService);
   private repartidorService = inject(RepartidorService);
   private authService = inject(AuthService);
+  public fechaService = inject(FechaService); // ← AÑADIR
   private router = inject(Router);
 
   // Datos
@@ -49,24 +51,36 @@ export class AsignacionRutasComponent implements OnInit {
   }
 
   cargarDatos() {
-    this.loading = true;
-    this.error = '';
+  this.loading = true;
+  this.error = '';
 
-    // Cargar ventas listas para reparto
-    this.ventasService.getVentasPorEstado(4).subscribe({
-      next: (ventas) => {
-        console.log('📦 Ventas listas para reparto encontradas:', ventas.length);
-        this.ventasListas = ventas;
-        this.calcularZonasConVentas();
-        this.loading = false;
-        this.cargarUltimaVentaCreada();
-      },
-      error: (error) => {
-        console.error('❌ Error cargando ventas listas:', error);
-        this.error = 'Error cargando ventas listas para reparto';
-        this.loading = false;
-      }
-    });
+  // Cargar ventas listas para reparto
+  this.ventasService.getVentasPorEstado(4).subscribe({
+    next: (ventas) => {
+      console.log('📦 Ventas listas para reparto encontradas:', ventas.length);
+      
+      // DEBUG: Mostrar información detallada de cada venta
+      ventas.forEach((venta, index) => {
+        console.log(`Venta ${index + 1}:`, {
+          id: venta.id_venta,
+          estadoId: venta.id_estado_venta,
+          estado: venta.estado,
+          total: venta.total,
+          nombre: venta.nombre_completo
+        });
+      });
+      
+      this.ventasListas = ventas;
+      this.calcularZonasConVentas();
+      this.loading = false;
+      this.cargarUltimaVentaCreada();
+    },
+    error: (error) => {
+      console.error('❌ Error cargando ventas listas:', error);
+      this.error = 'Error cargando ventas listas para reparto';
+      this.loading = false;
+    }
+  });
 
     // Cargar repartidores activos
     this.repartidorService.getRepartidoresActivos().subscribe({
@@ -220,48 +234,26 @@ export class AsignacionRutasComponent implements OnInit {
     });
   }
 
-  verDetalleVenta(id: any) {
-    const ventaId = Number(id);
-    if (!ventaId || isNaN(ventaId) || ventaId <= 0) {
-      this.mostrarError('ID de venta no válido');
-      return;
-    }
-    this.router.navigate(['/ventas', ventaId]);
+ // En asignacion-rutas.component.ts, modificar el método verDetalleVenta:
+verDetalleVenta(id: any) {
+  const ventaId = Number(id);
+  if (!ventaId || isNaN(ventaId) || ventaId <= 0) {
+    this.mostrarError('ID de venta no válido');
+    return;
   }
+  
+  // Guardar la ruta actual antes de navegar
+  localStorage.setItem('previous_ventas_route', '/ventas/asignacion-rutas');
+  
+  this.router.navigate(['/ventas', ventaId]);
+}
 
   volverAPanel() {
     this.router.navigate(['/ventas']);
   }
 
-  formatearFecha(fecha: string): string {
-    if (!fecha) return '';
-    try {
-      const fechaObj = new Date(fecha);
-      return fechaObj.toLocaleDateString('es-PE', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    } catch (error) {
-      return fecha;
-    }
-  }
+// REEMPLAZAR los métodos formatearFecha y formatearHora
 
-  formatearHora(hora: string): string {
-    if (!hora) return '';
-    try {
-      const [horas, minutos] = hora.split(':');
-      const fecha = new Date();
-      fecha.setHours(parseInt(horas), parseInt(minutos));
-      return fecha.toLocaleTimeString('es-PE', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch (error) {
-      return hora;
-    }
-  }
 
   getRepartidorById(id: number): Repartidor | undefined {
     return this.repartidores.find(r => r.id_repartidor === id);
@@ -295,5 +287,90 @@ export class AsignacionRutasComponent implements OnInit {
       return false;
     }
   }
-  
+// Método para cancelar venta antes de asignar repartidor
+cancelarVenta(idVenta: number, venta: Venta) {
+  // Verificar permisos
+  if (!this.authService.isAdmin() && !this.authService.isVendedor()) {
+    alert('Solo administradores y vendedores pueden cancelar ventas');
+    return;
+  }
+
+  // Manejar nombre undefined
+  const nombreCliente = venta.nombre_completo || 'Cliente sin nombre';
+  const totalVenta = venta.total || 0;
+
+  // Mostrar confirmación con SweetAlert2
+  Swal.fire({
+    title: '⚠️ Cancelar Venta',
+    html: `¿Está seguro de cancelar la venta <strong>#${idVenta}</strong>?<br><br>
+           <strong>Cliente:</strong> ${nombreCliente}<br>
+           <strong>Total:</strong> S/ ${totalVenta}<br>
+           <strong>Fecha:</strong> ${this.fechaService.formatFechaTabla(venta.fecha)} ${this.fechaService.formatHora(venta.hora)}<br><br>
+           <span class="text-danger" style="color: #dc3545; font-weight: bold;">
+             ⚠️ Esta acción cambiará el estado a "Cancelado" y no se podrá revertir.
+           </span>`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, cancelar venta',
+    cancelButtonText: 'No, mantener venta',
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    reverseButtons: true,
+    focusCancel: true,
+    customClass: {
+      popup: 'swal-custom-popup'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Mostrar loading
+      Swal.fire({
+        title: 'Procesando cancelación...',
+        text: 'Por favor espere',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Llamar al servicio para cancelar la venta
+      this.ventasService.updateEstadoVenta(idVenta, 8).subscribe({
+        next: (response) => {
+          // Remover de la lista local
+          this.ventasListas = this.ventasListas.filter(v => v.id_venta !== idVenta);
+          
+          // Actualizar estadísticas
+          this.calcularZonasConVentas();
+          
+          Swal.fire({
+            title: '✅ Venta Cancelada',
+            html: `La venta <strong>#${idVenta}</strong> ha sido cancelada correctamente.<br><br>
+                   <strong>Cliente:</strong> ${nombreCliente}<br>
+                   <strong>Total:</strong> S/ ${totalVenta}`,
+            icon: 'success',
+            timer: 3000,
+            showConfirmButton: false,
+            timerProgressBar: true,
+            willClose: () => {
+              // Recargar datos si es necesario
+              if (this.ventasListas.length === 0) {
+                this.cargarDatos();
+              }
+            }
+          });
+        },
+        error: (error) => {
+          console.error('Error cancelando venta:', error);
+          Swal.fire({
+            title: '❌ Error',
+            html: `No se pudo cancelar la venta:<br><br>
+                   <strong>${error.error?.error || error.message || 'Error del sistema'}</strong><br><br>
+                   Por favor, intente nuevamente.`,
+            icon: 'error',
+            confirmButtonText: 'Entendido'
+          });
+        }
+      });
+    }
+  });
+}
 }

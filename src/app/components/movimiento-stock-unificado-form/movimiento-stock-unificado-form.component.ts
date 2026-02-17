@@ -1,5 +1,5 @@
 // src/app/components/movimiento-stock-unificado-form/movimiento-stock-unificado-form.component.ts
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,7 +22,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatIconModule } from '@angular/material/icon'; // ✅ AGREGAR ESTA IMPORTACIÓN
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-movimiento-stock-unificado-form',
@@ -41,16 +41,20 @@ import { MatIconModule } from '@angular/material/icon'; // ✅ AGREGAR ESTA IMPO
     MatNativeDateModule,
     MatRadioModule,
     MatAutocompleteModule,
-    MatIconModule // ✅ AGREGAR ESTA IMPORTACIÓN
+    MatIconModule
   ]
 })
-export class MovimientoStockUnificadoFormComponent implements OnInit {
+export class MovimientoStockUnificadoFormComponent implements OnInit, OnDestroy {
   form: FormGroup;
   productos: Product[] = [];
   lotes: Lote[] = [];
   filteredLotes: Observable<Lote[]> = of([]);
   isLoading = false;
   isSubmitting = false;
+  
+  // 🔧 NUEVAS PROPIEDADES PARA CONTROLAR EL NÚMERO DE LOTE
+  numeroLoteDisplay: string = '';
+  private numeroLoteCache: string = '';
 
   // Configuración de productos con tiempos de validez
   configProductos: { [key: number]: any } = {
@@ -110,6 +114,12 @@ export class MovimientoStockUnificadoFormComponent implements OnInit {
     this.configurarBusquedaLotes();
   }
 
+  ngOnDestroy(): void {
+    // Limpiar cache al destruir
+    this.numeroLoteCache = '';
+    this.numeroLoteDisplay = '';
+  }
+
   private configurarEventosFormulario(): void {
     // Cuando cambia el producto
     this.form.get('id_producto')?.valueChanges.subscribe(productoId => {
@@ -149,11 +159,22 @@ export class MovimientoStockUnificadoFormComponent implements OnInit {
   private actualizarConfiguracionProducto(productoId: number): void {
     const config = this.configProductos[productoId];
     if (config) {
+      // 🔧 GENERAR NÚMERO DE LOTE UNA SOLA VEZ
+      this.regenerarNumeroLote(config.prefijoLote);
+      
       this.form.patchValue({
         prefijo_lote: config.prefijoLote,
         fecha_caducidad_auto: this.calcularFechaCaducidad(config.mesesValidez)
       });
     }
+  }
+
+  // 🔧 MÉTODO PARA GENERAR NÚMERO DE LOTE DE FORMA CONTROLADA
+  private regenerarNumeroLote(prefijo: string): void {
+    const fecha = new Date();
+    const consecutivo = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    this.numeroLoteCache = `${prefijo}-${fecha.getFullYear()}${(fecha.getMonth()+1).toString().padStart(2, '0')}-${consecutivo}`;
+    this.numeroLoteDisplay = this.numeroLoteCache;
   }
 
   private actualizarModoLote(tipoMovimiento: string): void {
@@ -215,11 +236,13 @@ export class MovimientoStockUnificadoFormComponent implements OnInit {
     return fecha;
   }
 
+  // 🔧 MÉTODO PÚBLICO PARA OBTENER EL NÚMERO DE LOTE
   generarNumeroLote(): string {
-    const prefijo = this.form.get('prefijo_lote')?.value || 'LOTE';
-    const fecha = new Date();
-    const consecutivo = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `${prefijo}-${fecha.getFullYear()}${(fecha.getMonth()+1).toString().padStart(2, '0')}-${consecutivo}`;
+    if (!this.numeroLoteCache) {
+      const prefijo = this.form.get('prefijo_lote')?.value || 'LOTE';
+      this.regenerarNumeroLote(prefijo);
+    }
+    return this.numeroLoteCache;
   }
 
   displayLote(lote: Lote): string {
@@ -234,77 +257,94 @@ export class MovimientoStockUnificadoFormComponent implements OnInit {
     });
   }
 
- async guardar(): Promise<void> {
-  if (this.form.invalid) {
-    this.marcarCamposInvalidos();
-    this.mostrarError('Por favor complete todos los campos requeridos');
-    return;
-  }
-
-  this.isSubmitting = true;
-  const formValue = this.form.getRawValue();
-
-  try {
-    let idLote: number | undefined = undefined;
-
-    // Lógica de gestión de lote
-    if (formValue.tipo_movimiento === 'ingreso') {
-      idLote = await this.gestionarLoteIngreso(formValue);
-    } else {
-      idLote = formValue.id_lote_existente || undefined;
-      
-      // Validar stock para egresos
-      if (formValue.tipo_movimiento === 'egreso' && idLote) {
-        const loteSeleccionado = this.lotes.find(l => l.id_lote === idLote);
-        if (loteSeleccionado && loteSeleccionado.cantidad_actual < formValue.cantidad) {
-          throw new Error(`Stock insuficiente. Disponible: ${loteSeleccionado.cantidad_actual}`);
-        }
-      }
+  async guardar(): Promise<void> {
+    if (this.form.invalid) {
+      this.marcarCamposInvalidos();
+      this.mostrarError('Por favor complete todos los campos requeridos');
+      return;
     }
 
-    // ✅ CORREGIDO: Usar undefined directamente en lugar de null
-    const movimientoData = {
-      id_producto: formValue.id_producto,
-      tipo_movimiento: formValue.tipo_movimiento,
-      cantidad: formValue.cantidad,
-      descripcion: formValue.descripcion || this.generarDescripcionAutomatica(formValue),
-      id_lote: idLote // ✅ Ya es undefined por defecto
-    };
+    this.isSubmitting = true;
+    const formValue = this.form.getRawValue();
 
-    await this.movimientoService.createMovimiento(movimientoData).toPromise();
+    try {
+      let idLote: number | undefined = undefined;
+      let movimientoData: any;
 
-    this.mostrarExito('Movimiento registrado correctamente');
-    this.dialogRef.close(true);
-
-  } catch (error: any) {
-    console.error('Error:', error);
-    this.mostrarError(error.message || 'Error al registrar movimiento');
-  } finally {
-    this.isSubmitting = false;
-  }
-}
-
-private async gestionarLoteIngreso(formValue: any): Promise<number> {
-  // Validar que tenemos un producto seleccionado
-  if (!formValue.id_producto) {
-    throw new Error('Debe seleccionar un producto');
-  }
-
-  switch (formValue.gestion_lote) {
-    case 'automatico':
-      const fechaCaducidad = formValue.fecha_caducidad_auto || this.calcularFechaCaducidad();
-      const loteAutoData = {
-        id_producto: formValue.id_producto,
-        numero_lote: this.generarNumeroLote(),
-        fecha_caducidad: this.formatDateForBackend(fechaCaducidad),
-        cantidad_inicial: formValue.cantidad
-      };
-      
-      const loteAuto = await this.loteService.createLote(loteAutoData).toPromise();
-      if (!loteAuto || !loteAuto.id_lote) {
-        throw new Error('Error al crear lote automático');
+      // Lógica de gestión de lote
+      if (formValue.tipo_movimiento === 'ingreso') {
+        idLote = await this.gestionarLoteIngreso(formValue);
+        
+        // Obtener nombre del producto
+        const nombreProducto = this.productos.find(p => p.id_producto === formValue.id_producto)?.nombre || 'Producto';
+        
+        movimientoData = {
+          id_producto: formValue.id_producto,
+          tipo_movimiento: formValue.tipo_movimiento,
+          cantidad: formValue.cantidad,
+          descripcion: formValue.descripcion || `Ingreso - ${nombreProducto} - ${formValue.cantidad} unidades`,
+          id_lote: idLote
+        };
+      } else {
+        idLote = formValue.id_lote_existente || undefined;
+        
+        // Validar stock para egresos
+        if (formValue.tipo_movimiento === 'egreso' && idLote) {
+          const loteSeleccionado = this.lotes.find(l => l.id_lote === idLote);
+          if (loteSeleccionado && loteSeleccionado.cantidad_actual < formValue.cantidad) {
+            throw new Error(`Stock insuficiente. Disponible: ${loteSeleccionado.cantidad_actual}`);
+          }
+        }
+        
+        movimientoData = {
+          id_producto: formValue.id_producto,
+          tipo_movimiento: formValue.tipo_movimiento,
+          cantidad: formValue.cantidad,
+          descripcion: formValue.descripcion || this.generarDescripcionAutomatica(formValue),
+          id_lote: idLote
+        };
       }
-      return loteAuto.id_lote;
+
+      // Enviar movimiento al backend
+      const resultado = await this.movimientoService.createMovimiento(movimientoData).toPromise();
+      
+      this.mostrarExito('Movimiento registrado correctamente');
+      
+      // 🟢 DISPARAR EVENTO DE ACTUALIZACIÓN
+      window.dispatchEvent(new CustomEvent('inventario-actualizado'));
+      
+      // 🟢 CERRAR MODAL CON RETRASO PARA PERMITIR ACTUALIZACIÓN
+      setTimeout(() => {
+        this.dialogRef.close(true);
+      }, 500);
+
+    } catch (error: any) {
+      console.error('Error:', error);
+      this.mostrarError(error.message || 'Error al registrar movimiento');
+      this.isSubmitting = false;
+    }
+  }
+
+  private async gestionarLoteIngreso(formValue: any): Promise<number> {
+    if (!formValue.id_producto) {
+      throw new Error('Debe seleccionar un producto');
+    }
+
+    switch (formValue.gestion_lote) {
+      case 'automatico':
+        const fechaCaducidad = formValue.fecha_caducidad_auto || this.calcularFechaCaducidad();
+        const loteAutoData = {
+          id_producto: formValue.id_producto,
+          numero_lote: this.generarNumeroLote(),
+          fecha_caducidad: this.formatDateForBackend(fechaCaducidad),
+          cantidad_inicial: formValue.cantidad
+        };
+        
+        const loteAuto = await this.loteService.createLote(loteAutoData).toPromise();
+        if (!loteAuto || !loteAuto.id_lote) {
+          throw new Error('Error al crear lote automático');
+        }
+        return loteAuto.id_lote;
 
       case 'manual':
         if (!formValue.numero_lote_manual || !formValue.fecha_caducidad_manual) {
@@ -317,7 +357,6 @@ private async gestionarLoteIngreso(formValue: any): Promise<number> {
           cantidad_inicial: formValue.cantidad
         };
         
-        // ✅ CORREGIDO: Manejar el posible undefined
         const loteManual = await this.loteService.createLote(loteManualData).toPromise();
         if (!loteManual) {
           throw new Error('Error al crear lote manual');
@@ -341,20 +380,19 @@ private async gestionarLoteIngreso(formValue: any): Promise<number> {
     return `${tipo} - ${producto} - ${formValue.cantidad} unidades`;
   }
 
-private formatDateForBackend(date: Date | string): string {
-  if (!date) return new Date().toISOString().split('T')[0];
-  
-  if (typeof date === 'string') {
-    // Si es string, intentar parsear
-    const parsed = new Date(date);
-    return isNaN(parsed.getTime()) 
-      ? new Date().toISOString().split('T')[0] 
-      : parsed.toISOString().split('T')[0];
+  private formatDateForBackend(date: Date | string): string {
+    if (!date) return new Date().toISOString().split('T')[0];
+    
+    if (typeof date === 'string') {
+      const parsed = new Date(date);
+      return isNaN(parsed.getTime()) 
+        ? new Date().toISOString().split('T')[0] 
+        : parsed.toISOString().split('T')[0];
+    }
+    
+    return date.toISOString().split('T')[0];
   }
-  
-  // Si es Date object
-  return date.toISOString().split('T')[0];
-}
+
   private marcarCamposInvalidos(): void {
     Object.keys(this.form.controls).forEach(key => {
       const control = this.form.get(key);
@@ -388,10 +426,13 @@ private formatDateForBackend(date: Date | string): string {
       next: (productos) => {
         this.productos = productos;
         this.isLoading = false;
+        // 🔧 Habilitar cuando termine la carga
+        this.form.get('id_producto')?.enable();
       },
       error: (err) => {
         this.mostrarError('Error cargando productos');
         this.isLoading = false;
+        this.form.get('id_producto')?.enable();
       }
     });
   }

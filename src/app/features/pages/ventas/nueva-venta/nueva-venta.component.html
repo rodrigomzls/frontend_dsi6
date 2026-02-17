@@ -355,38 +355,40 @@
         </h2>
         
         <div class="comprobante-types">
-          <div class="comprobante-option" 
-               [class.selected]="venta.tipo_comprobante === 'SIN_COMPROBANTE'"
-               (click)="venta.tipo_comprobante = 'SIN_COMPROBANTE'">
-            <i class="material-icons">note</i>
-            <div class="option-content">
-              <h4>Nota de Venta</h4>
-              <p>Sin comprobante oficial</p>
-            </div>
-            <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'SIN_COMPROBANTE'">check_circle</i>
+                <!-- En la sección de Comprobante, modifica la opción de Nota de Venta -->
+        <div class="comprobante-option" 
+            [class.selected]="venta.tipo_comprobante === 'SIN_COMPROBANTE'"
+            (click)="seleccionarNotaDeVenta()"> <!-- Cambia esto -->
+          <i class="material-icons">note</i>
+          <div class="option-content">
+            <h4>Nota de Venta</h4>
+            <p>Sin comprobante oficial</p>
           </div>
+          <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'SIN_COMPROBANTE'">check_circle</i>
+        </div>
+          
+          <!-- Las otras opciones quedarían así: -->
+<div class="comprobante-option" 
+     [class.selected]="venta.tipo_comprobante === 'BOLETA'"
+     (click)="seleccionarComprobante('BOLETA')"> <!-- Nuevo método -->
+  <i class="material-icons">receipt</i>
+  <div class="option-content">
+    <h4>Boleta Electrónica</h4>
+    <p>Para clientes con DNI</p>
+  </div>
+  <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'BOLETA'">check_circle</i>
+</div>
           
           <div class="comprobante-option" 
-               [class.selected]="venta.tipo_comprobante === 'BOLETA'"
-               (click)="venta.tipo_comprobante = 'BOLETA'; onTipoComprobanteChange()">
-            <i class="material-icons">receipt</i>
-            <div class="option-content">
-              <h4>Boleta Electrónica</h4>
-              <p>Para clientes con DNI</p>
-            </div>
-            <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'BOLETA'">check_circle</i>
-          </div>
-          
-          <div class="comprobante-option" 
-               [class.selected]="venta.tipo_comprobante === 'FACTURA'"
-               (click)="venta.tipo_comprobante = 'FACTURA'; onTipoComprobanteChange()">
-            <i class="material-icons">description</i>
-            <div class="option-content">
-              <h4>Factura Electrónica</h4>
-              <p>Para clientes con RUC</p>
-            </div>
-            <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'FACTURA'">check_circle</i>
-          </div>
+     [class.selected]="venta.tipo_comprobante === 'FACTURA'"
+     (click)="seleccionarComprobante('FACTURA')"> <!-- Nuevo método -->
+  <i class="material-icons">description</i>
+  <div class="option-content">
+    <h4>Factura Electrónica</h4>
+    <p>Para clientes con RUC</p>
+  </div>
+  <i class="material-icons check-icon" *ngIf="venta.tipo_comprobante === 'FACTURA'">check_circle</i>
+</div>
         </div>
         
         <!-- Preview de comprobante -->
@@ -458,15 +460,6 @@
         <div class="estado-item" *ngIf="venta.id_cliente !== 0 && venta.detalles.length > 0">
           <i class="material-icons icono-estado icono-exito">check_circle</i>
           <span>Listo para procesar</span>
-        </div>
-      </div>
-      
-      <!-- Comprobante generado -->
-      <div class="comprobante-generado" *ngIf="serieNumeroPreview">
-        <i class="material-icons">receipt</i>
-        <div class="comprobante-info">
-          <span class="comprobante-texto">Comprobante:</span>
-          <strong class="comprobante-numero">{{ serieNumeroPreview }}</strong>
         </div>
       </div>
     </div>

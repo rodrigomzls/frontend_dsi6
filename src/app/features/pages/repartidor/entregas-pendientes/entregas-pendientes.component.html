@@ -110,10 +110,17 @@
     <i class="fas fa-play-circle"></i> Iniciar Ruta
   </button>
   
-  <!-- Botón de Mapa - SIEMPRE disponible -->
-  <button class="btn btn-info" (click)="abrirMapa(entrega.direccion, entrega.coordenadas)">
+<!-- En entregas-pendientes.component.html -->
+<div class="mapa-actions">
+  <button class="btn btn-info" 
+          (click)="abrirMapa(entrega.direccion, entrega.coordenadas)">
     <i class="fas fa-map"></i> Ver en Mapa
   </button>
+  <button class="btn btn-outline-info" 
+          (click)="copiarDireccion(entrega.direccion)">
+    <i class="fas fa-copy"></i> Copiar Dirección
+  </button>
+</div>
   
   <!-- Botón de Ver Detalles - SIEMPRE disponible -->
   <button class="btn btn-secondary" (click)="verDetalleVenta(entrega.id_venta)">

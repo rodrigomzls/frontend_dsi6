@@ -45,10 +45,13 @@
     
     <div class="dropdown-menu" [class.show]="showExportDropdown">
       
-      <div class="dropdown-header">
-        <i class="fas fa-download"></i>
-        Exportar Datos
-      </div>
+    <!-- Cabecera con botón cerrar -->
+  <div class="dropdown-header">
+    <span>Exportar Datos</span>
+    <button class="close-dropdown-btn" (click)="closeExportDropdown()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
       
       <button (click)="exportarVentas('excel')" class="dropdown-item">
         <i class="fas fa-file-excel text-success"></i>
@@ -107,24 +110,16 @@
         </div>
       </button>
     </div>
+     <!-- Overlay CON CLASE CONDICIONAL -->
+  <div class="dropdown-overlay" 
+       [class.active]="showExportDropdown"
+       (click)="closeExportDropdown()">
+  </div>
   </div>
 </div>
     
     <div class="toolbar-right">
       <!-- Filtro por rango de fechas (avanzado) -->
-      <div class="filtro-rango" *ngIf="authService.isAdmin()">
-        <input type="date" [(ngModel)]="filtroRangoFechas.inicio" 
-               placeholder="Desde"
-               class="filtro-rango-input">
-        <span class="separador">a</span>
-        <input type="date" [(ngModel)]="filtroRangoFechas.fin" 
-               placeholder="Hasta"
-               class="filtro-rango-input">
-        <button (click)="aplicarFiltroRangoFechas()" class="btn-small">
-          Aplicar
-        </button>
-      </div>
-      
       <!-- Toggle estadísticas -->
       <button (click)="mostrarEstadisticas = !mostrarEstadisticas" 
               class="btn-toggle"
@@ -135,51 +130,146 @@
     </div>
   </div>
 
-  <!-- Buscador y filtros - sección actualizada -->
-  <div class="filters">
-    <!-- Buscador -->
-    <div class="filter-group">
-      <div class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input 
-          type="text" 
-          [(ngModel)]="searchTerm" 
-          (input)="aplicarFiltros()"
-          placeholder="Buscar por cliente, ID o razón social..."
-          class="search-input">
+<!-- En panel-ventas.component.html - MODIFICAR la sección del filtro de fechas -->
+
+<!-- ... Toolbar se mantiene igual ... -->
+
+<!-- Filtros mejorados con secciones diferenciadas -->
+<div class="filters">
+  <!-- Sección 1: Búsqueda general -->
+  <div class="filter-group">
+    <div class="search-container">
+      <i class="fas fa-search search-icon"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="aplicarFiltros()"
+        placeholder="Buscar por cliente, ID o razón social..."
+        class="search-input">
+    </div>
+  </div>
+
+  <!-- Sección 2: Filtros básicos -->
+  <div class="filter-group">
+    <label class="filter-label">
+      <i class="fas fa-flag"></i> Estado:
+    </label>
+    <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()" class="filter-select">
+      <option [value]="0">Todos los estados</option>
+      <option *ngFor="let estado of estadosVenta" [value]="estado.id_estado_venta">
+        {{ estado.estado }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Sección 3: Filtro de fecha específica CON ICONO DIFERENTE -->
+  <div class="filter-group">
+    <div class="filter-with-help">
+      <div class="filter-header">
+        <label class="filter-label">
+          <i class="fas fa-calendar-day"></i> Fecha exacta:
+        </label>
+        <span class="filter-help" title="Filtrar por un día específico">
+          <i class="fas fa-question-circle"></i>
+        </span>
       </div>
-    </div>
-
-    <!-- Filtro por estado -->
-    <div class="filter-group">
-      <label class="filter-label">
-        <i class="fas fa-flag"></i> Estado:
-      </label>
-      <select [(ngModel)]="filtroEstado" (change)="aplicarFiltros()" class="filter-select">
-        <option [value]="0">Todos los estados</option>
-        <option *ngFor="let estado of estadosVenta" [value]="estado.id_estado_venta">
-          {{ estado.estado }}
-        </option>
-      </select>
-    </div>
-
-    <!-- Filtro por fecha -->
-    <div class="filter-group">
-      <label class="filter-label">
-        <i class="fas fa-calendar"></i> Fecha:
-      </label>
       <input 
         type="date" 
         [(ngModel)]="filtroFecha" 
-        (change)="aplicarFiltros()"
-        class="filter-input">
+        (change)="onFechaEspecificaChange()"
+        class="filter-input date-input-especifica"
+        placeholder="Seleccionar día">
     </div>
-
-    <!-- Limpiar filtros -->
-    <button (click)="limpiarFiltros()" class="btn-clear" *ngIf="hayFiltrosActivos()">
-      <i class="fas fa-times"></i> Limpiar
-    </button>
   </div>
+
+  <!-- Limpiar filtros -->
+  <button (click)="limpiarFiltros()" class="btn-clear" *ngIf="hayFiltrosActivos()">
+    <i class="fas fa-times"></i> Limpiar
+  </button>
+</div>
+
+<!-- Nueva sección: Filtro avanzado de rango de fechas -->
+<div class="filtro-avanzado-container" *ngIf="authService.isAdmin()">
+  <div class="filtro-avanzado-header">
+    <i class="fas fa-calendar-alt"></i>
+    <span class="filtro-avanzado-title">Filtro Avanzado por Rango</span>
+    <small class="filtro-avanzado-desc">Selecciona un período de tiempo específico</small>
+    
+    <!-- Mostrar rango aplicado actualmente -->
+    <div class="rango-aplicado-info" *ngIf="rangoAplicado.inicio && rangoAplicado.fin">
+      <small>
+        <i class="fas fa-check-circle text-success"></i>
+       Rango aplicado: {{ fechaService.formatFechaTabla(rangoAplicado.inicio) }} - {{ fechaService.formatFechaTabla(rangoAplicado.fin) }}
+      </small>
+    </div>
+  </div>
+  
+  <div class="filtro-avanzado-body">
+    <div class="rango-fechas-controls">
+      <div class="rango-input-group">
+        <label class="rango-label">
+          <i class="fas fa-calendar-plus"></i> Desde:
+        </label>
+        <input 
+          type="date" 
+          [(ngModel)]="filtroRangoTemp.inicio" 
+          class="rango-input"
+          [max]="filtroRangoTemp.fin || maxDate"
+          placeholder="Fecha inicial">
+      </div>
+      
+      <div class="rango-separador">
+        <i class="fas fa-arrow-right"></i>
+      </div>
+      
+      <div class="rango-input-group">
+        <label class="rango-label">
+          <i class="fas fa-calendar-minus"></i> Hasta:
+        </label>
+        <input 
+          type="date" 
+          [(ngModel)]="filtroRangoTemp.fin" 
+          class="rango-input"
+          [min]="filtroRangoTemp.inicio || minDate"
+          [max]="maxDate"
+          placeholder="Fecha final">
+      </div>
+      
+      <button 
+        (click)="aplicarFiltroRangoFechas()" 
+        class="btn-primary btn-rango"
+        [disabled]="!filtroRangoTemp.inicio || !filtroRangoTemp.fin">
+        <i class="fas fa-filter"></i> Aplicar Rango
+      </button>
+      
+      <button 
+        (click)="limpiarFiltroRango()" 
+        class="btn-secondary btn-limpiar-rango"
+        *ngIf="filtroRangoFechas.inicio || filtroRangoFechas.fin">
+        <i class="fas fa-eraser"></i> Limpiar
+      </button>
+    </div>
+    
+    <!-- Opciones rápidas de rango - SOLO cuando no hay rango aplicado -->
+    <div class="rangos-rapidos" *ngIf="!filtroRangoFechas.inicio && !filtroRangoFechas.fin">
+      <small class="rangos-rapidos-title">Rangos predefinidos:</small>
+      <div class="rangos-botones">
+        <button (click)="establecerRangoRapido('hoy')" class="btn-rango-rapido">
+          <i class="fas fa-sun"></i> Hoy
+        </button>
+        <button (click)="establecerRangoRapido('ayer')" class="btn-rango-rapido">
+          <i class="fas fa-history"></i> Ayer
+        </button>
+        <button (click)="establecerRangoRapido('semana')" class="btn-rango-rapido">
+          <i class="fas fa-calendar-week"></i> Esta semana
+        </button>
+        <button (click)="establecerRangoRapido('mes')" class="btn-rango-rapido">
+          <i class="fas fa-calendar"></i> Este mes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Indicadores de filtros activos -->
   <div class="filtros-activos" *ngIf="hayFiltrosActivos()">
@@ -192,20 +282,22 @@
         <i class="fas fa-money-bill-wave"></i> Pago: {{ getNombreEstadoPago(filtroEstadoPago) }}
         <i class="fas fa-times close-tag"></i>
       </span>
-      <span class="filtro-tag" *ngIf="filtroFecha" (click)="removerFiltro('fecha')">
-        <i class="fas fa-calendar"></i> Fecha: {{ formatearFechaTabla(filtroFecha) }}
-        <i class="fas fa-times close-tag"></i>
-      </span>
+      <!-- En la línea 201 - CORREGIR -->
+<span class="filtro-tag" *ngIf="filtroFecha" (click)="removerFiltro('fecha')">
+  <i class="fas fa-calendar"></i> 
+  Fecha: {{ fechaService.formatFechaTabla(filtroFecha) }} <!-- CAMBIAR -->
+  <i class="fas fa-times close-tag"></i>
+</span>
       <span class="filtro-tag" *ngIf="searchTerm" (click)="removerFiltro('busqueda')">
         <i class="fas fa-search"></i> Buscando: "{{ searchTerm }}"
         <i class="fas fa-times close-tag"></i>
       </span>
     </div>
-    <!-- Agregar en la sección de filtros activos -->
-<span class="filtro-tag" *ngIf="filtroRangoFechas.inicio && filtroRangoFechas.fin" 
+ <!-- En la línea 213 - CORREGIR -->
+<span class="filtro-tag" *ngIf="rangoAplicado.inicio && rangoAplicado.fin" 
       (click)="removerFiltro('rango')">
   <i class="fas fa-calendar-alt"></i> 
-  Rango: {{ formatearFechaTabla(filtroRangoFechas.inicio) }} - {{ formatearFechaTabla(filtroRangoFechas.fin) }}
+ Rango: {{ fechaService.formatFechaTabla(rangoAplicado.inicio) }} - {{ fechaService.formatFechaTabla(rangoAplicado.fin) }}
   <i class="fas fa-times close-tag"></i>
 </span>
   </div>
@@ -303,15 +395,20 @@
                 </div>
               </div>
             </td>
-            <td class="venta-fecha">
-              <div class="fecha-info">
-                <strong>{{ formatearFechaTabla(venta.fecha) }}</strong>
-                <small>{{ formatearHoraTabla(venta.hora) }}</small>
-                <small *ngIf="venta.fecha_creacion" class="creacion-info">
-                  Creada: {{ formatearFechaHoraCorta(venta.fecha_creacion) }}
-                </small>
-              </div>
-            </td>
+          <!-- En panel-ventas.component.html - CAMBIAR donde se usan las fechas -->
+<td class="venta-fecha">
+  <div class="fecha-info">
+    <!-- REEMPLAZAR: {{ formatearFechaTabla(venta.fecha) }} -->
+    <strong>{{ fechaService.formatFechaTabla(venta.fecha) }}</strong>
+    
+    <!-- REEMPLAZAR: {{ formatearHoraTabla(venta.hora) }} -->
+    <small>{{ fechaService.formatHora(venta.hora) }}</small>
+    
+    <small *ngIf="venta.fecha_creacion" class="creacion-info">
+      Creada: {{ fechaService.formatHora(venta.fecha_creacion) }}
+    </small>
+  </div>
+</td>
             <td class="venta-total">
               <div class="total-info">
                 <strong>S/ {{ venta.total }}</strong>
@@ -385,9 +482,10 @@
             <strong>#{{ venta.id_venta }}</strong>
             <small *ngIf="venta.vendedor">{{ venta.vendedor }}</small>
           </div>
-          <div class="venta-fecha-mobile">
-            {{ formatearFechaTabla(venta.fecha) }} {{ formatearHoraTabla(venta.hora) }}
-          </div>
+          <!-- En la línea 399 (vista móvil) - CORREGIR -->
+<div class="venta-fecha-mobile">
+  {{ fechaService.formatFechaTabla(venta.fecha) }} {{ fechaService.formatHora(venta.hora) }} <!-- CAMBIAR -->
+</div>
         </div>
         
         <div class="venta-content-mobile">

@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { RepartidorVentaService } from '../../../../core/services/repartidor-venta.service';
 import { RepartidorVenta, VentaDetalle } from '../../../../core/models/repartidor-venta.model';
 import { AuthService } from '../../../../core/services/auth.service';
-
+import { filter } from 'rxjs/operators';
 @Component({
   selector: 'app-detalle-venta-repartidor',
   standalone: true,
@@ -22,10 +22,35 @@ export class DetalleVentaRepartidorComponent implements OnInit {
   venta: RepartidorVenta | null = null;
   loading = true;
   error = '';
+// Variable para guardar la ruta de origen
+  private previousRoute = '/repartidor/rutas-asignadas'; // Valor por defecto
 
   ngOnInit() {
+      this.capturarRutaAnterior();
     this.cargarDetalleVenta();
   }
+
+ // Método para capturar la ruta anterior
+  private capturarRutaAnterior() {
+  const savedRoute = localStorage.getItem('previous_repartidor_route');
+  
+  if (savedRoute) {
+    // Determinar a qué página volver basado en la ruta guardada
+    if (savedRoute.includes('/repartidor/rutas-asignadas')) {
+      this.previousRoute = '/repartidor/rutas-asignadas';
+    } else if (savedRoute.includes('/repartidor/entregas-pendientes')) {
+      this.previousRoute = '/repartidor/entregas-pendientes';
+    } else if (savedRoute.includes('/repartidor/historial-entregas')) {
+      this.previousRoute = '/repartidor/historial-entregas';
+    }
+    
+    // Limpiar el dato después de usarlo
+    localStorage.removeItem('previous_repartidor_route');
+  }
+  
+  console.log('🔙 Ruta de origen:', this.previousRoute);
+}
+
 
  cargarDetalleVenta() {
   const id = this.route.snapshot.paramMap.get('id');
@@ -74,9 +99,15 @@ irARutasAsignadas() {
     }
   }
 
-  volverAtras() {
-    this.router.navigate(['/repartidor/entregas-pendientes']);
-  }
+  
+// Modificar volverAtras para limpiar el localStorage si es necesario
+volverAtras() {
+  // Limpiar cualquier dato residual
+  localStorage.removeItem('previous_repartidor_route');
+  
+  console.log('🔙 Volviendo a:', this.previousRoute);
+  this.router.navigate([this.previousRoute]);
+}
 
   // Métodos auxiliares para la vista
   getEstadoBadgeClass(estado: string): string {

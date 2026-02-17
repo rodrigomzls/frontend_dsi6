@@ -95,6 +95,65 @@ export class NuevaVentaComponent implements OnInit {
     this.cargarRepartidores();
   }
 
+// Añade este método después de ngOnInit
+validarTipoComprobanteSegunCliente(tipo: string): boolean {
+  if (this.venta.id_cliente === 0) {
+    this.error = 'Primero selecciona un cliente';
+    return false;
+  }
+
+  // Buscar el cliente seleccionado
+  const clienteSeleccionado = this.clientes.find(c => c.id_cliente === this.venta.id_cliente);
+  
+  if (!clienteSeleccionado) {
+    this.error = 'Cliente no encontrado';
+    return false;
+  }
+
+  const tipoDocumento = clienteSeleccionado.persona?.tipo_documento;
+  const numeroDocumento = clienteSeleccionado.persona?.numero_documento || '';
+
+  // Validación mejorada
+  if (tipo === 'FACTURA') {
+    // Para factura, debe tener RUC
+    if (tipoDocumento !== 'RUC') {
+      // Verificar si el número de documento parece un RUC (11 dígitos)
+      const esRUC = numeroDocumento && numeroDocumento.length === 11 && /^\d+$/.test(numeroDocumento);
+      
+      if (!esRUC) {
+        this.error = 'Este cliente no tiene RUC. Solo puede emitir BOLETA o NOTA DE VENTA.';
+        Swal.fire({
+          title: '❌ Tipo de comprobante no válido',
+          text: 'El cliente seleccionado no tiene RUC. Debe emitir BOLETA o NOTA DE VENTA.',
+          icon: 'warning',
+          confirmButtonText: 'Entendido'
+        });
+        return false;
+      }
+    }
+  } else if (tipo === 'BOLETA') {
+    // Para boleta, puede tener DNI o documento temporal
+    const esValidoParaBoleta = 
+      tipoDocumento === 'DNI' || 
+      tipoDocumento === 'NO_ESPECIFICADO' ||
+      (numeroDocumento && numeroDocumento.length === 8 && /^\d+$/.test(numeroDocumento));
+    
+    if (!esValidoParaBoleta) {
+      // Si tiene RUC pero quiere boleta, también es válido (puede elegir)
+      if (tipoDocumento === 'RUC') {
+        // Es válido, permitir
+        return true;
+      }
+      
+      this.error = 'Documento no válido para BOLETA';
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+
   // Método para incrementar cantidad
   incrementarCantidad() {
     if (this.productoSeleccionado) {
@@ -108,33 +167,34 @@ export class NuevaVentaComponent implements OnInit {
   }
 
   // Método para limpiar toda la venta
-  limpiarVenta() {
-    Swal.fire({
-      title: '¿Limpiar venta?',
-      text: 'Se perderán todos los datos de la venta actual',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, limpiar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.venta = {
-          id_cliente: 0,
-          fecha: new Date().toISOString().split('T')[0],
-          hora: new Date().toTimeString().split(' ')[0],
-          total: 0,
-          id_metodo_pago: 1,
-          id_estado_venta: 1,
-          id_repartidor: null,
-          id_vendedor: null,
-          notas: '',
-          detalles: [],
-          tipo_comprobante: '',
-          tipo_comprobante_solicitado: ''
-        };
-        
+  // MODIFICA limpiarVenta para inicializar correctamente los campos
+limpiarVenta() {
+  Swal.fire({
+    title: '¿Limpiar venta?',
+    text: 'Se perderán todos los datos de la venta actual',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, limpiar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      this.venta = {
+        id_cliente: 0,
+        fecha: new Date().toISOString().split('T')[0],
+        hora: new Date().toTimeString().split(' ')[0],
+        total: 0,
+        id_metodo_pago: 1,
+        id_estado_venta: 1,
+        id_repartidor: null,
+        id_vendedor: null,
+        notas: '',
+        detalles: [],
+        tipo_comprobante: 'SIN_COMPROBANTE', // Inicializar con valor por defecto
+        tipo_comprobante_solicitado: 'SIN_COMPROBANTE' // Inicializar con valor por defecto
+      };
+        this.serieNumeroPreview = ''; // Limpiar vista previa
         this.searchCliente = '';
         this.searchProducto = '';
         this.productoSeleccionado = null;
@@ -214,14 +274,28 @@ export class NuevaVentaComponent implements OnInit {
 
   async cargarDatosIniciales() {
     try {
-      this.clientesService.getClientesParaVentas().subscribe({
-        next: (clientes: ClienteVenta[]) => {
-          console.log('📋 Clientes cargados para ventas:', clientes);
-          this.clientes = clientes;
-          this.filteredClientes = clientes;
-        },
-        error: (error) => console.error('Error cargando clientes:', error)
+      // En el método cargarDatosIniciales, mejora el log:
+this.clientesService.getClientesParaVentas().subscribe({
+  next: (clientes: ClienteVenta[]) => {
+    console.log('📋 Clientes cargados para ventas:', clientes);
+    
+    // Mostrar estructura detallada del primer cliente
+    if (clientes.length > 0) {
+      console.log('🔍 Estructura del primer cliente:', {
+        id_cliente: clientes[0].id_cliente,
+        tipo_cliente: clientes[0].tipo_cliente,
+        nombre_completo: clientes[0].nombre_completo,
+        razon_social: clientes[0].razon_social,
+        persona: clientes[0].persona,
+        persona_keys: clientes[0].persona ? Object.keys(clientes[0].persona) : 'sin persona'
       });
+    }
+    
+    this.clientes = clientes;
+    this.filteredClientes = clientes;
+  },
+  error: (error) => console.error('Error cargando clientes:', error)
+});
 
       this.productosService.getProducts().subscribe({
         next: (productos) => {
@@ -298,20 +372,30 @@ export class NuevaVentaComponent implements OnInit {
     }
   }
 
-  seleccionarCliente(cliente: ClienteVenta) {
-    this.venta.id_cliente = cliente.id_cliente;
-    this.clienteSeleccionadoNombre = cliente.nombre_completo || cliente.persona?.nombre_completo || '';
-    this.searchCliente = this.clienteSeleccionadoNombre;
-    
-    this.mostrarListaClientes = false;
-    this.filteredClientes = [];
-    
-    console.log('✅ Cliente seleccionado:', {
-      id_cliente: this.venta.id_cliente,
-      nombre: this.clienteSeleccionadoNombre
-    });
+// También valida cuando se selecciona un cliente
+seleccionarCliente(cliente: ClienteVenta) {
+  this.venta.id_cliente = cliente.id_cliente;
+  this.clienteSeleccionadoNombre = cliente.nombre_completo || cliente.persona?.nombre_completo || '';
+  this.searchCliente = this.clienteSeleccionadoNombre;
+  
+  this.mostrarListaClientes = false;
+  this.filteredClientes = [];
+  
+  // Si ya había un tipo de comprobante seleccionado, validarlo
+  if (this.venta.tipo_comprobante && this.venta.tipo_comprobante !== 'SIN_COMPROBANTE') {
+    if (!this.validarTipoComprobanteSegunCliente(this.venta.tipo_comprobante)) {
+      // Si no es válido, resetear a SIN_COMPROBANTE
+      this.venta.tipo_comprobante = 'SIN_COMPROBANTE';
+      this.venta.tipo_comprobante_solicitado = 'SIN_COMPROBANTE';
+      this.serieNumeroPreview = '';
+    }
   }
-
+  
+  console.log('✅ Cliente seleccionado:', {
+    id_cliente: this.venta.id_cliente,
+    nombre: this.clienteSeleccionadoNombre
+  });
+}
   seleccionarProducto(producto: any) {
     console.log('🎯 Producto seleccionado:', producto);
     
@@ -435,32 +519,36 @@ export class NuevaVentaComponent implements OnInit {
     }, 200);
   }
 
-  onTipoComprobanteChange() {
-    if (this.venta.tipo_comprobante && this.venta.id_cliente !== 0) {
-      this.loadingSerie = true;
-      this.serieNumeroPreview = 'Calculando...';
-      
-      this.ventasService.getSiguienteNumeroComprobante(
-        this.venta.tipo_comprobante,
-        this.venta.id_cliente
-      ).subscribe({
-        next: (respuesta: any) => {
-          this.serieNumeroPreview = `${respuesta.serie}-${respuesta.correlativo}`;
-          this.venta.serie_comprobante = respuesta.serie;
-          this.venta.numero_correlativo = respuesta.numero_secuencial;
-          this.loadingSerie = false;
-          console.log('✅ Número de comprobante obtenido:', respuesta);
-        },
-        error: (error: any) => {
-          console.error('❌ Error obteniendo número de comprobante:', error);
-          this.serieNumeroPreview = 'Error: ' + (error.error?.error || error.message);
-          this.loadingSerie = false;
-        }
-      });
-    } else {
-      this.serieNumeroPreview = '';
-    }
+  // MODIFICA onTipoComprobanteChange para que también actualice tipo_comprobante_solicitado
+onTipoComprobanteChange() {
+  if (this.venta.tipo_comprobante && this.venta.id_cliente !== 0) {
+    // Sincronizar ambos campos
+    this.venta.tipo_comprobante_solicitado = this.venta.tipo_comprobante;
+    
+    this.loadingSerie = true;
+    this.serieNumeroPreview = 'Calculando...';
+    
+    this.ventasService.getSiguienteNumeroComprobante(
+      this.venta.tipo_comprobante,
+      this.venta.id_cliente
+    ).subscribe({
+      next: (respuesta: any) => {
+        this.serieNumeroPreview = `${respuesta.serie}-${respuesta.correlativo}`;
+        this.venta.serie_comprobante = respuesta.serie;
+        this.venta.numero_correlativo = respuesta.numero_secuencial;
+        this.loadingSerie = false;
+        console.log('✅ Número de comprobante obtenido:', respuesta);
+      },
+      error: (error: any) => {
+        console.error('❌ Error obteniendo número de comprobante:', error);
+        this.serieNumeroPreview = 'Error: ' + (error.error?.error || error.message);
+        this.loadingSerie = false;
+      }
+    });
+  } else {
+    this.serieNumeroPreview = '';
   }
+}
 
   finalizarVenta() {
     if (this.venta.id_cliente === 0) {
@@ -479,7 +567,17 @@ export class NuevaVentaComponent implements OnInit {
       return;
     }
 
+      // Asegurar que tipo_comprobante y tipo_comprobante_solicitado estén sincronizados
+  if (!this.venta.tipo_comprobante) {
+    this.venta.tipo_comprobante = 'SIN_COMPROBANTE';
+  }
+  if (!this.venta.tipo_comprobante_solicitado) {
+    this.venta.tipo_comprobante_solicitado = this.venta.tipo_comprobante;
+  }
+
     console.log('🔍 VERIFICANDO DETALLES DE LA VENTA:');
+    console.log('Tipo comprobante:', this.venta.tipo_comprobante);
+    console.log('Tipo comprobante solicitado:', this.venta.tipo_comprobante_solicitado);
     this.venta.detalles.forEach((detalle, index) => {
       console.log(`   Detalle ${index + 1}:`, {
         id_producto: detalle.id_producto,
@@ -506,26 +604,26 @@ export class NuevaVentaComponent implements OnInit {
     };
 
     const ventaParaEnviar = {
-      id_cliente: this.venta.id_cliente,
-      fecha: this.venta.fecha,
-      hora: this.venta.hora,
-      total: this.venta.total,
-      id_metodo_pago: this.venta.id_metodo_pago,
-      id_estado_venta: 4,
-      id_repartidor: safeValue(this.venta.id_repartidor, 'id_repartidor'),
-      id_vendedor: currentUser.id_usuario,
-      notas: safeValue(this.venta.notas || '', 'notas'),
-      tipo_comprobante_solicitado: this.venta.tipo_comprobante || 'SIN_COMPROBANTE',
-      detalles: this.venta.detalles.map(detalle => ({
-        id_producto: detalle.id_producto,
-        cantidad: detalle.cantidad,
-        precio_unitario: detalle.precio_unitario,
-        producto_nombre: safeValue(detalle.producto_nombre, 'producto_nombre')
-      }))
-    };
+    id_cliente: this.venta.id_cliente,
+    fecha: this.venta.fecha,
+    hora: this.venta.hora,
+    total: this.venta.total,
+    id_metodo_pago: this.venta.id_metodo_pago,
+    id_estado_venta: 4,
+    id_repartidor: safeValue(this.venta.id_repartidor, 'id_repartidor'),
+    id_vendedor: currentUser.id_usuario,
+    notas: safeValue(this.venta.notas || '', 'notas'),
+    tipo_comprobante_solicitado: this.venta.tipo_comprobante_solicitado || this.venta.tipo_comprobante || 'SIN_COMPROBANTE', // Asegurar que se envía
+    detalles: this.venta.detalles.map(detalle => ({
+      id_producto: detalle.id_producto,
+      cantidad: detalle.cantidad,
+      precio_unitario: detalle.precio_unitario,
+      producto_nombre: safeValue(detalle.producto_nombre, 'producto_nombre')
+    }))
+  };
 
-    console.log('🔍 OBJETO FINAL PARA ENVIAR:', ventaParaEnviar);
-    
+  console.log('🔍 OBJETO FINAL PARA ENVIAR (con tipo comprobante):', ventaParaEnviar);
+
     const detallesConProblemas = ventaParaEnviar.detalles.filter(detalle => 
       !detalle.id_producto || detalle.id_producto === undefined
     );
@@ -588,4 +686,31 @@ getVendedorNombre(): string {
   const currentUser = this.authService.getCurrentUser();
   return currentUser?.nombre || currentUser?.username || 'Vendedor';
 }
+// Agrega estos métodos en la clase NuevaVentaComponent
+
+// Modifica seleccionarNotaDeVenta (siempre válido)
+seleccionarNotaDeVenta() {
+  this.venta.tipo_comprobante = 'SIN_COMPROBANTE';
+  this.venta.tipo_comprobante_solicitado = 'SIN_COMPROBANTE';
+  this.serieNumeroPreview = '';
+  this.loadingSerie = false;
+  
+  console.log('✅ Nota de Venta seleccionada');
+}
+
+
+// Modifica el método seleccionarComprobante
+seleccionarComprobante(tipo: string) {
+  // Validar antes de seleccionar
+  if (!this.validarTipoComprobanteSegunCliente(tipo)) {
+    return;
+  }
+  
+  this.venta.tipo_comprobante = tipo;
+  this.venta.tipo_comprobante_solicitado = tipo;
+  this.onTipoComprobanteChange();
+  
+  console.log(`✅ ${tipo} seleccionado`);
+}
+
 }
