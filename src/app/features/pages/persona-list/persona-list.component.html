@@ -35,7 +35,7 @@
           <mat-option [value]="20">20</mat-option>
         </mat-select>
       </mat-form-field>
-      <span class="total-count">de {{ filteredData.length }} personas</span>
+      <span class="total-count">de {{ getTotalPersonas() }} personas</span>
     </div>
   </div>
 
@@ -166,9 +166,9 @@
         </div>
 
         <!-- Navegación personalizada (solo botones adelante/atrás) -->
-        <div class="custom-navigation" *ngIf="!isLoading && filteredData.length > 0">
+        <div class="custom-navigation" *ngIf="!isLoading && getTotalPersonas.length > 0">
           <div class="nav-info">
-            <span>Mostrando {{getStartIndex() + 1}} - {{getEndIndex()}} de {{filteredData.length}} personas</span>
+            <span>Mostrando {{getStartIndex() + 1}} - {{getEndIndex()}} de {{getTotalFiltered()}} personas</span>
           </div>
           <div class="nav-buttons">
             <button mat-icon-button (click)="previousPage()" [disabled]="!hasPreviousPage()" class="nav-btn">
@@ -180,11 +180,12 @@
           </div>
         </div>
 
-        <!-- Mensaje cuando no hay datos -->
-        <div *ngIf="filteredData.length === 0 && !isLoading" class="no-data">
-          <mat-icon class="no-data-icon">person</mat-icon>
-          <h3>No se encontraron personas</h3>
-          <p>Comienza creando una nueva persona</p>
+          <!-- Mensaje cuando no hay datos -->
+        <div *ngIf="dataSource.data.length === 0 && !isLoading" class="no-data">
+          <mat-icon class="no-data-icon">people</mat-icon>
+          <h3>No se encontraron usuarios</h3>
+          <p *ngIf="authService.isAdmin()">Comienza creando un nuevo usuario</p>
+          <p *ngIf="!authService.isAdmin()">No hay usuarios disponibles para mostrar</p>
         </div>
       </div>
     </div>

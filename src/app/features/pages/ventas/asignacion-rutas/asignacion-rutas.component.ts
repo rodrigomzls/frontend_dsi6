@@ -288,83 +288,87 @@ verDetalleVenta(id: any) {
     }
   }
 // Método para cancelar venta antes de asignar repartidor
+// En asignacion-rutas.component.ts - ACTUALIZAR cancelarVenta
 cancelarVenta(idVenta: number, venta: Venta) {
   // Verificar permisos
   if (!this.authService.isAdmin() && !this.authService.isVendedor()) {
-    alert('Solo administradores y vendedores pueden cancelar ventas');
+    Swal.fire('Error', 'Solo administradores y vendedores pueden cancelar ventas', 'error');
     return;
   }
 
-  // Manejar nombre undefined
   const nombreCliente = venta.nombre_completo || 'Cliente sin nombre';
   const totalVenta = venta.total || 0;
 
-  // Mostrar confirmación con SweetAlert2
   Swal.fire({
     title: '⚠️ Cancelar Venta',
-    html: `¿Está seguro de cancelar la venta <strong>#${idVenta}</strong>?<br><br>
-           <strong>Cliente:</strong> ${nombreCliente}<br>
-           <strong>Total:</strong> S/ ${totalVenta}<br>
-           <strong>Fecha:</strong> ${this.fechaService.formatFechaTabla(venta.fecha)} ${this.fechaService.formatHora(venta.hora)}<br><br>
-           <span class="text-danger" style="color: #dc3545; font-weight: bold;">
-             ⚠️ Esta acción cambiará el estado a "Cancelado" y no se podrá revertir.
-           </span>`,
+    html: `
+      <div style="text-align: left;">
+        <p>¿Está seguro de cancelar la venta <strong>#${idVenta}</strong>?</p>
+        <div style="background: #fff3cd; padding: 1rem; border-radius: 0.375rem; margin: 1rem 0;">
+          <p><strong>Cliente:</strong> ${nombreCliente}</p>
+          <p><strong>Total:</strong> S/ ${totalVenta}</p>
+          <p><strong>Fecha:</strong> ${this.fechaService.formatFechaTabla(venta.fecha)}</p>
+        </div>
+        <p style="color: #28a745; font-weight: bold;">
+          ✅ El stock será restaurado automáticamente
+        </p>
+        <p style="color: #dc3545; font-weight: bold;">
+          ⚠️ Esta acción no se puede deshacer
+        </p>
+      </div>
+    `,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Sí, cancelar venta',
-    cancelButtonText: 'No, mantener venta',
+    cancelButtonText: 'No, mantener',
     confirmButtonColor: '#dc3545',
     cancelButtonColor: '#6c757d',
-    reverseButtons: true,
-    focusCancel: true,
-    customClass: {
-      popup: 'swal-custom-popup'
+    input: 'textarea',
+    inputLabel: 'Motivo de cancelación',
+    inputPlaceholder: 'Ingrese el motivo...',
+    inputValidator: (value) => {
+      if (!value) {
+        return 'Debe ingresar un motivo para la cancelación';
+      }
+      return null;
     }
   }).then((result) => {
-    if (result.isConfirmed) {
+    if (result.isConfirmed && result.value) {
       // Mostrar loading
       Swal.fire({
         title: 'Procesando cancelación...',
-        text: 'Por favor espere',
+        text: 'Restaurando stock y actualizando registros',
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
         }
       });
 
-      // Llamar al servicio para cancelar la venta
-      this.ventasService.updateEstadoVenta(idVenta, 8).subscribe({
+      // Usar el NUEVO endpoint que restaura stock
+      this.ventasService.cancelarVentaConStock(idVenta, result.value).subscribe({
         next: (response) => {
-          // Remover de la lista local
-          this.ventasListas = this.ventasListas.filter(v => v.id_venta !== idVenta);
-          
-          // Actualizar estadísticas
-          this.calcularZonasConVentas();
-          
           Swal.fire({
             title: '✅ Venta Cancelada',
-            html: `La venta <strong>#${idVenta}</strong> ha sido cancelada correctamente.<br><br>
-                   <strong>Cliente:</strong> ${nombreCliente}<br>
-                   <strong>Total:</strong> S/ ${totalVenta}`,
+            html: `
+              <div style="text-align: left;">
+                <p>La venta <strong>#${idVenta}</strong> ha sido cancelada.</p>
+                <p>✅ Stock restaurado: ${response.lotes_restaurados} lotes</p>
+              </div>
+            `,
             icon: 'success',
             timer: 3000,
             showConfirmButton: false,
-            timerProgressBar: true,
-            willClose: () => {
-              // Recargar datos si es necesario
-              if (this.ventasListas.length === 0) {
-                this.cargarDatos();
-              }
-            }
+            timerProgressBar: true
+          }).then(() => {
+            // Recargar datos
+            this.cargarDatos();
           });
         },
         error: (error) => {
           console.error('Error cancelando venta:', error);
           Swal.fire({
             title: '❌ Error',
-            html: `No se pudo cancelar la venta:<br><br>
-                   <strong>${error.error?.error || error.message || 'Error del sistema'}</strong><br><br>
-                   Por favor, intente nuevamente.`,
+            text: error.error?.error || 'Error al cancelar la venta',
             icon: 'error',
             confirmButtonText: 'Entendido'
           });

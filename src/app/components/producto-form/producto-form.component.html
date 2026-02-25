@@ -49,18 +49,21 @@
           </mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Stock</mat-label>
-          <input 
-            matInput 
-            type="number" 
-            formControlName="stock" 
-            min="0"
-            required />
-          <mat-error *ngIf="productForm.get('stock')?.hasError('required')">
-            Stock requerido
-          </mat-error>
-        </mat-form-field>
+        <!-- CAMPO STOCK - SIEMPRE DESHABILITADO Y DE SOLO LECTURA -->
+<mat-form-field appearance="outline" class="form-field stock-field-readonly">
+  <mat-label>Stock</mat-label>
+  <input 
+    matInput 
+    type="number" 
+    formControlName="stock" 
+    readonly  
+  />
+  <mat-icon matSuffix class="lock-icon">lock</mat-icon>
+  <!-- Mensaje informativo unificado -->
+  <mat-hint align="end" class="stock-hint">
+    🔒 Stock gestionado vía Inventario
+  </mat-hint>
+</mat-form-field>
       </div>
     </div>
     <!-- Información Comercial -->
@@ -93,18 +96,6 @@
       </div>
 
       <div class="form-row">
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Proveedor</mat-label>
-          <mat-select formControlName="proveedorId" required>
-            <mat-option *ngFor="let proveedor of proveedores" [value]="proveedor.id_proveedor">
-              {{ proveedor.nombre }}
-            </mat-option>
-          </mat-select>
-          <mat-error *ngIf="productForm.get('proveedorId')?.hasError('required')">
-            Proveedor requerido
-          </mat-error>
-        </mat-form-field>
-
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>País Origen</mat-label>
           <mat-select formControlName="paisOrigenId" required>

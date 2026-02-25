@@ -3,38 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-
-export interface Insumo {
-  id_insumo: number;
-  nombre: string;
-  descripcion?: string;
-  unidad_medida: string;
-  costo_promedio: number;
-  stock_actual: number;
-  stock_minimo: number;
-  id_proveedor_principal?: number;
-  activo: boolean;
-  fecha_creacion: string;
-}
-
-export interface InsumoCreate {
-  nombre: string;
-  descripcion?: string;
-  unidad_medida: string;
-  costo_promedio: number;
-  stock_minimo: number;
-  id_proveedor_principal?: number;
-}
-
-export interface InsumoUpdate {
-  nombre?: string;
-  descripcion?: string;
-  unidad_medida?: string;
-  costo_promedio?: number;
-  stock_minimo?: number;
-  id_proveedor_principal?: number;
-  activo?: boolean;
-}
+import { Insumo, InsumoCreate, InsumoUpdate } from '../models/insumo.model';
 
 @Injectable({ providedIn: 'root' })
 export class InsumoService {
@@ -50,11 +19,11 @@ export class InsumoService {
     return throwError(() => new Error(message));
   }
 
-  getInsumos(): Observable<Insumo[]> {
+  getInsumos(): Observable<Insumo[]> {// ✅ Tipado explícito
     return this.http.get<Insumo[]>(this.apiUrl).pipe(catchError(this.handleError));
   }
 
-  getInsumoById(id: number): Observable<Insumo> {
+  getInsumoById(id: number): Observable<Insumo> {// ✅ Tipado explícito
     return this.http.get<Insumo>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
   }
 
@@ -66,7 +35,7 @@ export class InsumoService {
     return this.http.put<any>(`${this.apiUrl}/${id}`, payload).pipe(catchError(this.handleError));
   }
 
-  deleteInsumo(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
+  deleteInsumo(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
   }
 }

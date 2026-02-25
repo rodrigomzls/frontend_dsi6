@@ -14,6 +14,8 @@ export interface Lote {
     nombre: string;
     descripcion?: string;
     precio?: number;
+     marca?: string;        // ✅ AGREGAR
+    categoria?: string;     // ✅ AGREGAR
   };
 }
 

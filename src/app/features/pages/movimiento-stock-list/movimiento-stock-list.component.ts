@@ -18,6 +18,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MovimientoStockUnificadoFormComponent } from '../../../components/movimiento-stock-unificado-form/movimiento-stock-unificado-form.component';
 import { MatDatepickerModule } from '@angular/material/datepicker'; // ✅ Añadir
 import { MatNativeDateModule } from '@angular/material/core'; // ✅ Añadir
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DetalleMovimientoModalComponent } from '../../../components/detalle-movimiento-modal/detalle-movimiento-modal.component';
+import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-movimiento-stock-list',
   templateUrl: './movimiento-stock-list.component.html',
@@ -34,8 +37,9 @@ import { MatNativeDateModule } from '@angular/material/core'; // ✅ Añadir
     MatIconModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatDatepickerModule, // ✅ Añadir
-    MatNativeDateModule // ✅ Añadir
+    MatDatepickerModule, 
+    MatNativeDateModule,
+    MatTooltipModule
   ]
 })
 export class MovimientoStockListComponent implements OnInit, AfterViewInit {
@@ -43,6 +47,16 @@ export class MovimientoStockListComponent implements OnInit, AfterViewInit {
 displayedColumns: string[] = ['id', 'producto', 'tipo', 'lote', 'cantidad', 'fecha', 'acciones'];
   dataSource = new MatTableDataSource<MovimientoStock>([]);
   isLoading = true;
+  // Agregar estas propiedades
+filtroActivo: {
+  tipos: string[],
+  fechaInicio: Date | null,
+  fechaFin: Date | null
+} = {
+  tipos: [],
+  fechaInicio: null,
+  fechaFin: null
+};
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -50,7 +64,8 @@ displayedColumns: string[] = ['id', 'producto', 'tipo', 'lote', 'cantidad', 'fec
   constructor(
     private movimientoService: MovimientoStockService,
     public dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    public authService: AuthService
   ) {}
 
 
@@ -68,11 +83,14 @@ loadMovimientos(): void {
     error: () => { this.isLoading = false; this.showError('Error al cargar movimientos'); }
   });
 }
-
-  applyFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-  }
+// Modificar applyFilter para usar el filtro combinado
+applyFilter(event: Event): void {
+  const searchTerm = (event.target as HTMLInputElement).value;
+  this.filtroActivo.fechaInicio = null;
+  this.filtroActivo.fechaFin = null;
+  this.filtroActivo.tipos = [];
+  this.aplicarFiltrosCombinados();
+}
 
  addMovimiento(): void {
   const dialogRef = this.dialog.open(MovimientoStockFormComponent, { 
@@ -121,13 +139,85 @@ displayedColumnsProfessional: string[] = [
 
 mostrarFiltrosAvanzados = false;
 
-// Métodos adicionales
+// En el constructor o ngOnInit, configurar el filterPredicate
 ngOnInit(): void { 
   this.loadMovimientos();
   window.addEventListener('inventario-actualizado', () => {
     this.loadMovimientos();
   });
+  
+  // Configurar el filterPredicate personalizado
+  this.dataSource.filterPredicate = this.filtrarMovimientos();
 }
+
+
+// Método para crear el filterPredicate
+private filtrarMovimientos() {
+  return (data: MovimientoStock, filter: string): boolean => {
+    // Si no hay filtro, mostrar todos
+    if (!filter) return true;
+    
+    try {
+      const filtros = JSON.parse(filter);
+      
+      // Filtro por tipo
+      if (filtros.tipos && filtros.tipos.length > 0) {
+        if (!filtros.tipos.includes(data.tipo_movimiento)) {
+          return false;
+        }
+      }
+      
+      // Filtro por fecha
+      if (filtros.fechaInicio && filtros.fechaFin) {
+        const fechaMov = new Date(data.fecha);
+        const fechaInicio = new Date(filtros.fechaInicio);
+        const fechaFin = new Date(filtros.fechaFin);
+        
+        // Ajustar fechas para comparación correcta
+        fechaInicio.setHours(0, 0, 0, 0);
+        fechaFin.setHours(23, 59, 59, 999);
+        
+        if (fechaMov < fechaInicio || fechaMov > fechaFin) {
+          return false;
+        }
+      }
+      
+      // Filtro por búsqueda (si existe)
+      if (filtros.searchTerm) {
+        const term = filtros.searchTerm.toLowerCase();
+        const productoNombre = data.producto?.nombre?.toLowerCase() || '';
+        const loteNumero = data.lote?.numero_lote?.toLowerCase() || '';
+        const descripcion = data.descripcion?.toLowerCase() || '';
+        
+        if (!productoNombre.includes(term) && 
+            !loteNumero.includes(term) && 
+            !descripcion.includes(term)) {
+          return false;
+        }
+      }
+      
+      return true;
+    } catch (e) {
+      return true;
+    }
+  };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 toggleFiltrosAvanzados(): void {
   this.mostrarFiltrosAvanzados = !this.mostrarFiltrosAvanzados;
@@ -206,22 +296,96 @@ getBalanceTotal(): number {
   }, 0);
 }
 
+// Método aplicarFiltroTipo mejorado
 aplicarFiltroTipo(tipos: string[]): void {
-  if (tipos.length === 0) {
-    this.dataSource.filter = '';
-  } else {
-    this.dataSource.filter = tipos.join('|');
+  this.filtroActivo.tipos = tipos || [];
+  this.aplicarFiltrosCombinados();
+}
+// Método aplicarFiltroFecha implementado
+aplicarFiltroFecha(): void {
+  // Obtener los inputs de fecha directamente
+  const startInput = document.querySelector('input[matStartDate]') as HTMLInputElement;
+  const endInput = document.querySelector('input[matEndDate]') as HTMLInputElement;
+  
+  if (startInput && endInput && startInput.value && endInput.value) {
+    // Convertir las fechas del formato DD/MM/YYYY a Date objects
+    const fechaInicio = this.convertirFechaString(startInput.value);
+    const fechaFin = this.convertirFechaString(endInput.value);
+    
+    if (fechaInicio && fechaFin) {
+      this.filtroActivo.fechaInicio = fechaInicio;
+      this.filtroActivo.fechaFin = fechaFin;
+      this.aplicarFiltrosCombinados();
+    }
   }
 }
 
-aplicarFiltroFecha(): void {
-  // Implementar filtro por fecha
+
+// Método auxiliar para convertir string DD/MM/YYYY a Date
+private convertirFechaString(fechaStr: string): Date | null {
+  if (!fechaStr) return null;
+  
+  try {
+    // Si viene en formato DD/MM/YYYY
+    const partes = fechaStr.split('/');
+    if (partes.length === 3) {
+      const dia = parseInt(partes[0], 10);
+      const mes = parseInt(partes[1], 10) - 1; // Los meses en JS son 0-11
+      const anio = parseInt(partes[2], 10);
+      return new Date(anio, mes, dia);
+    }
+    
+    // Si ya es un objeto Date o string ISO
+    const fecha = new Date(fechaStr);
+    return isNaN(fecha.getTime()) ? null : fecha;
+  } catch (e) {
+    console.error('Error convirtiendo fecha:', e);
+    return null;
+  }
 }
 
+// Modificar limpiarFiltros
 limpiarFiltros(): void {
-  this.dataSource.filter = '';
-  this.mostrarFiltrosAvanzados = false;
+  // Resetear filtros activos
+  this.filtroActivo = {
+    tipos: [],
+    fechaInicio: null,
+    fechaFin: null
+  };
+  
+  // Limpiar inputs de fecha
+  const startInput = document.querySelector('input[matStartDate]') as HTMLInputElement;
+  const endInput = document.querySelector('input[matEndDate]') as HTMLInputElement;
+  if (startInput) startInput.value = '';
+  if (endInput) endInput.value = '';
+  
+  // Limpiar input de búsqueda
+  const searchInput = document.querySelector('.search-field input') as HTMLInputElement;
+  if (searchInput) searchInput.value = '';
+  
+  // 🔥 NUEVO: Resetear el select de tipo de movimiento
+  setTimeout(() => {
+    // Forzar actualización del select
+    const tipoSelect = document.querySelector('mat-select[placeholder="Tipo de Movimiento"]') as any;
+    
+    // Limpiar el valor del select programáticamente
+    this.filtroActivo.tipos = [];
+    
+    // Cerrar paneles abiertos
+    document.querySelectorAll('.cdk-overlay-container .mat-select-panel').forEach(panel => {
+      panel.remove();
+    });
+  }, 100);
+  
+  // Aplicar filtros vacíos
+  this.aplicarFiltrosCombinados();
+  
+  // Opcional: No cerrar los filtros avanzados
+  // this.mostrarFiltrosAvanzados = false;
+  
+  console.log('🧹 Filtros de movimientos limpiados');
 }
+
 
 exportarExcel(): void {
   // Implementar exportación a Excel
@@ -231,9 +395,7 @@ recargarDatos(): void {
   this.loadMovimientos();
 }
 
-verDetallesMovimiento(movimiento: any): void {
-  // Implementar vista de detalles
-}
+
 
 crearMovimientoUnificado(): void {
   const dialogRef = this.dialog.open(MovimientoStockUnificadoFormComponent, {
@@ -242,11 +404,121 @@ crearMovimientoUnificado(): void {
     maxHeight: '90vh',
     panelClass: 'movimiento-unificado-dialog'
   });
-  
-  dialogRef.afterClosed().subscribe((result: any) => {
+    dialogRef.afterClosed().subscribe((result: any) => {
     if (result) {
       this.loadMovimientos();
     }
+  });
+}
+
+// Nuevo método para combinar filtros
+aplicarFiltrosCombinados(): void {
+  // Obtener el término de búsqueda actual
+  const searchInput = document.querySelector('.search-field input') as HTMLInputElement;
+  const searchTerm = searchInput?.value || '';
+  
+  const filtroCombinado = {
+    tipos: this.filtroActivo.tipos,
+    fechaInicio: this.filtroActivo.fechaInicio,
+    fechaFin: this.filtroActivo.fechaFin,
+    searchTerm: searchTerm.trim().toLowerCase()
+  };
+  
+  this.dataSource.filter = JSON.stringify(filtroCombinado);
+  
+  // Debug: Mostrar resultado
+  console.log('🔍 Filtro aplicado:', filtroCombinado);
+  console.log('📊 Resultados:', this.dataSource.filteredData.length);
+}
+
+// Reemplaza el método getTipoIcon (o crea uno nuevo para cantidad)
+
+getCantidadIcon(movimiento: MovimientoStock): string {
+  // Para EGRESO: flecha hacia arriba (rojo)
+  // Para INGRESO: flecha hacia abajo (verde)
+  // Para AJUSTE: flecha hacia arriba/abajo según sea positivo/negativo? (mejor usar autorenew)
+  
+  if (movimiento.tipo_movimiento === 'egreso') {
+    return 'arrow_upward'; // Flecha hacia arriba para egreso
+  } else if (movimiento.tipo_movimiento === 'ingreso') {
+    return 'arrow_downward'; // Flecha hacia abajo para ingreso
+  } else if (movimiento.tipo_movimiento === 'ajuste') {
+    // Para ajustes, podemos usar un ícono neutral
+    return 'autorenew';
+  } else if (movimiento.tipo_movimiento === 'devolucion') {
+    return 'refresh';
+  }
+  return 'help';
+}
+
+// También necesitas determinar la clase CSS para la cantidad
+getCantidadClass(movimiento: MovimientoStock): string {
+  if (movimiento.tipo_movimiento === 'ingreso' || movimiento.tipo_movimiento === 'devolucion') {
+    return 'positiva'; // Verde para ingresos
+  } else {
+    return 'negativa'; // Rojo para egresos y ajustes
+  }
+}
+
+// En movimiento-stock-list.component.ts
+puedeAnular(movimiento: any): boolean {
+  // 🚫 1. No permitir anular movimientos de anulación
+  if (movimiento.descripcion && movimiento.descripcion.includes('ANULACIÓN del movimiento')) {
+    return false;
+  }
+  
+  // 🚫 2. Verificar si este movimiento YA FUE ANULADO (usando campo del backend)
+  if (movimiento.anulado) {
+    return false;
+  }
+  
+  // ✅ 3. Verificar límite de 24 horas
+  const fechaMov = new Date(movimiento.fecha);
+  const ahora = new Date();
+  const diffHoras = (ahora.getTime() - fechaMov.getTime()) / (1000 * 60 * 60);
+  
+  return diffHoras <= 24;
+}
+
+anularMovimiento(movimiento: any): void {
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '450px',
+    data: {
+      title: '⚠️ Anular Movimiento',
+      message: `¿Estás seguro de ANULAR este movimiento?<br><br>
+                <strong>Producto:</strong> ${movimiento.producto?.nombre}<br>
+                <strong>Tipo:</strong> ${movimiento.tipo_movimiento}<br>
+                <strong>Cantidad:</strong> ${movimiento.cantidad}<br><br>
+                Esto revertirá el efecto en el stock y creará un movimiento de anulación.`,
+      confirmText: 'Sí, Anular',
+      cancelText: 'Cancelar',
+      confirmColor: 'warn',
+      icon: 'warning'
+    }
+  });
+  
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.movimientoService.anularMovimiento(movimiento.id_movimiento).subscribe({
+        next: () => {
+          this.showSuccess('Movimiento anulado correctamente');
+          this.loadMovimientos();
+        },
+        error: (err) => {
+          console.error('Error al anular movimiento:', err);
+          this.showError('Error al anular movimiento');
+        }
+      });
+    }
+  });
+}
+// Agregar el método
+verDetallesMovimiento(movimiento: MovimientoStock): void {
+  this.dialog.open(DetalleMovimientoModalComponent, {
+    width: '600px',
+    maxWidth: '95vw',
+    data: movimiento,
+    panelClass: 'detalle-modal-panel'
   });
 }
 }

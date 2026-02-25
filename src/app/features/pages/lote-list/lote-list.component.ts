@@ -15,7 +15,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { DetalleLoteModalComponent } from '../../../components/detalle-lote-modal/detalle-lote-modal.component';
+import { AuthService } from '../../../core/services/auth.service'; 
 @Component({
   selector: 'app-lote-list',
   templateUrl: './lote-list.component.html',
@@ -31,7 +33,8 @@ import { MatSelectModule } from '@angular/material/select';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-     MatSelectModule
+    MatSelectModule,
+    MatTooltipModule
   ]
 })
 export class LoteListComponent implements OnInit, AfterViewInit {
@@ -50,6 +53,16 @@ export class LoteListComponent implements OnInit, AfterViewInit {
   
   dataSource = new MatTableDataSource<Lote>([]);
   isLoading = true;
+  // Agregar propiedades
+filtrosLotes: {
+  stock: string[],
+  caducidad: string[],
+  searchTerm: string
+} = {
+  stock: [],
+  caducidad: [],
+  searchTerm: ''
+};
   
   searchTerm: string = '';
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -58,17 +71,76 @@ export class LoteListComponent implements OnInit, AfterViewInit {
   constructor(
     private loteService: LoteService,
     public dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+  public authService: AuthService
   ) {}
 
- // En el método ngOnInit de lote-list.component.ts agregar:
+// En el constructor o ngOnInit, configurar el filterPredicate
 ngOnInit(): void {
   this.loadLotes();
-  
-  // Escuchar evento de actualización
   window.addEventListener('inventario-actualizado', () => {
     this.loadLotes();
   });
+  
+  // Configurar filterPredicate personalizado
+  this.dataSource.filterPredicate = this.filtrarLotes();
+}
+// Método para filtrar lotes
+private filtrarLotes() {
+  return (data: Lote, filter: string): boolean => {
+    if (!filter) return true;
+    
+    try {
+      const filtros = JSON.parse(filter);
+      
+      // Filtro por término de búsqueda
+      if (filtros.searchTerm) {
+        const term = filtros.searchTerm.toLowerCase();
+        const productoNombre = data.producto?.nombre?.toLowerCase() || '';
+        const numeroLote = data.numero_lote?.toLowerCase() || '';
+        
+        if (!productoNombre.includes(term) && !numeroLote.includes(term)) {
+          return false;
+        }
+      }
+      
+      // Filtro por estado de stock
+      if (filtros.stock && filtros.stock.length > 0) {
+        const stockClass = this.getStockClass(data);
+        const stockText = this.getStockText(data).toLowerCase();
+        
+        // Mapear clases a valores del filtro
+        let coincideStock = false;
+        filtros.stock.forEach((filtro: string) => {
+          if (filtro === 'normal' && stockClass === 'stock-normal') coincideStock = true;
+          if (filtro === 'bajo' && (stockClass === 'stock-bajo' || stockClass === 'stock-medio')) coincideStock = true;
+          if (filtro === 'agotado' && stockClass === 'stock-agotado') coincideStock = true;
+        });
+        
+        if (!coincideStock) return false;
+      }
+      
+      // Filtro por estado de caducidad
+      if (filtros.caducidad && filtros.caducidad.length > 0) {
+        const dias = this.calcularDiasParaCaducar(data.fecha_caducidad);
+        const caducidadClass = this.getDiasClass(data.fecha_caducidad);
+        
+        let coincideCaducidad = false;
+        filtros.caducidad.forEach((filtro: string) => {
+          if (filtro === 'normal' && dias > 90) coincideCaducidad = true;
+          if (filtro === 'proxima' && dias <= 30 && dias > 7) coincideCaducidad = true;
+          if (filtro === 'critica' && dias <= 7 && dias >= 0) coincideCaducidad = true;
+          if (filtro === 'caducado' && dias < 0) coincideCaducidad = true;
+        });
+        
+        if (!coincideCaducidad) return false;
+      }
+      
+      return true;
+    } catch (e) {
+      return true;
+    }
+  };
 }
 
   ngAfterViewInit(): void {
@@ -109,12 +181,42 @@ ngOnInit(): void {
     });
   }
 
-  applyFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-     this.searchTerm = filterValue.trim().toLowerCase();
-     this.applyFilterToDataSource();
-  }
+ // Modificar applyFilter
+applyFilter(event: Event): void {
+  this.filtrosLotes.searchTerm = (event.target as HTMLInputElement).value.trim().toLowerCase();
+  this.aplicarFiltrosLotes();
+}
 
+// Método para limpiar filtros de lotes (agregar en el HTML)
+limpiarFiltrosLotes(): void {
+  // Resetear filtros
+  this.filtrosLotes = {
+    stock: [],
+    caducidad: [],
+    searchTerm: ''
+  };
+  
+  // Limpiar input de búsqueda
+  const searchInput = document.querySelector('.search-field input') as HTMLInputElement;
+  if (searchInput) searchInput.value = '';
+  
+  // 🔥 NUEVO: Resetear los selects de Material
+  setTimeout(() => {
+    // Forzar actualización de los selects
+    const stockSelect = document.querySelector('mat-select[placeholder="Estado de Stock"]') as any;
+    const caducidadSelect = document.querySelector('mat-select[placeholder="Estado de Caducidad"]') as any;
+    
+    // Cerrar paneles abiertos si los hay
+    document.querySelectorAll('.cdk-overlay-container .mat-select-panel').forEach(panel => {
+      panel.remove();
+    });
+  }, 100);
+  
+  // Aplicar filtros vacíos
+  this.aplicarFiltrosLotes();
+  
+  console.log('🧹 Filtros de lotes limpiados');
+}
 
    // ✅ CORREGIDO: Filtro simplificado
 // ✅ CORREGIDO: Filtro que incluye nombre del producto
@@ -262,14 +364,29 @@ getCaducidadText(fechaCaducidad: string): string {
   return 'Normal';
 }
 
+// Implementar aplicarFiltroStock
 aplicarFiltroStock(estados: string[]): void {
-  // Implementar filtro por estado de stock
+  this.filtrosLotes.stock = estados || [];
+  this.aplicarFiltrosLotes();
 }
-
+// Implementar aplicarFiltroCaducidad
 aplicarFiltroCaducidad(estados: string[]): void {
-  // Implementar filtro por estado de caducidad
+  this.filtrosLotes.caducidad = estados || [];
+  this.aplicarFiltrosLotes();
 }
-
+// Nuevo método para aplicar filtros combinados
+aplicarFiltrosLotes(): void {
+  const filtroCombinado = {
+    stock: this.filtrosLotes.stock,
+    caducidad: this.filtrosLotes.caducidad,
+    searchTerm: this.filtrosLotes.searchTerm
+  };
+  
+  this.dataSource.filter = JSON.stringify(filtroCombinado);
+  
+  console.log('🔍 Filtros de lotes:', filtroCombinado);
+  console.log('📊 Resultados:', this.dataSource.filteredData.length);
+}
 exportarExcel(): void {
   // Implementar exportación a Excel
 }
@@ -278,7 +395,60 @@ recargarDatos(): void {
   this.loadLotes();
 }
 
+
+// En lote-list.component.ts - AGREGAR MÉTODO
+desactivarLote(lote: Lote): void {
+  const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    width: '450px',
+    data: {
+      title: '⚠️ Desactivar Lote',
+      message: `¿Estás seguro de DESACTIVAR el lote <strong>${lote.numero_lote}</strong>?<br><br>
+                Esta acción marcará el lote como inactivo y no aparecerá en las listas.`,
+      confirmText: 'Sí, Desactivar',
+      cancelText: 'Cancelar',
+      confirmColor: 'warn',
+      icon: 'warning'
+    }
+  });
+  
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.loteService.updateLote(lote.id_lote, { activo: false }).subscribe({
+        next: () => {
+          this.showSuccess('Lote desactivado correctamente');
+          this.loadLotes();
+        },
+        error: (err) => {
+          console.error('Error al desactivar lote:', err);
+          this.showError('Error al desactivar lote');
+        }
+      });
+    }
+  });
+}
+// En lote-list.component.ts
+getStockIcon(lote: Lote): string {
+  const porcentaje = this.getPorcentajeStock(lote);
+  if (lote.cantidad_actual === 0) return 'block';
+  if (porcentaje <= 20) return 'warning';
+  if (porcentaje <= 50) return 'info';
+  return 'check_circle';
+}
+
+getCaducidadIcon(fechaCaducidad: string): string {
+  const dias = this.calcularDiasParaCaducar(fechaCaducidad);
+  if (dias < 0) return 'error';
+  if (dias <= 7) return 'warning';
+  if (dias <= 30) return 'schedule';
+  return 'event_available';
+}
+// Agregar el método
 verDetallesLote(lote: Lote): void {
-  // Implementar vista de detalles
+  this.dialog.open(DetalleLoteModalComponent, {
+    width: '600px',
+    maxWidth: '95vw',
+    data: lote,
+    panelClass: 'detalle-modal-panel'
+  });
 }
 }

@@ -8,10 +8,11 @@ export interface MovimientoStock {
   descripcion?: string;
   id_usuario?: number;
   id_lote?: number; // ✅ NUEVO: Relación con lote
-
+  anulado?: boolean;
   // Datos relacionados (JOIN)
   producto?: {
     nombre: string;
+    stock?: number; 
   };
   usuario?: {
     id_usuario: number;

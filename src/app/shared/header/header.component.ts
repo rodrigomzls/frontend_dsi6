@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../core/services/auth.service';
 import { BreakpointService } from '../../core/services/breakpoint.service';
+import { LogoComponent } from '../../shared/components/logo/logo.component';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -18,7 +19,8 @@ import { Subscription } from 'rxjs';
     MatButtonModule,
     MatMenuModule,
     MatIconModule,
-    MatDividerModule
+    MatDividerModule,
+    LogoComponent
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
@@ -367,7 +369,28 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.closeMenu();
     }
   }
+  /**goToConfiguracionEmpresa(): void {
+  if (this.tieneAcceso('empresa')) {
+    this.router.navigate(['/configuracion/empresa']);
+    this.closeMenu();
+  }
+}**/
 
+goToPersonalizacion(): void {
+  if (this.userRole === 1) {
+    this.router.navigate(['/configuracion/personalizacion']);
+    this.closeMenu();
+  }
+}
+goInsumos(): void {
+  if (this.tieneAcceso('pedido_proveedor')) {
+    this.router.navigate(['/insumos']);
+    this.closeMenu();
+  }
+}
+isAdmin(): boolean {
+  return this.userRole === 1;
+}
   goToSunat(): void {
     if (this.tieneAcceso('sunat')) {
       this.router.navigate(['/sunat']);

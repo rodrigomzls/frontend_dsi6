@@ -1,10 +1,7 @@
 <!-- header.component.html - VERSIÓN CON USER-ACTIONS EN EL MENÚ -->
 <header class="header">
   <!-- Logo clickeable -->
-  <div class="logo" (click)="irAlInicio()">
-    <img src="../../../assets/company-logo.png" alt="Logo Viña" class="logo-img">
-    <span class="logo-text">Viña</span>
-  </div>
+  <app-logo tipo="navbar" (click)="irAlInicio()"></app-logo>
 
   <!-- Botón menú hamburguesa (solo móvil) -->
   <button mat-icon-button class="menu-toggle" *ngIf="isLoggedIn" (click)="toggleMenu()" aria-label="Menú principal">
@@ -44,6 +41,16 @@
           <mat-icon>receipt_long</mat-icon>
           Panel de Ventas
         </button>
+         <!-- En el menú de usuario o en un lugar visible para admin  <button mat-menu-item *ngIf="isAdmin()" (click)="goToConfiguracionEmpresa()">
+            <mat-icon>settings</mat-icon>
+            Configurar Empresa
+          </button>-->
+         
+          <!-- Dentro del menú de usuario o como opción independiente -->
+          <button mat-menu-item *ngIf="isAdmin()" (click)="goToPersonalizacion()">
+            <mat-icon>palette</mat-icon>
+            Personalizar Sistema
+          </button>
       </mat-menu>
 
       <!-- Productos -->
@@ -143,6 +150,10 @@
           <mat-icon>list_alt</mat-icon>
           Pedidos a Proveedor
         </button>
+        <button mat-menu-item *ngIf="tieneAcceso('pedido_proveedor')" (click)="goInsumos(); closeMenu()">
+        <mat-icon>category</mat-icon>
+        Insumos
+      </button>
         <button mat-menu-item *ngIf="tieneAcceso('categorias')" (click)="goCategorias(); closeMenu()">
           <mat-icon>category</mat-icon>
           Categorías

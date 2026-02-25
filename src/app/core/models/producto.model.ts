@@ -6,11 +6,9 @@ export interface Product {
   stock: number;
   categoriaId: number;
   marcaId: number;
-  proveedorId: number;
   paisOrigenId: number;
   categoriaNombre?: string;
   marcaNombre?: string;
-  proveedorNombre?: string;
   paisOrigenNombre?: string;
   
    // 🔹 Agrega esta línea (opcional)

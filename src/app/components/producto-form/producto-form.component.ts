@@ -70,41 +70,38 @@ export class ProductoFormComponent implements OnInit {
         values.stock !== null &&
         values.categoriaId &&
         values.marcaId &&
-        values.proveedorId &&
         values.paisOrigenId
       );
     }
     return true;
   }
 
-  private createForm(): FormGroup {
-    return this.fb.group({
-      nombre: ['', [Validators.required, Validators.minLength(2)]],
-      descripcion: ['', [Validators.required, Validators.minLength(3)]],
-      precio: ['', [Validators.required, Validators.min(0.01)]],
-      stock: ['', [Validators.required, Validators.min(0)]],
-      categoriaId: ['', Validators.required],
-      marcaId: ['', Validators.required],
-      proveedorId: ['', Validators.required],
-      paisOrigenId: ['', Validators.required],
-    });
-  }
+private createForm(): FormGroup {
+  return this.fb.group({
+    nombre: ['', [Validators.required, Validators.minLength(2)]],
+    descripcion: ['', [Validators.required, Validators.minLength(3)]],
+    precio: ['', [Validators.required, Validators.min(0.01)]],
+    stock: [{ value: 0, disabled: true }, [Validators.required, Validators.min(0)]], // 👈 SIEMPRE DESHABILITADO
+    categoriaId: ['', Validators.required],
+    marcaId: ['', Validators.required],
+    paisOrigenId: ['', Validators.required],
+  });
+}
 
-  private loadFormData(product: Product): void {
-    setTimeout(() => {
-      this.productForm.patchValue({
-        nombre: product.nombre || '',
-        descripcion: product.descripcion || '',
-        precio: product.precio || 0,
-        stock: product.stock || 0,
-        categoriaId: product.categoriaId || '',
-        marcaId: product.marcaId || '',
-        proveedorId: product.proveedorId || '',
-        paisOrigenId: product.paisOrigenId || '',
-      });
-      this.productForm.updateValueAndValidity();
-    }, 0);
-  }
+private loadFormData(product: Product): void {
+  setTimeout(() => {
+    this.productForm.patchValue({
+      nombre: product.nombre || '',
+      descripcion: product.descripcion || '',
+      precio: product.precio || 0,
+      stock: product.stock || 0, // El valor se asigna, pero el control sigue deshabilitado
+      categoriaId: product.categoriaId || '',
+      marcaId: product.marcaId || '',
+      paisOrigenId: product.paisOrigenId || '',
+    });
+    this.productForm.updateValueAndValidity();
+  }, 0);
+}
 
   private loadData(): void {
     this.isLoading = true;
@@ -112,13 +109,11 @@ export class ProductoFormComponent implements OnInit {
     forkJoin({
       categorias: this.productService.getCategorias(),
       marcas: this.productService.getMarcas(),
-      proveedores: this.productService.getProveedores(),
       paises: this.productService.getPaises()
     }).subscribe({
       next: (data) => {
         this.categorias = data.categorias;
         this.marcas = data.marcas;
-        this.proveedores = data.proveedores;
         this.paises = data.paises;
         this.isLoading = false;
 

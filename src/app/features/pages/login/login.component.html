@@ -13,12 +13,11 @@
   <div class="container">
     <!-- Tarjeta de login -->
     <div class="login-box">
-      <!-- Logo y título -->
+      <!-- Logo y título - CORREGIDO: usar el componente -->
       <div class="login-header">
-        <img src="../../../../assets/logo.png" alt="Viña Agua Mineral" class="logo" />
+        <app-logo tipo="login" [clickable]="false"></app-logo>
         <h1></h1>
       </div>
-
       <!-- Formulario de login -->
       <form (ngSubmit)="onSubmit()" *ngIf="!loading" class="login-form">
         <div class="form-group">

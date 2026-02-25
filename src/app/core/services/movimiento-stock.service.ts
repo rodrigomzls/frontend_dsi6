@@ -39,4 +39,10 @@ export class MovimientoStockService {
   deleteMovimiento(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
   }
+    // En movimiento-stock.service.ts
+anularMovimiento(id: number): Observable<any> {
+  return this.http.post<any>(`${this.apiUrl}/${id}/anular`, {}).pipe(
+    catchError(this.handleError)
+  );
+}
 }

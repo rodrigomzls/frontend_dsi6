@@ -2,5 +2,7 @@
 export const environment = {
   production: false,
     apiUrl: 'http://localhost:4000/api',  // ✅ VERIFICAR SI YA TIENE /api  // URL de tu backend Node.js
-  apiUrlPHP: 'http://localhost:8000' // URL de tu backend PHP (si lo usas)
+  // Nivel de logs (debug = muchos logs)
+    logLevel: 'debug',
+    apiUrlPHP: 'http://localhost:8000' // URL de tu backend PHP (si lo usas)
 };

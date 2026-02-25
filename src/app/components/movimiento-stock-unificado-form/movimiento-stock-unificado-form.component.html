@@ -51,13 +51,7 @@
               <span class="radio-description">Generar lote automáticamente</span>
             </div>
           </mat-radio-button>
-          
-          <mat-radio-button value="manual" class="radio-option">
-            <div class="radio-content">
-              <span class="radio-title">✏️ Manual</span>
-              <span class="radio-description">Ingresar datos del lote manualmente</span>
-            </div>
-          </mat-radio-button>
+
           
           <mat-radio-button value="existente" class="radio-option">
             <div class="radio-content">
@@ -67,24 +61,38 @@
           </mat-radio-button>
         </mat-radio-group>
 
-        <!-- Lote Automático -->
-        <div *ngIf="esIngreso && modoLoteActual === 'automatico'" class="lote-subsection automatico">
-          <div class="auto-lote-info">
-            <div class="info-item">
-              <strong>Número de Lote:</strong> 
-              <span class="lote-number">{{ numeroLoteDisplay || 'Generando...' }}</span>
-            </div>
-            <div class="info-item">
-              <strong>Fecha de Caducidad:</strong> 
-              <span class="fecha-caducidad">
-                {{ form.get('fecha_caducidad_auto')?.value | date:'dd/MM/yyyy' }}
-              </span>
-            </div>
-          </div>
-          <div class="info-note">
-            ✅ Este lote se generará automáticamente al guardar
-          </div>
-        </div>
+       <!-- En movimiento-stock-unificado-form.component.html - dentro de la sección de lote automático -->
+<div *ngIf="esIngreso && modoLoteActual === 'automatico'" class="lote-subsection automatico">
+  <div class="auto-lote-info">
+    <div class="info-item">
+      <strong>Número de Lote:</strong> 
+      <span class="lote-number">{{ numeroLoteDisplay || 'Generando...' }}</span>
+    </div>
+    
+    <!-- NUEVO: Selector de período de caducidad -->
+    <div class="info-item periodo-selector">
+      <strong>Período de Caducidad:</strong>
+      <mat-radio-group [(ngModel)]="periodoCaducidadSeleccionado" 
+                       (change)="actualizarFechaCaducidad()"
+                       [ngModelOptions]="{standalone: true}">
+        <mat-radio-button *ngFor="let opcion of opcionesCaducidadProductoActual" 
+                          [value]="opcion">
+          {{ opcion }} {{ opcion === 1 ? 'mes' : 'meses' }}
+        </mat-radio-button>
+      </mat-radio-group>
+    </div>
+    
+    <div class="info-item">
+      <strong>Fecha de Caducidad:</strong> 
+      <span class="fecha-caducidad">
+        {{ fechaCaducidadCalculada | date:'dd/MM/yyyy' }}
+      </span>
+    </div>
+  </div>
+  <div class="info-note">
+    ✅ Este lote se generará automáticamente al guardar
+  </div>
+</div>
 
         <!-- Lote Manual -->
         <div *ngIf="esIngreso && modoLoteActual === 'manual'" class="lote-subsection manual">

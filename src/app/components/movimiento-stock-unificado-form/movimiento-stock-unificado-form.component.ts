@@ -23,7 +23,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
-
+import { FormsModule } from '@angular/forms'; // <-- AGREGAR
 @Component({
   selector: 'app-movimiento-stock-unificado-form',
   templateUrl: './movimiento-stock-unificado-form.component.html',
@@ -32,6 +32,7 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -51,18 +52,42 @@ export class MovimientoStockUnificadoFormComponent implements OnInit, OnDestroy 
   filteredLotes: Observable<Lote[]> = of([]);
   isLoading = false;
   isSubmitting = false;
-  
+  // Propiedades nuevas
+periodoCaducidadSeleccionado: number = 6;
+fechaCaducidadCalculada: Date = new Date();
+opcionesCaducidadProductoActual: number[] = [6]; // Default
   // 🔧 NUEVAS PROPIEDADES PARA CONTROLAR EL NÚMERO DE LOTE
   numeroLoteDisplay: string = '';
   private numeroLoteCache: string = '';
 
   // Configuración de productos con tiempos de validez
-  configProductos: { [key: number]: any } = {
-    1: { mesesValidez: 6, prefijoLote: 'BL' },  // Bidón Agua Bella
-    2: { mesesValidez: 6, prefijoLote: 'VL' },  // Bidón Agua Viña  
-    3: { mesesValidez: 12, prefijoLote: 'BP' }, // Paquete Botella Bella
-    4: { mesesValidez: 12, prefijoLote: 'VP' }  // Paquete Botella Viña
-  };
+// Configuración de productos con tiempos de validez CONFIGURABLES
+configProductos: { [key: number]: any } = {
+  1: { 
+    mesesValidez: 6, 
+    prefijoLote: 'BL',
+    tipo: 'bidon',
+    opcionesCaducidad: [3, 6, 12] // 3, 6, 12 meses
+  },
+  2: { 
+    mesesValidez: 6, 
+    prefijoLote: 'VL',
+    tipo: 'bidon',
+    opcionesCaducidad: [3, 6, 12]
+  },
+  3: { 
+    mesesValidez: 12, 
+    prefijoLote: 'BP',
+    tipo: 'paquete',
+    opcionesCaducidad: [12, 18, 24] // 12, 18, 24 meses
+  },
+  4: { 
+    mesesValidez: 12, 
+    prefijoLote: 'VP',
+    tipo: 'paquete',
+    opcionesCaducidad: [12, 18, 24]
+  }
+};
 
   tiposMovimiento = [
     { value: 'ingreso', label: '📥 Ingreso', creaLote: true },
@@ -156,18 +181,34 @@ export class MovimientoStockUnificadoFormComponent implements OnInit, OnDestroy 
     ));
   }
 
-  private actualizarConfiguracionProducto(productoId: number): void {
-    const config = this.configProductos[productoId];
-    if (config) {
-      // 🔧 GENERAR NÚMERO DE LOTE UNA SOLA VEZ
-      this.regenerarNumeroLote(config.prefijoLote);
-      
-      this.form.patchValue({
-        prefijo_lote: config.prefijoLote,
-        fecha_caducidad_auto: this.calcularFechaCaducidad(config.mesesValidez)
-      });
-    }
+ // En actualizarConfiguracionProducto
+private actualizarConfiguracionProducto(productoId: number): void {
+  const config = this.configProductos[productoId];
+  if (config) {
+    // Configurar opciones de caducidad
+    this.opcionesCaducidadProductoActual = config.opcionesCaducidad || [6];
+    
+    // Establecer período por defecto (el primero de la lista)
+    this.periodoCaducidadSeleccionado = this.opcionesCaducidadProductoActual[0];
+    
+    // Calcular fecha
+    this.actualizarFechaCaducidad();
+    
+    this.regenerarNumeroLote(config.prefijoLote);
   }
+}
+// Nuevo método para actualizar fecha
+actualizarFechaCaducidad(): void {
+  if (!this.periodoCaducidadSeleccionado) return;
+  
+  const fecha = new Date();
+  fecha.setMonth(fecha.getMonth() + this.periodoCaducidadSeleccionado);
+  this.fechaCaducidadCalculada = fecha;
+  
+  this.form.patchValue({
+    fecha_caducidad_auto: fecha
+  });
+}
 
   // 🔧 MÉTODO PARA GENERAR NÚMERO DE LOTE DE FORMA CONTROLADA
   private regenerarNumeroLote(prefijo: string): void {

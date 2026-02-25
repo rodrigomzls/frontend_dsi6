@@ -37,11 +37,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   styleUrls: ['./usuario-list.component.css']
 })
 export class UsuarioListComponent implements OnInit {
-  pageSize = 10; // Valor inicial
-  currentPage = 0; // Página actual
+  pageSize = 10;
+  currentPage = 0;
   displayedColumns: string[] = ['numero', 'usuario_info', 'persona', 'rol', 'estado', 'acciones'];
+  
   dataSource = new MatTableDataSource<any>([]);
-  filteredData: any[] = []; // Datos filtrados para paginación
+  allUsuarios: any[] = []; // Todos los usuarios
+  filteredUsuarios: any[] = []; // Usuarios filtrados
+  paginatedUsuarios: any[] = []; // Usuarios de la página actual
   isLoading = true;
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -68,33 +71,17 @@ export class UsuarioListComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Cambiar tamaño de página
-  changePageSize(size: number): void {
-    this.pageSize = size;
-    this.currentPage = 0; // Resetear a primera página
-    this.updateTableData();
-    this.cdr.detectChanges();
-  }
-
   // Cargar usuarios
   loadUsers(): void {
     this.isLoading = true;
     this.usuarioService.getUsers().subscribe({
       next: (users) => {
         console.log('Usuarios cargados:', users);
-        this.dataSource.data = users;
-        this.filteredData = [...users]; // Inicializar datos filtrados
-        
-        // Configurar sort después de cargar datos
-        setTimeout(() => {
-          if (this.sort) {
-            this.dataSource.sort = this.sort;
-          }
-          
-          this.isLoading = false;
-          this.updateTableData();
-          this.cdr.detectChanges();
-        }, 0);
+        this.allUsuarios = [...users];
+        this.filteredUsuarios = [...users];
+        this.applyPagination();
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error cargando usuarios:', err);
@@ -104,60 +91,72 @@ export class UsuarioListComponent implements OnInit {
     });
   }
 
-  // Aplicar filtro
-  applyFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-    
-    // Actualizar datos filtrados
-    if (this.dataSource.filteredData) {
-      this.filteredData = this.dataSource.filteredData;
-    } else {
-      this.filteredData = this.dataSource.data.filter(item => 
-        JSON.stringify(item).toLowerCase().includes(filterValue.toLowerCase())
-      );
-    }
-    
-    this.currentPage = 0; // Resetear a primera página al filtrar
-    this.updateTableData();
-  }
-
-  // Actualizar datos de la tabla según paginación
-  updateTableData(): void {
+  // Aplicar paginación
+  applyPagination(): void {
     const startIndex = this.currentPage * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     
-    // Si hay datos filtrados, usarlos; si no, usar todos
-    const dataToUse = this.filteredData.length > 0 ? this.filteredData : this.dataSource.data;
+    this.paginatedUsuarios = this.filteredUsuarios.slice(startIndex, endIndex);
+    this.dataSource.data = this.paginatedUsuarios;
+  }
+
+  // Cambiar tamaño de página
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 0;
+    this.applyPagination();
+    this.cdr.detectChanges();
+  }
+
+  // Aplicar filtro - IGUAL QUE EN CATEGORÍAS
+  applyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
     
-    // Obtener slice de datos para la página actual
-    const pageData = dataToUse.slice(startIndex, endIndex);
-    this.dataSource.data = pageData;
+    if (!filterValue) {
+      // Si no hay filtro, mostrar todos
+      this.filteredUsuarios = [...this.allUsuarios];
+    } else {
+      // Aplicar filtro manualmente
+      this.filteredUsuarios = this.allUsuarios.filter(usuario => {
+        const searchString = 
+          (usuario.nombre_usuario || usuario.username || '').toLowerCase() + ' ' +
+          (usuario.nombre_completo || usuario.nombre || '').toLowerCase() + ' ' +
+          (usuario.email || '').toLowerCase() + ' ' +
+          (usuario.id_usuario || '').toString();
+        
+        return searchString.includes(filterValue);
+      });
+    }
+    
+    this.currentPage = 0;
+    this.applyPagination();
   }
 
   // Métodos de navegación
   nextPage(): void {
     if (this.hasNextPage()) {
       this.currentPage++;
-      this.updateTableData();
+      this.applyPagination();
     }
   }
 
   previousPage(): void {
     if (this.hasPreviousPage()) {
       this.currentPage--;
-      this.updateTableData();
+      this.applyPagination();
     }
   }
 
   hasNextPage(): boolean {
-    const dataToUse = this.filteredData.length > 0 ? this.filteredData : this.dataSource.data;
-    const totalPages = Math.ceil(dataToUse.length / this.pageSize);
-    return this.currentPage < totalPages - 1;
+    return this.currentPage < this.getTotalPages() - 1;
   }
 
   hasPreviousPage(): boolean {
     return this.currentPage > 0;
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.filteredUsuarios.length / this.pageSize);
   }
 
   getStartIndex(): number {
@@ -165,10 +164,16 @@ export class UsuarioListComponent implements OnInit {
   }
 
   getEndIndex(): number {
-    const dataToUse = this.filteredData.length > 0 ? this.filteredData : this.dataSource.data;
-    const startIndex = this.currentPage * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    return Math.min(endIndex, dataToUse.length);
+    const end = this.getStartIndex() + this.pageSize;
+    return Math.min(end, this.filteredUsuarios.length);
+  }
+
+  getTotalFiltered(): number {
+    return this.filteredUsuarios.length;
+  }
+
+  getTotalUsuarios(): number {
+    return this.allUsuarios.length;
   }
 
   // Número de fila
@@ -177,7 +182,7 @@ export class UsuarioListComponent implements OnInit {
   }
 
   // ======================
-  // MÉTODOS DE DIALOGOS (mantenidos igual)
+  // MÉTODOS DE DIALOGOS
   // ======================
 
   openAddDialog(): void {

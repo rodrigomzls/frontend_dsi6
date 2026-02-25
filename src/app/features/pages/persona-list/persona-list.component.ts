@@ -14,7 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PersonaService } from '../../../core/services/persona.service';
 import { PersonaFormComponent } from '../../../components/persona-form/persona-form.component';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../../components/confirm-dialog/confirm-dialog.component';
-
+import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-persona-list',
   standalone: true,
@@ -36,11 +36,14 @@ import { ConfirmDialogComponent, ConfirmDialogData } from '../../../components/c
   styleUrls: ['./persona-list.component.css']
 })
 export class PersonaListComponent implements OnInit {
-  pageSize = 10; // Valor inicial
-  currentPage = 0; // Página actual
+  pageSize = 10;
+  currentPage = 0;
   displayedColumns: string[] = ['id', 'documento', 'informacion', 'direccion', 'contacto', 'acciones'];
+  
   dataSource = new MatTableDataSource<any>([]);
-  filteredData: any[] = []; // Datos filtrados para paginación
+  allPersonas: any[] = []; // Todas las personas
+  filteredPersonas: any[] = []; // Personas filtradas
+  paginatedPersonas: any[] = []; // Personas de la página actual
   isLoading = true;
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -50,23 +53,24 @@ export class PersonaListComponent implements OnInit {
     private personaService: PersonaService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
+    public authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadPersonas();
+     // Ajustar columnas según permisos
+    if (!this.authService.isAdmin()) {
+      this.displayedColumns = this.displayedColumns.filter(col => col !== 'acciones');
+    }
   }
+
+
+
+
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
-    this.cdr.detectChanges();
-  }
-
-  // Cambiar tamaño de página
-  changePageSize(size: number): void {
-    this.pageSize = size;
-    this.currentPage = 0; // Resetear a primera página
-    this.updateTableData();
     this.cdr.detectChanges();
   }
 
@@ -76,19 +80,11 @@ export class PersonaListComponent implements OnInit {
     this.personaService.getAll().subscribe({
       next: (personas) => { 
         console.log('Personas cargadas:', personas);
-        this.dataSource.data = personas;
-        this.filteredData = [...personas]; // Inicializar datos filtrados
-        
-        // Configurar sort después de cargar datos
-        setTimeout(() => {
-          if (this.sort) {
-            this.dataSource.sort = this.sort;
-          }
-          
-          this.isLoading = false;
-          this.updateTableData();
-          this.cdr.detectChanges();
-        }, 0);
+        this.allPersonas = [...personas];
+        this.filteredPersonas = [...personas];
+        this.applyPagination();
+        this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => { 
         console.error('Error cargando personas:', err); 
@@ -98,56 +94,73 @@ export class PersonaListComponent implements OnInit {
     });
   }
 
-  // Aplicar filtro
-  applyFilter(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-    
-    // Actualizar datos filtrados
-    if (this.dataSource.filteredData) {
-      this.filteredData = this.dataSource.filteredData;
-    } else {
-      this.filteredData = this.dataSource.data.filter(item => 
-        JSON.stringify(item).toLowerCase().includes(filterValue.toLowerCase())
-      );
-    }
-    
-    this.currentPage = 0; // Resetear a primera página al filtrar
-    this.updateTableData();
-  }
-
-  // Actualizar datos de la tabla según paginación
-  updateTableData(): void {
+  // Aplicar paginación
+  applyPagination(): void {
     const startIndex = this.currentPage * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     
-    // Obtener slice de datos para la página actual
-    const pageData = this.filteredData.slice(startIndex, endIndex);
-    this.dataSource.data = pageData;
+    this.paginatedPersonas = this.filteredPersonas.slice(startIndex, endIndex);
+    this.dataSource.data = this.paginatedPersonas;
+  }
+
+  // Cambiar tamaño de página
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 0;
+    this.applyPagination();
+    this.cdr.detectChanges();
+  }
+
+  // Aplicar filtro - IGUAL QUE EN CATEGORÍAS
+  applyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    
+    if (!filterValue) {
+      // Si no hay filtro, mostrar todas
+      this.filteredPersonas = [...this.allPersonas];
+    } else {
+      // Aplicar filtro manualmente
+      this.filteredPersonas = this.allPersonas.filter(persona => {
+        const searchString = 
+          (persona.nombre_completo || '').toLowerCase() + ' ' +
+          (persona.numero_documento || '').toLowerCase() + ' ' +
+          (persona.telefono || '').toLowerCase() + ' ' +
+          (persona.email || '').toLowerCase() + ' ' +
+          (persona.id_persona || '').toString();
+        
+        return searchString.includes(filterValue);
+      });
+    }
+    
+    this.currentPage = 0;
+    this.applyPagination();
   }
 
   // Métodos de navegación
   nextPage(): void {
     if (this.hasNextPage()) {
       this.currentPage++;
-      this.updateTableData();
+      this.applyPagination();
     }
   }
 
   previousPage(): void {
     if (this.hasPreviousPage()) {
       this.currentPage--;
-      this.updateTableData();
+      this.applyPagination();
     }
   }
 
   hasNextPage(): boolean {
-    const totalPages = Math.ceil(this.filteredData.length / this.pageSize);
-    return this.currentPage < totalPages - 1;
+    return this.currentPage < this.getTotalPages() - 1;
   }
 
   hasPreviousPage(): boolean {
     return this.currentPage > 0;
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.filteredPersonas.length / this.pageSize);
   }
 
   getStartIndex(): number {
@@ -155,9 +168,16 @@ export class PersonaListComponent implements OnInit {
   }
 
   getEndIndex(): number {
-    const startIndex = this.currentPage * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    return Math.min(endIndex, this.filteredData.length);
+    const end = this.getStartIndex() + this.pageSize;
+    return Math.min(end, this.filteredPersonas.length);
+  }
+
+  getTotalFiltered(): number {
+    return this.filteredPersonas.length;
+  }
+
+  getTotalPersonas(): number {
+    return this.allPersonas.length;
   }
 
   // ======================

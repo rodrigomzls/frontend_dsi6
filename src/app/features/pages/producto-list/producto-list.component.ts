@@ -50,7 +50,6 @@ export class ProductoListComponent implements OnInit {
     'stock',
     'categoria',
     'marca',
-    'proveedor',
     'paisOrigen',
     'acciones'
   ];

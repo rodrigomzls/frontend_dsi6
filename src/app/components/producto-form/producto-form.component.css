@@ -268,8 +268,98 @@ mat-form-field:hover .mat-mdc-text-field-wrapper {
   }
 }
 
+/* === 🚫 CAMPO DE STOCK DESHABILITADO (MODO EDICIÓN) === */
+.mat-form-field-disabled {
+  opacity: 0.85;
+  background-color: #f5f5f5;
+  border-radius: 6px;
+}
+
+.mat-form-field-disabled .mat-mdc-text-field-wrapper {
+  background-color: #f5f5f5 !important;
+  cursor: not-allowed;
+}
+
+.mat-form-field-disabled input {
+  cursor: not-allowed;
+  color: #666 !important;
+}
+
+/* Estilo especial para el hint de advertencia */
+.mat-mdc-form-field-hint-wrapper {
+  color: #f57c00 !important;
+  font-weight: 500;
+  font-size: 11px;
+  padding: 2px 4px !important;
+  background-color: rgba(245, 124, 0, 0.1);
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+
 @media (max-width: 360px) {
   .form-section {
     margin-bottom: 8px;
   }
+}
+/* Al final de producto-form.component.css */
+
+/* === 🔒 CAMPO DE STOCK - SIEMPRE SOLO LECTURA === */
+.stock-field-readonly .mat-mdc-text-field-wrapper {
+  background-color: #f8f9fa !important;
+  border-left: 3px solid #ff9800; /* Borde naranja para destacar */
+}
+
+.stock-field-readonly input {
+  color: #2e7d32 !important; /* Verde oscuro para el número */
+  font-weight: 600;
+  cursor: default;
+  background-color: #f8f9fa;
+  -webkit-text-fill-color: #2e7d32; /* Para mantener color en disabled */
+}
+
+.stock-field-readonly .mat-mdc-form-field-icon-suffix {
+  color: #ff9800;
+}
+
+.lock-icon {
+  font-size: 18px;
+  color: #ff9800;
+  opacity: 0.8;
+}
+
+.stock-hint {
+  color: #ff9800 !important;
+  font-weight: 500;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(255, 152, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-top: 2px;
+}
+
+/* Efecto hover para que se note que es solo lectura */
+.stock-field-readonly:hover .mat-mdc-text-field-wrapper {
+  background-color: #f1f3f4 !important;
+  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+/* Para el modo creación, también se ve igual */
+.stock-field-readonly .mat-form-field-outline {
+  color: #ff9800;
+}
+
+/* Si quieres que el campo sea aún más obvio, puedes añadir un patrón de fondo */
+.stock-field-readonly .mat-mdc-form-field-flex {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 152, 0, 0.02),
+    rgba(255, 152, 0, 0.02) 10px,
+    rgba(255, 152, 0, 0.04) 10px,
+    rgba(255, 152, 0, 0.04) 20px
+  );
 }

@@ -19,8 +19,8 @@ export interface Venta {
   detalles: VentaDetalle[];
   tipo_comprobante?: string;
   tipo_comprobante_solicitado?: string;
-  serie_comprobante?: string;
-  numero_correlativo?: number;
+  serie_comprobante?: string | null;  // 👈 Puede venir de comprobante_sunat
+  numero_correlativo?: number | null; // 👈 Puede venir de comprobante_sunat
   nombre_completo?: string;
   telefono?: string;
   direccion?: string;
@@ -31,6 +31,9 @@ export interface Venta {
   fecha_creacion?: string;
   fecha_actualizacion?: string;
   razon_social?: string;
+  tipo_cliente?: string;
+  tipo_documento?: string;
+  numero_documento?: string;
   coordenadas?: string;
   placa_furgon?: string;
   comprobante_emitido?: number;
@@ -159,7 +162,9 @@ export class VentasService {
       })
     );
   }
-
+cancelarVentaConStock(idVenta: number, motivo: string): Observable<any> {
+  return this.http.post<any>(`${this.apiUrl}/${idVenta}/cancelar-con-stock`, { motivo });
+}
   // ✅ MÉTODO AUXILIAR PARA ESTADÍSTICAS VACÍAS
   private getEstadisticasVacio(): EstadisticasVentas {
     return {

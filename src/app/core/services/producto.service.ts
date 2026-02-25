@@ -75,14 +75,12 @@ getProductsWithDetails(): Observable<any[]> {
         const pais = paises?.find(p => p.id === product.paisOrigenId);
         const categoria = categorias?.find(c => c.id_categoria === product.categoriaId);
         const marca = marcas?.find(m => m.id_marca === product.marcaId);
-        const proveedor = proveedores?.find(prov => prov.id_proveedor === product.proveedorId);
 
         return {
           ...product,
           paisOrigenNombre: pais ? pais.nombre : 'No disponible',
           categoriaNombre: categoria ? categoria.nombre : 'No disponible',
-          marcaNombre: marca ? marca.nombre : 'No disponible',
-          proveedorNombre: proveedor ? proveedor.nombre : 'No disponible'
+          marcaNombre: marca ? marca.nombre : 'No disponible'
         };
       });
     }),
@@ -103,7 +101,6 @@ getProductsForSales(): Observable<any[]> {
         stock: producto.stock,
         categoriaId: producto.categoriaId,
         marcaId: producto.marcaId,
-        proveedorId: producto.proveedorId,
         // Placeholders para la vista
         categoriaNombre: 'Categoría',
         marcaNombre: 'Marca', 

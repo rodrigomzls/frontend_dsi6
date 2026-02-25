@@ -24,17 +24,14 @@ import { LoteListComponent } from './features/pages/lote-list/lote-list.componen
 import { MovimientoStockListComponent } from './features/pages/movimiento-stock-list/movimiento-stock-list.component';
 import { InventarioDashboardComponent } from './features/pages/inventario/inventario-dashboard/inventario-dashboard.component';
 import { InventarioReportesComponent } from './features/pages/inventario/inventario-reportes/inventario-reportes.component';
-
-// ✅ NUEVO: Importar el componente unificado
 import { InventarioUnificadoComponent } from './features/pages/inventario/inventario-unificado/inventario-unificado.component';
-
-// ✅ NUEVO: Importar componente principal SUNAT
 import { SunatPrincipalComponent } from './features/pages/sunat/pages/sunat-principal/sunat-principal.component';
-
+//import { EmpresaConfigComponent } from './features/pages/configuracion/empresa-config/empresa-config.component';
 // Guards para standalone
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
-
+import { PersonalizacionComponent } from './features/pages/configuracion/personalizacion/personalizacion.component';
+import { InsumoListComponent } from './features/pages/insumo-list/insumo-list.component';
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -83,8 +80,21 @@ export const routes: Routes = [
     component: PanelVentasComponent,
     canActivate: [authGuard, roleGuard],
     data: { requiredModule: 'ventas', expectedRoles: [1, 2] }
-  },
-   
+  }
+   ,
+   /**{
+  path: 'configuracion/empresa',
+  component: EmpresaConfigComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { requiredModule: 'empresa', expectedRoles: [1] } // Solo admin
+},**/
+  
+{
+  path: 'configuracion/personalizacion',
+  component: PersonalizacionComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { requiredModule: 'empresa', expectedRoles: [1] } // Solo admin
+},
   {
     path: 'usuarios',
     component: UsuarioListComponent,
@@ -172,7 +182,12 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { requiredModule: 'inventario_reportes', expectedRoles: [4] }
   },
-
+{
+  path: 'insumos',
+  component: InsumoListComponent,
+  canActivate: [authGuard, roleGuard],
+  data: { requiredModule: 'pedido_proveedor', expectedRoles: [1, 4] }
+},
   // ✅ MANTENER: Rutas administrativas (sin cambios)
   {
     path: 'proveedores',
