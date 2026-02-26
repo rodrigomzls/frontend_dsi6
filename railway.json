@@ -1,0 +1,10 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "npm install && npm run build -- --configuration=production"
+  },
+  "deploy": {
+    "startCommand": "npx http-server dist/my-app-dsi6/browser -p $PORT",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}
